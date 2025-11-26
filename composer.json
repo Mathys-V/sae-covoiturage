@@ -1,0 +1,18 @@
+{
+    "name": "spyro/covoiturage-iut",
+    "autoload": {
+        "psr-4": {
+            "Spyro\\CovoiturageIut\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mathys Vanheulle",
+            "email": "mathys19706980@gmail.com"
+        }
+    ],
+    "require": {
+        "flightphp/core": "^3.17",
+        "smarty/smarty": "^5.7"
+    }
+}

@@ -1,224 +1,185 @@
--- ============================================
--- 1. TABLE ADRESSE 
--- ============================================
-CREATE TABLE ADRESSE (
+-- SCRIPT DE CREATION BDD - COVOITURAGE - Equipe W
+
+-- ============================================================
+-- 1. TABLE ADRESSES
+-- ============================================================
+CREATE TABLE ADRESSES (
     id_adresse INT AUTO_INCREMENT PRIMARY KEY,
     numero VARCHAR(10),
-    voie VARCHAR(100) NOT NULL,
-    complement VARCHAR(100),
+    voie VARCHAR(150) NOT NULL,
     code_postal VARCHAR(10) NOT NULL,
     ville VARCHAR(100) NOT NULL,
     pays VARCHAR(100) DEFAULT 'France',
-    
     INDEX idx_ville (ville),
-    INDEX idx_code_postal (code_postal)
+    INDEX idx_cp (code_postal)
 );
 
--- ============================================
--- 2. TABLE UTILISATEUR 
--- ============================================
-CREATE TABLE UTILISATEUR (
+-- ============================================================
+-- 2. TABLE UTILISATEURS
+-- ============================================================
+CREATE TABLE UTILISATEURS (
     id_utilisateur INT AUTO_INCREMENT PRIMARY KEY,
-    id_adresse INT NULL,
+    id_adresse INT NOT NULL, -- Obligatoire
     email VARCHAR(255) UNIQUE NOT NULL,
     mot_de_passe VARCHAR(255) NOT NULL,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
     date_naissance DATE NOT NULL,
-    photo_profil VARCHAR(255) DEFAULT 'default.png', 
+    photo_profil VARCHAR(255) DEFAULT 'default.png',
     telephone VARCHAR(20),
     description TEXT NULL,
-    role ENUM('etudiant', 'admin') NOT NULL DEFAULT 'etudiant',
-    profil_verifie BOOLEAN DEFAULT FALSE,
-    note_moyenne DECIMAL(3,2) CHECK (note_moyenne >= 0 AND note_moyenne <= 5),
-    nombre_trajets INT DEFAULT 0,
-    date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP,
-    token_recuperation VARCHAR(255) NULL,
+    
+    -- Flags Admin/Vérifié/Actif
+    admin_flag CHAR(1) DEFAULT 'N' CHECK (admin_flag IN ('Y', 'N')),
+    verified_flag CHAR(1) DEFAULT 'N' CHECK (verified_flag IN ('Y', 'N')),
+    active_flag CHAR(1) DEFAULT 'Y' CHECK (active_flag IN ('Y', 'N')),
+    
+    token_recuperation VARCHAR(10) NULL,
     date_expiration_token DATETIME NULL,
+    date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_utilisateur_adresse 
-        FOREIGN KEY (id_adresse) 
-        REFERENCES ADRESSE(id_adresse)
-        ON DELETE SET NULL,
-        
- 
-    CONSTRAINT chk_date_naissance_valide
-        CHECK (date_naissance >= '1900-01-01'),
-    
-    INDEX idx_email (email),
-    INDEX idx_nom_prenom (nom, prenom),
-    INDEX idx_token (token_recuperation)
+    CONSTRAINT fk_user_adresse FOREIGN KEY (id_adresse) REFERENCES ADRESSES(id_adresse) ON DELETE RESTRICT,
+    CONSTRAINT chk_age CHECK (date_naissance >= '1900-01-01')
 );
 
--- ============================================
--- 3. TABLE VEHICULE 
--- ============================================
-CREATE TABLE VEHICULE (
+-- ============================================================
+-- 3. TABLE VEHICULES
+-- ============================================================
+CREATE TABLE VEHICULES (
     id_vehicule INT AUTO_INCREMENT PRIMARY KEY,
-    id_utilisateur INT NOT NULL,
-    marque VARCHAR(100) NOT NULL,
-    modele VARCHAR(100) NOT NULL,
-    couleur VARCHAR(50),
-    immatriculation VARCHAR(20) UNIQUE NOT NULL,
-    nombre_places TINYINT NOT NULL CHECK (nombre_places > 0),
-    
-    CONSTRAINT fk_vehicule_utilisateur
-        FOREIGN KEY (id_utilisateur)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    INDEX idx_utilisateur (id_utilisateur)
+    -- Pas de conducteur ici (gestion par POSSESSIONS)
+    marque VARCHAR(50) NOT NULL,
+    modele VARCHAR(50) NOT NULL,
+    nb_places_totales TINYINT NOT NULL,
+    couleur VARCHAR(30),
+    immatriculation VARCHAR(20),
+    type_vehicule ENUM('voiture', 'moto', 'autre') DEFAULT 'voiture',
+    details_supplementaires TEXT NULL
 );
 
--- ============================================
--- 4. TABLE TRAJET 
--- ============================================
-CREATE TABLE TRAJET (
+-- ============================================================
+-- 4. TABLE POSSESSIONS (Liaison Utilisateur <-> Véhicule)
+-- ============================================================
+CREATE TABLE POSSESSIONS (
+    id_utilisateur INT NOT NULL,
+    id_vehicule INT NOT NULL,
+    est_proprietaire_principal CHAR(1) DEFAULT 'Y',
+    
+    PRIMARY KEY (id_utilisateur, id_vehicule),
+    
+    CONSTRAINT fk_poss_user FOREIGN KEY (id_utilisateur) REFERENCES UTILISATEURS(id_utilisateur) ON DELETE CASCADE,
+    CONSTRAINT fk_poss_vehicule FOREIGN KEY (id_vehicule) REFERENCES VEHICULES(id_vehicule) ON DELETE CASCADE
+);
+
+-- ============================================================
+-- 5. TABLE LIEUX_FREQUENTS
+-- ============================================================
+CREATE TABLE LIEUX_FREQUENTS (
+    id_lieu INT AUTO_INCREMENT PRIMARY KEY,
+    nom_lieu VARCHAR(100) NOT NULL,
+    ville VARCHAR(100) NOT NULL,
+    code_postal VARCHAR(10) NOT NULL,
+    rue VARCHAR(150) NULL,
+    
+    INDEX idx_nom (nom_lieu),
+    INDEX idx_ville (ville)
+);
+
+-- ============================================================
+-- 6. TABLE TRAJETS
+-- ============================================================
+CREATE TABLE TRAJETS (
     id_trajet INT AUTO_INCREMENT PRIMARY KEY,
     id_conducteur INT NOT NULL,
-    lieu_depart VARCHAR(200) NOT NULL,
-    lieu_arrivee VARCHAR(200) NOT NULL,
-    date_trajet DATE NOT NULL,
-    heure_depart TIME NOT NULL,
-    duree_estimee TIME NOT NULL, 
-    places_totales TINYINT NOT NULL,
-    places_disponibles TINYINT NOT NULL,
-    est_regulier BOOLEAN DEFAULT FALSE,
-    statut_trajet ENUM('actif', 'termine', 'annule', 'signale') 
-        DEFAULT 'actif',
-    informations_complementaires TEXT NULL,
-    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_vehicule INT NOT NULL, -- La voiture utilisée pour CE trajet
     
-    CONSTRAINT fk_trajet_conducteur
-        FOREIGN KEY (id_conducteur)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
+    ville_depart VARCHAR(100) NOT NULL,
+    code_postal_depart VARCHAR(10) NOT NULL,
+    rue_depart VARCHAR(150) NULL,
     
-    CONSTRAINT chk_places_coherentes
-        CHECK (places_disponibles <= places_totales),
+    ville_arrivee VARCHAR(100) NOT NULL,
+    code_postal_arrivee VARCHAR(10) NOT NULL,
+    rue_arrivee VARCHAR(150) NULL,
     
-    CONSTRAINT chk_places_positives
-        CHECK (places_totales > 0 AND places_disponibles >= 0),
+    date_heure_depart DATETIME NOT NULL,
+    duree_estimee TIME NOT NULL,
     
-    INDEX idx_date_trajet (date_trajet),
-    INDEX idx_lieu_depart (lieu_depart),
-    INDEX idx_lieu_arrivee (lieu_arrivee),
-    INDEX idx_statut (statut_trajet),
-    INDEX idx_conducteur (id_conducteur)
+    places_proposees TINYINT NOT NULL,
+    prix_passager DECIMAL(5,2) DEFAULT 0, -- (J'ai remis le prix car c'est standard)
+    
+    statut_flag CHAR(1) DEFAULT 'A' CHECK (statut_flag IN ('A', 'C', 'T')),
+    
+    commentaires TEXT,
+    
+    CONSTRAINT fk_trajet_user FOREIGN KEY (id_conducteur) REFERENCES UTILISATEURS(id_utilisateur),
+    -- CORRECTION ICI : Ajout de la liaison vers le véhicule
+    CONSTRAINT fk_trajet_vehicule FOREIGN KEY (id_vehicule) REFERENCES VEHICULES(id_vehicule)
 );
 
--- ============================================
--- 5. TABLE RESERVATION 
--- ============================================
-CREATE TABLE RESERVATION (
+-- ============================================================
+-- 7. TABLE RESERVATIONS
+-- ============================================================
+CREATE TABLE RESERVATIONS (
     id_reservation INT AUTO_INCREMENT PRIMARY KEY,
     id_trajet INT NOT NULL,
     id_passager INT NOT NULL,
-    statut_reservation ENUM('en_attente', 'confirmee', 'refusee', 
-                            'annulee', 'terminee') DEFAULT 'en_attente',
+    nb_places_reservees TINYINT NOT NULL DEFAULT 1,
     date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    date_modification DATETIME ON UPDATE CURRENT_TIMESTAMP,
+    statut_code CHAR(1) DEFAULT 'V' CHECK (statut_code IN ('V', 'A', 'R')),
     
-    CONSTRAINT fk_reservation_trajet
-        FOREIGN KEY (id_trajet)
-        REFERENCES TRAJET(id_trajet)
-        ON DELETE CASCADE,
-    
-    CONSTRAINT fk_reservation_passager
-        FOREIGN KEY (id_passager)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    INDEX idx_trajet (id_trajet),
-    INDEX idx_passager (id_passager),
-    INDEX idx_statut (statut_reservation)
-); 
+    CONSTRAINT fk_res_trajet FOREIGN KEY (id_trajet) REFERENCES TRAJETS(id_trajet),
+    CONSTRAINT fk_res_user FOREIGN KEY (id_passager) REFERENCES UTILISATEURS(id_utilisateur)
+);
 
--- ============================================
--- 6. TABLE AVIS 
--- ============================================
+-- ============================================================
+-- 8. TABLE AVIS
+-- ============================================================
 CREATE TABLE AVIS (
     id_avis INT AUTO_INCREMENT PRIMARY KEY,
     id_reservation INT NOT NULL,
-    id_evaluateur INT NOT NULL,
-    id_evalue INT NOT NULL,
-    note TINYINT NOT NULL CHECK (note BETWEEN 1 AND 5),
+    id_auteur INT NOT NULL,
+    id_destinataire INT NOT NULL,
+    
+    role_destinataire CHAR(1) NOT NULL CHECK (role_destinataire IN ('C', 'P')),
+    
+    note TINYINT NOT NULL CHECK (note BETWEEN 0 AND 5),
     commentaire TEXT,
     date_avis DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_avis_reservation
-        FOREIGN KEY (id_reservation)
-        REFERENCES RESERVATION(id_reservation)
-        ON DELETE CASCADE,
-    
-    CONSTRAINT fk_avis_evaluateur
-        FOREIGN KEY (id_evaluateur)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    CONSTRAINT fk_avis_evalue
-        FOREIGN KEY (id_evalue)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    INDEX idx_reservation (id_reservation),
-    INDEX idx_evalue (id_evalue)
+    CONSTRAINT fk_avis_res FOREIGN KEY (id_reservation) REFERENCES RESERVATIONS(id_reservation),
+    CONSTRAINT fk_avis_auteur FOREIGN KEY (id_auteur) REFERENCES UTILISATEURS(id_utilisateur),
+    CONSTRAINT fk_avis_dest FOREIGN KEY (id_destinataire) REFERENCES UTILISATEURS(id_utilisateur)
 );
 
--- ============================================
--- 7. TABLE MESSAGE 
--- ============================================
-CREATE TABLE MESSAGE (
+-- ============================================================
+-- 9. TABLE MESSAGES
+-- ============================================================
+CREATE TABLE MESSAGES (
     id_message INT AUTO_INCREMENT PRIMARY KEY,
+    id_trajet INT NOT NULL,
     id_expediteur INT NOT NULL,
-    id_destinataire INT NOT NULL,
-    contenu VARCHAR(500) NOT NULL,
+    contenu TEXT NOT NULL,
     date_envoi DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_message_expediteur
-        FOREIGN KEY (id_expediteur)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE CASCADE,
-    
-    CONSTRAINT fk_message_destinataire
-        FOREIGN KEY (id_destinataire)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE CASCADE,
-    
-    INDEX idx_expediteur (id_expediteur),
-    INDEX idx_destinataire (id_destinataire),
-    INDEX idx_date (date_envoi)
+    CONSTRAINT fk_msg_trajet FOREIGN KEY (id_trajet) REFERENCES TRAJETS(id_trajet),
+    CONSTRAINT fk_msg_exp FOREIGN KEY (id_expediteur) REFERENCES UTILISATEURS(id_utilisateur)
 );
 
--- ============================================
--- 8. TABLE SIGNALEMENT 
--- ============================================
-CREATE TABLE SIGNALEMENT (
+-- ============================================================
+-- 10. TABLE SIGNALEMENTS
+-- ============================================================
+CREATE TABLE SIGNALEMENTS (
     id_signalement INT AUTO_INCREMENT PRIMARY KEY,
     id_signaleur INT NOT NULL,
     id_signale INT NOT NULL,
     id_trajet INT NULL,
+    
     motif VARCHAR(255) NOT NULL,
-    description VARCHAR(500),
-    statut_signalement ENUM('en_attente', 'en_cours', 'resolu', 'rejete') 
-        DEFAULT 'en_attente',
+    description TEXT,
+    statut_code CHAR(1) DEFAULT 'E' CHECK (statut_code IN ('E', 'P', 'R', 'J')),
     date_signalement DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_signalement_signaleur
-        FOREIGN KEY (id_signaleur)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    CONSTRAINT fk_signalement_signale
-        FOREIGN KEY (id_signale)
-        REFERENCES UTILISATEUR(id_utilisateur)
-        ON DELETE RESTRICT,
-    
-    CONSTRAINT fk_signalement_trajet
-        FOREIGN KEY (id_trajet)
-        REFERENCES TRAJET(id_trajet)
-        ON DELETE SET NULL,
-    
-    INDEX idx_statut (statut_signalement),
-    INDEX idx_signale (id_signale)
+    CONSTRAINT fk_sig_signaleur FOREIGN KEY (id_signaleur) REFERENCES UTILISATEURS(id_utilisateur),
+    CONSTRAINT fk_sig_signale FOREIGN KEY (id_signale) REFERENCES UTILISATEURS(id_utilisateur),
+    CONSTRAINT fk_sig_trajet FOREIGN KEY (id_trajet) REFERENCES TRAJETS(id_trajet) ON DELETE SET NULL
 );

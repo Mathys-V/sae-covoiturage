@@ -105,7 +105,6 @@ CREATE TABLE TRAJETS (
     duree_estimee TIME NOT NULL,
     
     places_proposees TINYINT NOT NULL,
-    prix_passager DECIMAL(5,2) DEFAULT 0, -- (J'ai remis le prix car c'est standard)
     
     statut_flag CHAR(1) DEFAULT 'A' CHECK (statut_flag IN ('A', 'C', 'T')),
     

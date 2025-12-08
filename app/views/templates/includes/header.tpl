@@ -77,9 +77,7 @@
         }
     </style>
 </head>
-<body>
-
-<nav class="navbar navbar-expand-lg bg-white shadow-sm py-3 mb-4">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
     <a class="navbar-brand d-flex align-items-center gap-2" href="/">
@@ -163,5 +161,3 @@
     </div>
   </div>
 </nav>
-
-<div class="container" style="min-height: 80vh;">

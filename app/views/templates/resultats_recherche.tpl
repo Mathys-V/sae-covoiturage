@@ -13,7 +13,7 @@
                     <span class="badge bg-white text-dark rounded-pill px-3 py-2 fs-6">{$recherche.date}</span>
                 {/if}
                 
-                <a href="/sae-covoiturage/public/recherche" class="btn btn-sm text-white fw-bold px-4" style="background-color: #8c52ff; border-radius: 20px;">
+                <a href="/sae-covoiturage/public/recherche" class="btn btn-sm text-white fw-bold px-4" style="background-color: #8c52ff; border-radius: 20px; width: auto !important;">
                     Modifier
                 </a>
             </form>
@@ -29,7 +29,7 @@
                             <h5 class="fw-bold mb-3">Informations du conducteur</h5>
                             <div class="d-flex align-items-center mb-3">
                                 <div class="me-3">
-                                    <img src="public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                    <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
                                 </div>
                                 <div>
                                     <div class="fw-bold">{$trajet.prenom} {$trajet.nom|upper}</div>
@@ -56,7 +56,7 @@
                             </p>
 
                             <div class="d-flex justify-content-center mt-4 gap-3">
-                                <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5" style="background-color: #8c52ff; border-radius: 50px;">
+                                <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5" style="background-color: #8c52ff; border-radius: 50px; width: auto !important;">
                                     Réserver
                                 </a>
                                 <button class="btn btn-dark btn-sm rounded-pill px-3">Signaler</button>
@@ -72,7 +72,7 @@
             <h4 class="fw-bold">Oups ! Aucun trajet disponible.</h4>
             <p>Personne n'a proposé de trajet pour <strong>{$recherche.depart}</strong> vers <strong>{$recherche.arrivee}</strong> à cette date.</p>
             
-            <a href="/sae-covoiturage/public/trajet/nouveau" class="btn btn-purple mt-3 w-auto px-4">
+            <a href="/sae-covoiturage/public/trajet/nouveau" class="btn btn-purple mt-3 px-4" style="width: auto !important;">
                 Soyez le premier à en proposer un !
             </a>
         </div>

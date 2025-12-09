@@ -13,23 +13,35 @@
         :root { --main-purple: #8c52ff; --hover-purple: #703ccf; }
         .text-purple { color: var(--main-purple); }
         
-        /* CORRECTION BOUTONS : MEME TAILLE */
+        /* === CORRECTION FOOTER : STRUCTURE DE LA PAGE === */
+        html, body {
+            height: 100%; /* La page prend 100% de l'écran */
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column; /* Organise les éléments verticalement */
+            background-color: #f8f9fa; /* Couleur de fond légère pour tout le site */
+        }
+        /* ================================================ */
+
+        /* BOUTONS NAVIGATION (Largeur Fixe pour le menu) */
         .btn-purple {
             background-color: var(--main-purple); 
             color: white; 
             border: none;
             border-radius: 50px; 
-            padding: 8px 10px; /* Padding réduit pour éviter que le texte déborde */
+            padding: 8px 10px;
             font-weight: 500;
             transition: background 0.3s, transform 0.1s; 
             text-decoration: none;
             
-            /* FORCER LA TAILLE IDENTIQUE */
-            width: 180px; /* Largeur fixe pour tous */
-            display: inline-flex; /* Pour centrer le contenu */
+            /* Largeur fixe pour le menu */
+            width: 180px; 
+            display: inline-flex; 
             justify-content: center;
             align-items: center;
-            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            white-space: nowrap;
         }
         
         .btn-purple:hover {
@@ -92,7 +104,6 @@
         <div class="vr mx-2 d-none d-lg-block"></div>
 
         <div class="d-none d-lg-flex align-items-center gap-1">
-            
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
                title="{if isset($user)}Mon Profil{else}Se connecter{/if}">
                 <div class="user-avatar-btn">
@@ -110,45 +121,19 @@
                 </a>
                 
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
-                    
-                    <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}">
-                            <i class="bi bi-car-front me-2"></i> Mes trajets
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}">
-                            <i class="bi bi-chat-dots me-2"></i> Messages
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}">
-                            <i class="bi bi-person-circle me-2"></i> Profil
-                        </a>
-                    </li>
-
+                    <li><a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}"><i class="bi bi-car-front me-2"></i> Mes trajets</a></li>
+                    <li><a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}"><i class="bi bi-chat-dots me-2"></i> Messages</a></li>
+                    <li><a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}"><i class="bi bi-person-circle me-2"></i> Profil</a></li>
                     <li><hr class="dropdown-divider"></li>
-
                     {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                        <li>
-                            <a class="dropdown-item py-2 text-danger fw-bold" href="/sae-covoiturage/public/moderation">
-                                <i class="bi bi-shield-exclamation me-2"></i> Modération
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="/sae-covoiturage/public/moderation"><i class="bi bi-shield-exclamation me-2"></i> Modération</a></li>
                         <li><hr class="dropdown-divider"></li>
                     {/if}
-
                     <li>
                         {if isset($user)}
-                            <a class="dropdown-item py-2" href="/sae-covoiturage/public/deconnexion">
-                                <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-                            </a>
+                            <a class="dropdown-item py-2" href="/sae-covoiturage/public/deconnexion"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
                         {else}
-                            <a class="dropdown-item py-2 fw-bold text-purple" href="/sae-covoiturage/public/connexion">
-                                <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
-                            </a>
+                            <a class="dropdown-item py-2 fw-bold text-purple" href="/sae-covoiturage/public/connexion"><i class="bi bi-box-arrow-in-right me-2"></i> Se connecter</a>
                         {/if}
                     </li>
                 </ul>
@@ -157,31 +142,16 @@
 
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
-            
-            <a href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
-                <i class="bi bi-car-front me-2"></i> Mes trajets
-            </a>
-            <a href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
-                <i class="bi bi-chat-dots me-2"></i> Messages
-            </a>
-            <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
-                <i class="bi bi-person-circle me-2"></i> Mon Profil
-            </a>
-            
+            <a href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link"><i class="bi bi-car-front me-2"></i> Mes trajets</a>
+            <a href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link"><i class="bi bi-chat-dots me-2"></i> Messages</a>
+            <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link"><i class="bi bi-person-circle me-2"></i> Mon Profil</a>
             {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger">
-                    <i class="bi bi-shield-exclamation me-2"></i> Modération
-                </a>
+                <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger"><i class="bi bi-shield-exclamation me-2"></i> Modération</a>
             {/if}
-
             {if isset($user)}
-                <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted">
-                    <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-                </a>
+                <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
             {else}
-                <a href="/sae-covoiturage/public/connexion" class="mobile-link text-purple fw-bold">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
-                </a>
+                <a href="/sae-covoiturage/public/connexion" class="mobile-link text-purple fw-bold"><i class="bi bi-box-arrow-in-right me-2"></i> Se connecter</a>
             {/if}
         </div>
 

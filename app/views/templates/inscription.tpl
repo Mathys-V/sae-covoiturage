@@ -5,18 +5,36 @@
     <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5 position-relative" style="width: 100%; max-width: 800px;">
         
         <h1 class="text-center mb-5 titre-inscription">S'inscrire</h1>
-        
-        <form action="#" method="POST"> <div class="mb-5">
-                <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
-                    Quelle est votre adresse mail ?<span class="asterisque">*</span>
-                </label>
-                <input type="email" id="emailInput" name="email" class="form-control email-input" placeholder="exemple@mcovoitjv.com" required>
-            </div>
-
-            <div class="text-center mt-5 mb-4">
-                <button type="submit" class="btn btn-cont-email fw-bold">Continuer</button>
-            </div>
+        <form action="traitement_inscription.php" method="POST">
         </form>
+        <div class="form-step" id="step-1">         
+
+                <div class="mb-5">
+                    <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
+                        Quelle est votre adresse mail ?<span class="asterisque">*</span>
+                    </label>
+                    <input type="email" id="emailInput" name="email" class="form-control email-input" placeholder="exemple@mcovoitjv.com" required>
+                </div>
+
+                <div class="text-center mt-5 mb-4">
+                    <button type="submit" class="btn btn-cont-email fw-bold">Continuer</button>
+                </div>
+        </div>
+
+        <div class="form-step d-none" id="step-2">
+            <h1 class="text-center mb-5 titre-inscription">S'inscrire</h1>
+
+                <div class="mb-5">
+                    <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
+                        Quelle est votre adresse mail ?<span class="asterisque">*</span>
+                    </label>
+                    <input type="email" id="emailInput" name="email" class="form-control email-input" placeholder="exemple@mcovoitjv.com" required>
+                </div>
+
+                <div class="text-center mt-5 mb-4">
+                    <button type="submit" class="btn btn-cont-email fw-bold">Continuer</button>
+                </div>
+        </div>
 
         <p class="position-absolute bottom-0 start-0 m-4 texte-champ small">
             <span class="asterisque">*</span> champ obligatoire
@@ -24,6 +42,16 @@
     </div>
 
 </section>
+
+<script>
+    function goToStep(stepNumber) {
+        // On cache toutes les étapes
+        document.querySelectorAll('.form-step').forEach(div => div.classList.add('d-none'));
+        
+        // On affiche celle demandée
+        document.getElementById('step' + stepNumber).classList.remove('d-none');
+    }
+</script>
 
 <style>
     body {

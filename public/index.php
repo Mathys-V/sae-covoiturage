@@ -68,44 +68,71 @@ Flight::route('GET /recherche/resultats', function(){
     $arrivee = Flight::request()->query->arrivee;
     $date = Flight::request()->query->date;
 
-    // --- GESTION DE L'HISTORIQUE (COOKIES) ---
-    $nouvelleRecherche = [
-        'depart' => $depart,
-        'arrivee' => $arrivee,
-        'date' => $date,
-        'timestamp' => time()
-    ];
-
-    $historique = [];
-    if(isset($_COOKIE['historique_recherche'])) {
-        $historique = json_decode($_COOKIE['historique_recherche'], true);
+    // --- 1. GESTION DE L'HISTORIQUE (COOKIES) ---
+    // On vérifie d'abord si l'utilisateur a accepté les cookies de performance
+    $consent = ['performance' => 1]; // Par défaut on accepte (ou 0 selon ta politique)
+    if (isset($_COOKIE['cookie_consent'])) {
+        $consent = json_decode($_COOKIE['cookie_consent'], true);
     }
 
-    // On évite les doublons (si la recherche existe déjà, on ne l'ajoute pas)
-    // On filtre pour enlever une éventuelle recherche identique existante
-    $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
-        return !($h['depart'] == $nouvelleRecherche['depart'] 
-              && $h['arrivee'] == $nouvelleRecherche['arrivee'] 
-              && $h['date'] == $nouvelleRecherche['date']);
-    });
+    // Si l'utilisateur a accepté la performance, on sauvegarde l'historique
+    if ($consent['performance'] == 1) {
+        
+        $nouvelleRecherche = [
+            'depart' => $depart,
+            'arrivee' => $arrivee,
+            'date' => $date,
+            'timestamp' => time()
+        ];
 
-    // On ajoute la nouvelle à la fin
-    $historique[] = $nouvelleRecherche;
+        $historique = [];
+        if(isset($_COOKIE['historique_recherche'])) {
+            $historique = json_decode($_COOKIE['historique_recherche'], true);
+        }
 
-    // On garde seulement les 3 dernières
-    if(count($historique) > 3) {
-        $historique = array_slice($historique, -3);
-    }
+        // On filtre pour enlever les doublons exacts
+        $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
+            return !($h['depart'] == $nouvelleRecherche['depart'] 
+                  && $h['arrivee'] == $nouvelleRecherche['arrivee'] 
+                  && $h['date'] == $nouvelleRecherche['date']);
+        });
 
-    // On sauvegarde le Cookie (Valable 30 jours)
-    setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
+        // On ajoute la nouvelle à la fin
+        $historique[] = $nouvelleRecherche;
 
-    // --- REQUÊTE SQL (Code existant) ---
+        // On garde seulement les 3 dernières
+        if(count($historique) > 3) {
+            $historique = array_slice($historique, -3);
+        }
+
+        // On sauvegarde le Cookie (Valable 30 jours)
+        setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
+    } 
+    // FIN DU IF COOKIES : Le code continue pour afficher les résultats même si refusé
+
+    // --- 2. REQUÊTE SQL (RECHERCHE) ---
     $db = Flight::get('db');
-    // ... (Votre code SQL actuel ici pour récupérer $trajets) ...
-    // Pour l'exemple vide :
-    $trajets = []; 
+    
+    // On récupère les trajets qui correspondent + infos conducteur + infos voiture
+    $sql = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+            FROM TRAJETS t
+            JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
+            JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
+            WHERE t.ville_depart LIKE :depart 
+            AND t.ville_arrivee LIKE :arrivee
+            AND t.date_heure_depart >= :date
+            AND t.statut_flag = 'A'"; // A = Actif
+            
+    $stmt = $db->prepare($sql);
+    $stmt->execute([
+        ':depart' => "%$depart%", 
+        ':arrivee' => "%$arrivee%",
+        ':date' => $date . ' 00:00:00' // À partir de minuit ce jour-là
+    ]);
+    
+    $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // --- 3. AFFICHAGE ---
     Flight::render('resultats_recherche.tpl', [
         'titre' => 'Résultats',
         'trajets' => $trajets,
@@ -113,6 +140,31 @@ Flight::route('GET /recherche/resultats', function(){
     ]);
 });
 
+//8 Page cookies 
+Flight::route('GET /cookies', function(){
+    Flight::render('cookies.tpl', ['titre' => 'Gestion des cookies']);
+});
+//9 Page cookies préférences
+Flight::route('POST /cookies/save', function(){
+    $data = Flight::request()->data;
+    
+    // On crée un tableau des préférences
+    $preferences = [
+        'performance' => isset($data->perf) ? (int)$data->perf : 0,
+        'marketing'   => isset($data->marketing) ? (int)$data->marketing : 0
+    ];
+
+    // On stocke ce choix dans un cookie "maitre" valable 1 an
+    setcookie('cookie_consent', json_encode($preferences), time() + (86400 * 365), "/");
+
+    // Si l'utilisateur refuse la performance, on supprime l'historique existant !
+    if ($preferences['performance'] == 0) {
+        setcookie('historique_recherche', '', time() - 3600, "/");
+    }
+
+    // Redirection vers l'accueil ou message de succès
+    Flight::redirect('/');
+});
 
 // -----------------------------------------------------------
 // DÉMARRAGE

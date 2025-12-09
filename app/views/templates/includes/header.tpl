@@ -55,7 +55,7 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/covoiturage-iut/public/">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/sae-covoiturage/public/">
         <img src="assets/img/logo.png" alt="Logo">
         <span class="fw-bold fs-4" style="color: #8c52ff;">monCovoitJV</span>
     </a>
@@ -68,16 +68,16 @@
       
       <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 mt-3 mt-lg-0">
         
-        <a href="/covoiturage-iut/public/trajet/nouveau" class="btn btn-purple w-100 w-lg-auto">Proposer un trajet</a>
-        <a href="/covoiturage-iut/public/carte" class="btn btn-purple w-100 w-lg-auto">Carte</a>
-        <a href="/covoiturage-iut/public/recherche" class="btn btn-purple w-100 w-lg-auto">Rechercher</a>
-        <a href="/covoiturage-iut/public/reservations" class="btn btn-purple w-100 w-lg-auto">Reservations</a>
+        <a href="/sae-covoiturage/public/trajet/nouveau" class="btn btn-purple w-100 w-lg-auto">Proposer un trajet</a>
+        <a href="/sae-covoiturage/public/carte" class="btn btn-purple w-100 w-lg-auto">Carte</a>
+        <a href="/sae-covoiturage/public/recherche" class="btn btn-purple w-100 w-lg-auto">Rechercher</a>
+        <a href="/sae-covoiturage/public/reservations" class="btn btn-purple w-100 w-lg-auto">Reservations</a>
 
         <div class="vr mx-2 d-none d-lg-block"></div>
 
         <div class="d-none d-lg-flex align-items-center gap-1">
             
-            <a href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}" 
+            <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
                title="{if isset($user)}Mon Profil{else}Se connecter{/if}">
                 <div class="user-avatar-btn">
                     {if isset($user) && !empty($user.photo_profil)}
@@ -96,19 +96,19 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
                     
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/mes-trajets{else}/covoiturage-iut/public/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}">
                             <i class="bi bi-car-front me-2"></i> Mes trajets
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/messages{else}/covoiturage-iut/public/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}">
                             <i class="bi bi-chat-dots me-2"></i> Messages
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}">
                             <i class="bi bi-person-circle me-2"></i> Profil
                         </a>
                     </li>
@@ -117,7 +117,7 @@
 
                     {if isset($user) && isset($user.role) && $user.role == 'admin'}
                         <li>
-                            <a class="dropdown-item py-2 text-danger fw-bold" href="/covoiturage-iut/public/moderation">
+                            <a class="dropdown-item py-2 text-danger fw-bold" href="/sae-covoiturage/public/moderation">
                                 <i class="bi bi-shield-exclamation me-2"></i> Modération
                             </a>
                         </li>
@@ -126,11 +126,11 @@
 
                     <li>
                         {if isset($user)}
-                            <a class="dropdown-item py-2" href="/covoiturage-iut/public/deconnexion">
+                            <a class="dropdown-item py-2" href="/sae-covoiturage/public/deconnexion">
                                 <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
                             </a>
                         {else}
-                            <a class="dropdown-item py-2 fw-bold text-purple" href="/covoiturage-iut/public/connexion">
+                            <a class="dropdown-item py-2 fw-bold text-purple" href="/sae-covoiturage/public/connexion">
                                 <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
                             </a>
                         {/if}
@@ -142,28 +142,28 @@
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
-            <a href="{if isset($user)}/covoiturage-iut/public/mes-trajets{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-car-front me-2"></i> Mes trajets
             </a>
-            <a href="{if isset($user)}/covoiturage-iut/public/messages{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-chat-dots me-2"></i> Messages
             </a>
-            <a href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-person-circle me-2"></i> Mon Profil
             </a>
             
             {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                <a href="/covoiturage-iut/public/moderation" class="mobile-link text-danger">
+                <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger">
                     <i class="bi bi-shield-exclamation me-2"></i> Modération
                 </a>
             {/if}
 
             {if isset($user)}
-                <a href="/covoiturage-iut/public/deconnexion" class="mobile-link text-muted">
+                <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted">
                     <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
                 </a>
             {else}
-                <a href="/covoiturage-iut/public/connexion" class="mobile-link text-purple fw-bold">
+                <a href="/sae-covoiturage/public/connexion" class="mobile-link text-purple fw-bold">
                     <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
                 </a>
             {/if}

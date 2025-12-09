@@ -42,6 +42,11 @@ Flight::route('/inscription', function(){
     Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
 });
 
+// 4. FAQ
+Flight::route('/faq', function(){
+    Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
+});
+
 // 5. Carte
 Flight::route('/carte', function(){
     Flight::render('carte.tpl', ['titre' => 'Carte']);

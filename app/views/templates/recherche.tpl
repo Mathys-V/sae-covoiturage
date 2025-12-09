@@ -17,7 +17,8 @@
                     </div>
 
                     <div class="col-md-2">
-                        <input type="date" name="date" class="form-control rounded-pill py-2" required>
+                        <input type="date" name="date" class="form-control rounded-pill py-2" 
+                               value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
                     </div>
                 </div>
 
@@ -28,9 +29,13 @@
                     </div>
 
                     <div class="col-md-2 d-flex gap-2">
-                        <input type="number" class="form-control rounded-pill text-center" placeholder="11" min="0" max="23">
+                        <input type="number" class="form-control rounded-pill text-center" 
+                               value="{$smarty.now|date_format:'%H'}" min="0" max="23">
+                        
                         <span class="text-white align-self-center fw-bold">H</span>
-                        <input type="number" class="form-control rounded-pill text-center" placeholder="15" min="0" max="59">
+                        
+                        <input type="number" class="form-control rounded-pill text-center" 
+                               value="{$smarty.now|date_format:'%M'}" min="0" max="59">
                     </div>
                 </div>
 

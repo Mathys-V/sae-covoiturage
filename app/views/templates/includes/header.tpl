@@ -80,7 +80,7 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="../connexion.tpl">
         <img src="assets/img/logo.png" alt="Logo">
         <span class="fw-bold fs-4" style="color: #8c52ff;">monCovoitJV</span>
     </a>

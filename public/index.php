@@ -27,12 +27,24 @@ Flight::map('render', function($template, $data){
 // ROUTES
 // -----------------------------------------------------------
 
+// 1. Accueil
 Flight::route('/', function(){
     Flight::render('accueil.tpl', ['nom' => 'Equipe W']);
 });
 
+// 2. Connexion (Simplifié)
+Flight::route('/connexion', function(){
+    Flight::render('connexion.tpl', ['titre' => 'Se connecter']);
+});
+
+// 3. Inscription
+Flight::route('/inscription', function(){
+    Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
+});
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------
+
+
 Flight::start();
 ?>

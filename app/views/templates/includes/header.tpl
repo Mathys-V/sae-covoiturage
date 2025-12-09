@@ -13,7 +13,6 @@
         :root { --main-purple: #8c52ff; --hover-purple: #703ccf; }
         .text-purple { color: var(--main-purple); }
         
-        /* BOUTONS NAVIGATION */
         .btn-purple {
             background-color: var(--main-purple); color: white; border: none;
             border-radius: 50px; padding: 8px 20px; font-weight: 500;
@@ -23,7 +22,6 @@
             background-color: var(--hover-purple); color: white; transform: translateY(-1px);
         }
 
-        /* AVATAR & FLÈCHE (PC) */
         .user-avatar-btn {
             background-color: var(--main-purple); color: white; width: 45px; height: 45px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -35,7 +33,6 @@
         .big-arrow:hover { color: var(--hover-purple); }
         .navbar-brand img { max-height: 50px; width: auto; }
 
-        /* LIENS MOBILE */
         .mobile-link {
             color: #333; text-decoration: none; padding: 10px 0; display: block; border-bottom: 1px solid #eee; font-weight: 500;
         }
@@ -43,12 +40,22 @@
             color: var(--main-purple); background-color: #f9f9f9; padding-left: 10px; transition: all 0.2s;
         }
         .dropdown-item i { width: 20px; display: inline-block; text-align: center; color: var(--main-purple); }
+        
+        /* Bouton contour (Se connecter) */
+        .btn-outline-purple {
+            background-color: transparent; color: var(--main-purple); border: 2px solid var(--main-purple);
+            border-radius: 50px; padding: 6px 20px; font-weight: 500; transition: all 0.3s;
+            text-align: center; text-decoration: none;
+        }
+        .btn-outline-purple:hover { background-color: var(--main-purple); color: white; }
     </style>
 </head>
-<body> <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/covoiturage-iut/public/">
         <img src="assets/img/logo.png" alt="Logo">
         <span class="fw-bold fs-4" style="color: #8c52ff;">monCovoitJV</span>
     </a>
@@ -61,16 +68,17 @@
       
       <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 mt-3 mt-lg-0">
         
-        <a href="/trajet/nouveau" class="btn btn-purple w-100 w-lg-auto">Proposer un trajet</a>
-        <a href="/carte" class="btn btn-purple w-100 w-lg-auto">Carte</a>
-        <a href="/recherche" class="btn btn-purple w-100 w-lg-auto">Rechercher</a>
-        <a href="/reservations" class="btn btn-purple w-100 w-lg-auto">Reservations</a>
+        <a href="/covoiturage-iut/public/trajet/nouveau" class="btn btn-purple w-100 w-lg-auto">Proposer un trajet</a>
+        <a href="/covoiturage-iut/public/carte" class="btn btn-purple w-100 w-lg-auto">Carte</a>
+        <a href="/covoiturage-iut/public/recherche" class="btn btn-purple w-100 w-lg-auto">Rechercher</a>
+        <a href="/covoiturage-iut/public/reservations" class="btn btn-purple w-100 w-lg-auto">Reservations</a>
 
         <div class="vr mx-2 d-none d-lg-block"></div>
 
         <div class="d-none d-lg-flex align-items-center gap-1">
             
-            <a href="{if isset($user)}/profil{else}/connexion{/if}" title="{if isset($user)}Mon Profil{else}Se connecter{/if}">
+            <a href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}" 
+               title="{if isset($user)}Mon Profil{else}Se connecter{/if}">
                 <div class="user-avatar-btn">
                     {if isset($user) && !empty($user.photo_profil)}
                          <img src="public/uploads/{$user.photo_profil}" class="rounded-circle" style="width:100%; height:100%; object-fit:cover;">
@@ -88,19 +96,19 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
                     
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/mes-trajets{else}/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/mes-trajets{else}/covoiturage-iut/public/connexion{/if}">
                             <i class="bi bi-car-front me-2"></i> Mes trajets
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/messages{else}/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/messages{else}/covoiturage-iut/public/connexion{/if}">
                             <i class="bi bi-chat-dots me-2"></i> Messages
                         </a>
                     </li>
 
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/profil{else}/connexion{/if}">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}">
                             <i class="bi bi-person-circle me-2"></i> Profil
                         </a>
                     </li>
@@ -109,7 +117,7 @@
 
                     {if isset($user) && isset($user.role) && $user.role == 'admin'}
                         <li>
-                            <a class="dropdown-item py-2 text-danger fw-bold" href="/moderation">
+                            <a class="dropdown-item py-2 text-danger fw-bold" href="/covoiturage-iut/public/moderation">
                                 <i class="bi bi-shield-exclamation me-2"></i> Modération
                             </a>
                         </li>
@@ -118,11 +126,11 @@
 
                     <li>
                         {if isset($user)}
-                            <a class="dropdown-item py-2" href="/deconnexion">
+                            <a class="dropdown-item py-2" href="/covoiturage-iut/public/deconnexion">
                                 <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
                             </a>
                         {else}
-                            <a class="dropdown-item py-2 fw-bold text-purple" href="/connexion">
+                            <a class="dropdown-item py-2 fw-bold text-purple" href="/covoiturage-iut/public/connexion">
                                 <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
                             </a>
                         {/if}
@@ -134,28 +142,28 @@
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
-            <a href="{if isset($user)}/mes-trajets{else}/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/covoiturage-iut/public/mes-trajets{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-car-front me-2"></i> Mes trajets
             </a>
-            <a href="{if isset($user)}/messages{else}/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/covoiturage-iut/public/messages{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-chat-dots me-2"></i> Messages
             </a>
-            <a href="{if isset($user)}/profil{else}/connexion{/if}" class="mobile-link">
+            <a href="{if isset($user)}/covoiturage-iut/public/profil{else}/covoiturage-iut/public/connexion{/if}" class="mobile-link">
                 <i class="bi bi-person-circle me-2"></i> Mon Profil
             </a>
             
             {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                <a href="/moderation" class="mobile-link text-danger">
+                <a href="/covoiturage-iut/public/moderation" class="mobile-link text-danger">
                     <i class="bi bi-shield-exclamation me-2"></i> Modération
                 </a>
             {/if}
 
             {if isset($user)}
-                <a href="/deconnexion" class="mobile-link text-muted">
+                <a href="/covoiturage-iut/public/deconnexion" class="mobile-link text-muted">
                     <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
                 </a>
             {else}
-                <a href="/connexion" class="mobile-link text-purple fw-bold">
+                <a href="/covoiturage-iut/public/connexion" class="mobile-link text-purple fw-bold">
                     <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
                 </a>
             {/if}

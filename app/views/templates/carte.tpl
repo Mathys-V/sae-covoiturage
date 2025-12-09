@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte - MonCovoitJV</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,7 +21,7 @@
         }
 
         #map {
-            height: 100%;
+            height: 600px; 
             width: 100%;
         }
 
@@ -29,8 +29,10 @@
         .search-card {
             position: absolute;
             top: 20px;
-            left: 20px; /* Position en haut à gauche */
-            z-index: 1000; /* Au-dessus de la carte */
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            z-index: 1000;
             background: white;
             padding: 15px;
             border-radius: 15px;
@@ -60,7 +62,7 @@
 
     {include file='includes/header.tpl'} 
 
-    <div class="container-fluid p-0 position-relative">
+    <div class="container-fluid p-1 position-relative">
         
         <div class="search-card">
             <h5 style="color: #8c52ff; font-weight: bold;">Rechercher un trajet</h5>
@@ -83,23 +85,24 @@
 
     {include file='includes/footer.tpl'} [cite: 25]
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20n6a9K13/S5G/pX6B9zT1GzP9K2KzJk+A8C/KkM4g==" crossorigin=""></script>
+   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 {literal}
     <script>
-        // 1. Initialisation de la carte centrée sur l'IUT d'Amiens
-        // Coordonnées approximatives de l'IUT : 49.8824, 2.2647
-        var map = L.map('map').setView([49.8824, 2.2647], 14);
 
-        // 2. Ajout du fond de carte OpenStreetMap (GRATUIT)
+        // 1. Initialisation de la carte centrée sur l'IUT d'Amiens
+        var map = L.map('map').setView([49.87172, 2.26430], 16);
+        setTimeout(function(){ map.invalidateSize()}, 400);
+
+        // 2. Ajout du fond de carte OpenStreetMap 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 20,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
         // Variable pour stocker le marqueur actuel
         var currentMarker = null;
 
-        // Icône violette personnalisée (optionnel, pour faire plus joli)
+        // Icône violette personnalisée 
         // Sinon Leaflet utilise un marqueur bleu par défaut
         var violetIcon = new L.Icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
@@ -111,8 +114,9 @@
         });
 
         // Marqueur par défaut sur l'IUT
-        L.marker([49.8824, 2.2647], {icon: violetIcon}).addTo(map)
-            .bindPopup("<b>IUT d'Amiens</b><br>Point de rassemblement principal.")
+        L.marker([49.87172, 2.26430], {icon: violetIcon}).addTo(map)
+
+            .bindPopup("<b>IUT d'Amiens</b><br>")
             .openPopup();
 
         // 3. FONCTION : Clic sur la carte pour récupérer les infos

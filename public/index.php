@@ -41,6 +41,12 @@ Flight::route('/connexion', function(){
 Flight::route('/inscription', function(){
     Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
 });
+
+// 5. Carte
+Flight::route('/carte', function(){
+    Flight::render('carte.tpl', ['titre' => 'Carte']);
+});
+
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------

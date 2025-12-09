@@ -10,77 +10,45 @@
 
     <style>
         /* --- THÈME VIOLET --- */
-        :root {
-            --main-purple: #8c52ff;
-            --hover-purple: #703ccf;
-        }
-
+        :root { --main-purple: #8c52ff; --hover-purple: #703ccf; }
         .text-purple { color: var(--main-purple); }
         
         /* BOUTONS NAVIGATION */
         .btn-purple {
-            background-color: var(--main-purple);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 8px 20px;
-            font-weight: 500;
-            transition: background 0.3s, transform 0.1s;
-            text-align: center;
+            background-color: var(--main-purple); color: white; border: none;
+            border-radius: 50px; padding: 8px 20px; font-weight: 500;
+            transition: background 0.3s, transform 0.1s; text-align: center; text-decoration: none;
         }
         .btn-purple:hover {
-            background-color: var(--hover-purple);
-            color: white;
-            transform: translateY(-1px);
+            background-color: var(--hover-purple); color: white; transform: translateY(-1px);
         }
 
         /* AVATAR & FLÈCHE (PC) */
         .user-avatar-btn {
-            background-color: var(--main-purple);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            background-color: var(--main-purple); color: white; width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.3s;
         }
+        .user-avatar-btn:hover { background-color: var(--hover-purple); }
         .no-arrow::after { display: none !important; }
         .big-arrow { color: var(--main-purple); cursor: pointer; }
         .big-arrow:hover { color: var(--hover-purple); }
-
         .navbar-brand img { max-height: 50px; width: auto; }
 
-        /* LIENS MOBILE (Menu à plat) */
+        /* LIENS MOBILE */
         .mobile-link {
-            color: #333;
-            text-decoration: none;
-            padding: 10px 0;
-            display: block;
-            border-bottom: 1px solid #eee;
-            font-weight: 500;
+            color: #333; text-decoration: none; padding: 10px 0; display: block; border-bottom: 1px solid #eee; font-weight: 500;
         }
         .mobile-link:hover {
-            color: var(--main-purple);
-            background-color: #f9f9f9;
-            padding-left: 10px;
-            transition: all 0.2s;
+            color: var(--main-purple); background-color: #f9f9f9; padding-left: 10px; transition: all 0.2s;
         }
-
-        /* Petit ajustement pour les icones dans le dropdown PC */
-        .dropdown-item i {
-            width: 20px; /* Pour bien aligner les textes même si les icones ont des largeurs différentes */
-            display: inline-block;
-            text-align: center;
-            color: var(--main-purple); /* On met les icones en violet aussi sur PC */
-        }
+        .dropdown-item i { width: 20px; display: inline-block; text-align: center; color: var(--main-purple); }
     </style>
 </head>
-<nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
+<body> <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
-    <a class="navbar-brand d-flex align-items-center gap-2" href="../connexion.tpl">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
         <img src="assets/img/logo.png" alt="Logo">
         <span class="fw-bold fs-4" style="color: #8c52ff;">monCovoitJV</span>
     </a>
@@ -101,44 +69,64 @@
         <div class="vr mx-2 d-none d-lg-block"></div>
 
         <div class="d-none d-lg-flex align-items-center gap-1">
-            <a href="/profil" title="Mon Profil"><div class="user-avatar-btn"><i class="bi bi-person-fill fs-4"></i></div></a>
+            
+            <a href="{if isset($user)}/profil{else}/connexion{/if}" title="{if isset($user)}Mon Profil{else}Se connecter{/if}">
+                <div class="user-avatar-btn">
+                    {if isset($user) && !empty($user.photo_profil)}
+                         <img src="public/uploads/{$user.photo_profil}" class="rounded-circle" style="width:100%; height:100%; object-fit:cover;">
+                    {else}
+                         <i class="bi bi-person-fill fs-4"></i>
+                    {/if}
+                </div>
+            </a>
             
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-decoration-none no-arrow px-2" id="userDropdown" data-bs-toggle="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none no-arrow px-2" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-caret-down-fill fs-3 big-arrow"></i>
                 </a>
                 
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown">
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
+                    
                     <li>
-                        <a class="dropdown-item py-2" href="/mes-trajets">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/mes-trajets{else}/connexion{/if}">
                             <i class="bi bi-car-front me-2"></i> Mes trajets
                         </a>
                     </li>
+
                     <li>
-                        <a class="dropdown-item py-2" href="/messages">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/messages{else}/connexion{/if}">
                             <i class="bi bi-chat-dots me-2"></i> Messages
                         </a>
                     </li>
+
                     <li>
-                        <a class="dropdown-item py-2" href="/profil">
+                        <a class="dropdown-item py-2" href="{if isset($user)}/profil{else}/connexion{/if}">
                             <i class="bi bi-person-circle me-2"></i> Profil
                         </a>
                     </li>
+
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item py-2" href="/deconnexion">
-                            <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
-                        </a>
-                    </li>
-                    
-                    {if isset($user) && $user.role == 'admin'}
-                        <li><hr class="dropdown-divider"></li>
+
+                    {if isset($user) && isset($user.role) && $user.role == 'admin'}
                         <li>
                             <a class="dropdown-item py-2 text-danger fw-bold" href="/moderation">
                                 <i class="bi bi-shield-exclamation me-2"></i> Modération
                             </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
                     {/if}
+
+                    <li>
+                        {if isset($user)}
+                            <a class="dropdown-item py-2" href="/deconnexion">
+                                <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                            </a>
+                        {else}
+                            <a class="dropdown-item py-2 fw-bold text-purple" href="/connexion">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+                            </a>
+                        {/if}
+                    </li>
                 </ul>
             </div>
         </div>
@@ -146,15 +134,31 @@
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
-            <a href="/mes-trajets" class="mobile-link"><i class="bi bi-car-front me-2"></i> Mes trajets</a>
-            <a href="/messages" class="mobile-link"><i class="bi bi-chat-dots me-2"></i> Messages</a>
-            <a href="/profil" class="mobile-link"><i class="bi bi-person-circle me-2"></i> Mon Profil</a>
+            <a href="{if isset($user)}/mes-trajets{else}/connexion{/if}" class="mobile-link">
+                <i class="bi bi-car-front me-2"></i> Mes trajets
+            </a>
+            <a href="{if isset($user)}/messages{else}/connexion{/if}" class="mobile-link">
+                <i class="bi bi-chat-dots me-2"></i> Messages
+            </a>
+            <a href="{if isset($user)}/profil{else}/connexion{/if}" class="mobile-link">
+                <i class="bi bi-person-circle me-2"></i> Mon Profil
+            </a>
             
-            {if isset($user) && $user.role == 'admin'}
-                <a href="/moderation" class="mobile-link text-danger"><i class="bi bi-shield-exclamation me-2"></i> Modération</a>
+            {if isset($user) && isset($user.role) && $user.role == 'admin'}
+                <a href="/moderation" class="mobile-link text-danger">
+                    <i class="bi bi-shield-exclamation me-2"></i> Modération
+                </a>
             {/if}
 
-            <a href="/deconnexion" class="mobile-link text-muted"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
+            {if isset($user)}
+                <a href="/deconnexion" class="mobile-link text-muted">
+                    <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                </a>
+            {else}
+                <a href="/connexion" class="mobile-link text-purple fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+                </a>
+            {/if}
         </div>
 
       </div>

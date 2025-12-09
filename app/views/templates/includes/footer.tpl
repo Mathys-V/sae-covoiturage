@@ -1,58 +1,79 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Footer MonCovoitJV Final</title>
+<style>
+    :root {
+        --mon-covoit-purple: #8c52ff;
+    }
 
-    <style>
-        /* La couleur violette utilisée dans votre design */
-        :root {
-            --mon-covoit-purple: #8c52ff;
-        }
+    /* Le bloc principal du footer */
+    .footer-custom {
+        background-color: #ffffff; /* Fond Blanc */
+        border-top: 3px solid var(--mon-covoit-purple);
+        color: #212529;
+        width: 100%;
+        margin-top: auto;
+    }
 
-        /* --- STYLES DU FOOTER --- */
-        .footer-custom {
-            /* Couleur de fond très claire (comme sur l'image) */
-            background-color: #ffffff; 
-            color: #212529; /* Texte sombre */
-        }
-        .footer-link {
-            text-decoration: none;
-            color: inherit;
-            /* Espace entre les liens */
-            margin-right: 1.5rem; 
-            font-size: 0.9rem;
-            white-space: nowrap; 
-        }
-        /* Style du texte du logo dans le footer */
-        .footer-logo-text {
-            /* Utilise la couleur violette directement */
-            color: var(--mon-covoit-purple); 
-            font-size: 1rem; 
-            font-weight: bold;
-        }
-        .footer-link:hover {
-            color: var(--mon-covoit-purple); /* Surlignage violet */
-        }
-    </style>
-</head>
-    <footer class="footer-custom pt-3 pb-3 border-top">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 d-flex justify-content-center align-items-center flex-wrap">
-                    
-                    <a href="#" class="footer-link">Contactez-nous</a>
-                    <a href="#" class="footer-link">Paramètres des Cookies</a>
-                    <a href="#" class="footer-link">Informations légales</a>
-                    <a href="#" class="footer-link">F.A.Q</a>
-                    
-                    <div class="d-flex align-items-center">
-                        <img src="assets/img/logo.png" alt="Logo MonCovoitJV" style="height: 20px; margin-right: 5px;">
-                        <span class="footer-logo-text">MonCovoitJV</span>
-                    </div>
-                </div>
+    /* Les liens à gauche */
+    .footer-link {
+        text-decoration: none;
+        color: #212529;
+        margin-right: 2rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+        color: var(--mon-covoit-purple);
+    }
+
+    /* Texte "MonCovoitJV" à droite */
+    .footer-logo-text {
+        color: #000000;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-left: 10px;
+    }
+
+    /* Conteneur de l'image (Carré simple sans fond) */
+    .footer-logo-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Pas de background, pas de border-radius */
+    }
+
+    /* L'image du logo */
+    .footer-logo-box img {
+        height: 40px; /* Même taille que le rond d'avant, mais carré */
+        width: auto;  /* Garde les proportions */
+        object-fit: contain;
+        /* J'ai retiré le filtre "brightness" pour qu'on voie les vraies couleurs */
+    }
+</style>
+
+<footer class="footer-custom py-4 mt-5">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+            
+            <div class="mb-3 mb-md-0 d-flex flex-wrap justify-content-center justify-content-md-start">
+                <a href="/contact" class="footer-link">Contactez-nous</a>
+                <a href="/cookies" class="footer-link">Paramètres des cookies</a>
+                <a href="/mentions-legales" class="footer-link">Informations légales</a>
+                <a href="/faq" class="footer-link">F.A.Q</a>
             </div>
+            
+            <div class="d-flex align-items-center">
+                <div class="footer-logo-box">
+                    <img src="assets/img/logo.png" alt="Logo"> 
+                </div>
+                <span class="footer-logo-text">MonCovoitJV ©</span>
+            </div>
+
         </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

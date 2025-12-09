@@ -6,8 +6,7 @@
         
         <h1 class="text-center mb-5 titre-inscription">S'inscrire</h1>
         <form action="traitement_inscription.php" method="POST">
-        </form>
-        <div class="form-step" id="step-1">         
+                <div class="bloc-etape" id="step-1">         
 
                 <div class="mb-5">
                     <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
@@ -17,11 +16,11 @@
                 </div>
 
                 <div class="text-center mt-5 mb-4">
-                    <button type="submit" class="btn btn-cont-email fw-bold">Continuer</button>
+                    <button type="button" class="btn btn-primary btn-cont-email fw-bold" onclick="changerEtape(2)" >Continuer</button>
                 </div>
         </div>
 
-        <div class="form-step d-none" id="step-2">
+        <div class="d-none bloc-etape" id="step-2">
             <h1 class="text-center mb-5 titre-inscription">S'inscrire</h1>
 
                 <div class="mb-5">
@@ -35,6 +34,7 @@
                     <button type="submit" class="btn btn-cont-email fw-bold">Continuer</button>
                 </div>
         </div>
+        </form>
 
         <p class="position-absolute bottom-0 start-0 m-4 texte-champ small">
             <span class="asterisque">*</span> champ obligatoire
@@ -44,12 +44,20 @@
 </section>
 
 <script>
-    function goToStep(stepNumber) {
-        // On cache toutes les étapes
-        document.querySelectorAll('.form-step').forEach(div => div.classList.add('d-none'));
+    function changerEtape(numeroEtape) {
+        // 1. On sélectionne toutes les étapes (div avec la classe 'bloc-etape')
+        let toutesLesEtapes = document.querySelectorAll('.bloc-etape');
         
-        // On affiche celle demandée
-        document.getElementById('step' + stepNumber).classList.remove('d-none');
+        // 2. On les cache toutes (on ajoute d-none partout)
+        toutesLesEtapes.forEach(function(div) {
+            div.classList.add('d-none');
+        });
+
+        // 3. On cible l'étape qu'on veut montrer
+        let etapeVisee = document.getElementById('etape' + numeroEtape);
+        
+        // 4. On la rend visible (on enlève d-none)
+        etapeVisee.classList.remove('d-none');
     }
 </script>
 

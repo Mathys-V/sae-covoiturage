@@ -1,0 +1,14 @@
+@font-face {
+    font-family: 'Garet';
+    /* Le .. permet de remonter d'un dossier */
+    src: url('../fonts/Garet-Book.otf') format('opentype'); 
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Garet';
+    src: url('../fonts/Garet-Heavy.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}

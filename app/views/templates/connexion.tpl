@@ -74,7 +74,7 @@
             </div>
 
             <div class="text-center mt-3">
-                <a href="/inscription" class="text-decoration-none fw-bold text-purple">S'inscrire</a>
+                <a href="/sae-covoiturage/public/inscription" class="text-decoration-none fw-bold text-purple">S'inscrire</a>
             </div>
         </form>
     </div>

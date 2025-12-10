@@ -3,87 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($titre) ? $titre : 'FAQ'; ?></title>
+    <title>FAQ - MonCovoitJV</title>
     
     <style>
-        /* 1. On force le fond violet sur toute la page */
+        /* 1. CONFIGURATION GLOBALE (Thème Violet) */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #463077 !important; /* Force le violet */
-            color: white !important; /* Force le texte en blanc */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #463077 !important; /* Violet principal */
+            color: white !important;
         }
 
-        /* 2. Wrapper pour pousser le footer en bas */
+        /* 2. WRAPPER (Pour le footer sticky) */
         .page-wrapper {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* 3. Le contenu pousse le footer */
+        /* 3. CONTENU PRINCIPAL */
         .main-content {
             flex: 1;
             width: 100%;
-            max-width: 900px;
+            max-width: 800px; /* Un peu plus étroit pour la lecture */
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 60px 20px;
             box-sizing: border-box;
         }
 
         /* --- STYLES FAQ --- */
         .faq-title {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             font-size: 2.5em;
-            font-weight: bold;
+            font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 2px;
             color: white;
         }
 
         .faq-item {
-            border-bottom: 1px solid rgba(255,255,255,0.3); /* Ligne blanche semi-transparente */
+            background-color: rgba(255, 255, 255, 0.05); /* Fond très léger */
+            border-radius: 15px;
             margin-bottom: 20px;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .faq-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .faq-question {
-            padding: 15px 0;
+            padding: 20px 0;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1.4em;
+            font-weight: 600;
+            font-size: 1.2em;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-decoration: underline;
-            text-underline-offset: 5px;
-            color: white;
-        }
-
-        .faq-question:hover {
-            color: #ddd;
+            color: #fff;
+            user-select: none;
         }
 
         .faq-answer {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s ease;
-            font-size: 1.1em;
+            transition: max-height 0.4s ease-out, padding 0.4s ease;
+            font-size: 1em;
             line-height: 1.6;
-            color: #f0f0f0;
+            color: #dcd6f7; /* Blanc cassé violet pour le texte */
         }
 
+        /* État ouvert */
         .faq-item.active .faq-answer {
-            max-height: 500px;
+            max-height: 500px; /* Suffisant pour du texte long */
             padding-bottom: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 10px;
         }
 
+        /* Icône + / - */
         .toggle-icon {
-            font-size: 1.2em;
-            text-decoration: none;
-            color: white;
+            font-size: 1.5em;
+            font-weight: 300;
+            color: #bfaee3;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .toggle-icon {
+            transform: rotate(45deg); /* Effet croix */
         }
     </style>
 </head>
@@ -96,36 +109,61 @@
 
         <main class="main-content">
             
-            <h2 class="faq-title">F.A.Q</h2>
+            <h1 class="faq-title">Questions Fréquentes</h1>
 
             <div class="faq-item">
                 <div class="faq-question">
-                    Qui sommes nous ?
+                    Qui se cache derrière MonCovoitJV ?
                     <span class="toggle-icon">+</span>
                 </div>
                 <div class="faq-answer">
-                    Nous sommes une plateforme de covoiturage conçue pour les étudiants de l’Université de Picardie Jules Verne.
+                    <p>MonCovoitJV est une initiative développée par un <strong> groupe d'étudiants  </strong> en informatique de l'IUT d'Amiens. Notre projet vise à faciliter la mobilité au sein de l'Université de Picardie Jules Verne grâce à une solution numérique moderne et solidaire.</p>
                 </div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">
-                    Quel est notre objectif ?
+                    Le service est-il payant ?
                     <span class="toggle-icon">+</span>
                 </div>
                 <div class="faq-answer">
-                    Notre objectif est de simplifier les déplacements des étudiants tout en permettant de réduire leurs émissions en CO2.
+                    <p>Non, l'utilisation de la plateforme est <strong>entièrement gratuite</strong>. MonCovoitJV ne prélève aucune commission sur les trajets. Les conducteurs et les passagers sont libres de s'arranger entre eux pour le partage des frais (essence, péage) de manière équitable.</p>
                 </div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">
-                    Les trajets sont-ils sécurisés ?
+                    Comment la sécurité est-elle assurée ?
                     <span class="toggle-icon">+</span>
                 </div>
                 <div class="faq-answer">
-                    <p>Nous mettons en place un système de vérification des utilisateurs pour permettre aux étudiants de réserver leurs trajets en toute confiance.</p>
-                    <p>Nous ne pouvons pas directement sécuriser les trajets, c’est pourquoi nous vous permettons de signaler les utilisateurs ayant des comportements allant à l’encontre du bon déroulement de notre système de covoiturage.</p>
+                    <p>La sécurité est notre priorité. L'accès à la plateforme est réservé aux étudiants de l'UPJV. Nous avons mis en place :</p>
+                    <ul style="margin-bottom:0;">
+                        <li>Un système de <strong>profils vérifiés</strong>.</li>
+                        <li>Une fonctionnalité d'<strong>avis et de notation</strong> après chaque trajet.</li>
+                        <li>Un bouton de <strong>signalement</strong> pour rapporter tout comportement inapproprié à nos modérateurs.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Puis-je annuler une réservation ?
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Oui, vous pouvez annuler une réservation en un clic depuis votre espace "Mes Trajets".</p>
+                    <p>Le système se charge de tout : <strong>le conducteur recevra automatiquement un message</strong> pour l'informer de votre désistement. Nous vous invitons toutefois à annuler le plus tôt possible pour permettre à un autre étudiant de récupérer votre place.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    J'ai rencontré un bug technique, que faire ?
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Le site étant un projet étudiant en constante amélioration, des bugs peuvent survenir. N'hésitez pas à nous contacter via le formulaire de contact en bas de page pour nous signaler le problème. Votre retour nous aide à améliorer l'expérience pour tous !</p>
                 </div>
             </div>
 
@@ -140,17 +178,15 @@
             item.addEventListener('click', event => {
                 const parent = item.parentElement;
                 
-                // Ferme les autres (optionnel)
+                // Ferme automatiquement les autres onglets ouverts (Effet Accordéon)
                 document.querySelectorAll('.faq-item').forEach(child => {
                     if (child !== parent) {
                         child.classList.remove('active');
-                        child.querySelector('.toggle-icon').textContent = '+';
                     }
                 });
 
+                // Bascule l'état de l'élément cliqué
                 parent.classList.toggle('active');
-                const icon = item.querySelector('.toggle-icon');
-                icon.textContent = parent.classList.contains('active') ? '-' : '+';
             });
         });
     </script>

@@ -56,7 +56,7 @@
             <div class="mb-3 mb-md-0 d-flex flex-wrap justify-content-center justify-content-md-start">
                 <a href="/sae-covoiturage/public/contact" class="footer-link">Contactez-nous</a>
                 <a href="/sae-covoiturage/public/cookies" class="footer-link">Paramètres des cookies</a>
-                <a href="/sae-covoiturage/public/mentions-legales" class="footer-link">Informations légales</a>
+                <a href="/sae-covoiturage/public/mentions_legales" class="footer-link">Informations légales</a>
                 <a href="/sae-covoiturage/public/faq" class="footer-link">F.A.Q</a>
             </div>
             

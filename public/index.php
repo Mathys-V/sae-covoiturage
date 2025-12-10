@@ -171,6 +171,11 @@ Flight::route('POST /cookies/save', function(){
     Flight::redirect('/');
 });
 
+// 10. Mentions légales
+Flight::route('/mentions_legales', function(){
+    Flight::render('mentions_legales.tpl', ['titre' => 'Mentions_Legales']);
+});
+
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------

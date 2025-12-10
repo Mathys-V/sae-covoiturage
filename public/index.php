@@ -98,8 +98,8 @@ Flight::route('GET /recherche/resultats', function(){
         // On filtre pour enlever les doublons exacts
         $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
             return !($h['depart'] == $nouvelleRecherche['depart'] 
-                  && $h['arrivee'] == $nouvelleRecherche['arrivee'] 
-                  && $h['date'] == $nouvelleRecherche['date']);
+                && $h['arrivee'] == $nouvelleRecherche['arrivee'] 
+                && $h['date'] == $nouvelleRecherche['date']);
         });
 
         // On ajoute la nouvelle à la fin

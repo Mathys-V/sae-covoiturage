@@ -10,17 +10,31 @@ use Smarty\Smarty;
 // CONFIGURATION SMARTY & FLIGHT
 // -----------------------------------------------------------
 
-// 1. On enregistre Smarty dans Flight.
-// IMPORTANT : On doit utiliser 'Smarty\Smarty' et non juste 'Smarty'
+// -----------------------------------------------------------
+// CONFIGURATION SMARTY & FLIGHT
+// -----------------------------------------------------------
+
+// 1. On enregistre Smarty
 Flight::register('view', 'Smarty\Smarty', [], function($smarty) {
-    // On configure l'objet Smarty une fois qu'il est créé par Flight
     $smarty->setTemplateDir('../app/views/templates');
     $smarty->setCompileDir('../tmp/templates_c');
-    // On peut ajouter d'autres configs ici si besoin (cache, config, etc.)
 });
 
-// 2. On crée une méthode "render" simplifiée pour appeler la vue
 Flight::map('render', function($template, $data){
+    
+    // 1. Injection de l'utilisateur
+    if(isset($_SESSION['user'])){
+        Flight::view()->assign('user', $_SESSION['user']);
+    }
+
+    // 2. --- AJOUT SYSTEME FLASH (Message temporaire) ---
+    if(isset($_SESSION['flash_success'])){
+        Flight::view()->assign('flash_success', $_SESSION['flash_success']);
+        // On le supprime immédiatement pour qu'il ne réapparaisse pas au rechargement
+        unset($_SESSION['flash_success']); 
+    }
+    // --------------------------------------------------
+
     Flight::view()->assign($data);
     Flight::view()->display($template);
 });
@@ -29,32 +43,68 @@ Flight::map('render', function($template, $data){
 // ROUTES
 // -----------------------------------------------------------
 
-// 1. Accueil
+// Accueil
 Flight::route('/', function(){
     Flight::render('accueil.tpl', ['nom' => 'Equipe W']);
 });
 
-// 2. Connexion (Simplifié)
-Flight::route('/connexion', function(){
+// Connexion (Affichage)
+Flight::route('GET /connexion', function(){
+    // Si déjà connecté, on redirige vers l'accueil
+    if(isset($_SESSION['user'])) Flight::redirect('/');
     Flight::render('connexion.tpl', ['titre' => 'Se connecter']);
 });
 
-// 3. Inscription
+//Connexion (Traitement) - LE CŒUR DU SYSTÈME
+Flight::route('POST /connexion', function(){
+    $email = Flight::request()->data->email;
+    $password = Flight::request()->data->password;
+    
+    $db = Flight::get('db');
+
+    $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE email = :email");
+    $stmt->execute([':email' => $email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($password, $user['mot_de_passe'])) {
+        unset($user['mot_de_passe']); 
+        $_SESSION['user'] = $user;
+        
+        // --- CRÉATION DU MESSAGE FLASH ---
+        // On personnalise le message avec le prénom
+        $_SESSION['flash_success'] = "Connexion réussie ! Ravi de vous revoir, " . $user['prenom'] . ".";
+        
+        Flight::redirect('/');
+    } else {
+        Flight::render('connexion.tpl', [
+            'titre' => 'Se connecter',
+            'error' => 'Adresse email ou mot de passe incorrect.'
+        ]);
+    }
+});
+
+// Déconnexion
+Flight::route('/deconnexion', function(){
+    session_destroy(); // Détruit la session
+    Flight::redirect('/');
+});
+
+// Inscription
 Flight::route('/inscription', function(){
     Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
 });
 
-// 4. FAQ
+// FAQ
 Flight::route('/faq', function(){
     Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
 });
 
-// 5. Carte
+// Carte
 Flight::route('/carte', function(){
     Flight::render('carte.tpl', ['titre' => 'Carte']);
 });
 
-// 6. PAGE DE RECHERCHE (Affiche le formulaire et l'historique)
+// PAGE DE RECHERCHE (Affiche le formulaire et l'historique)
 Flight::route('GET /recherche', function(){
     // On récupère le cookie 'historique_recherche'
     $historique = [];
@@ -69,7 +119,7 @@ Flight::route('GET /recherche', function(){
     ]);
 });
 
-// 7. TRAITEMENT DE LA RECHERCHE (Sauvegarde + Résultats)
+// TRAITEMENT DE LA RECHERCHE (Sauvegarde + Résultats)
 Flight::route('GET /recherche/resultats', function(){
     $depart = Flight::request()->query->depart;
     $arrivee = Flight::request()->query->arrivee;
@@ -147,7 +197,7 @@ Flight::route('GET /recherche/resultats', function(){
     ]);
 });
 
-//8 Page cookies 
+//Page cookies 
 // Afficher la page de choix des cookies (AVEC MÉMOIRE)
 Flight::route('GET /cookies', function(){
     
@@ -173,7 +223,7 @@ Flight::route('GET /cookies', function(){
     ]);
 });
 
-//9 Page cookies préférences
+//Page cookies préférences
 Flight::route('POST /cookies/save', function(){
     $data = Flight::request()->data;
     
@@ -195,7 +245,7 @@ Flight::route('POST /cookies/save', function(){
     Flight::redirect('/');
 });
 
-// 10. Mentions légales
+// Mentions légales
 Flight::route('/mentions_legales', function(){
     Flight::render('mentions_legales.tpl', ['titre' => 'Mentions_Legales']);
 });

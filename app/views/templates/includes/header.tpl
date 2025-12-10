@@ -208,3 +208,27 @@
     </div>
   </div>
 </nav>
+
+{if isset($flash_success)}
+    <div class="container mt-3">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #198754;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Succès !</strong> {$flash_success}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    
+    <script>
+        setTimeout(function() {
+            let alert = document.querySelector('.alert');
+            if(alert) {
+                let bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 4000);
+    </script>
+{/if}

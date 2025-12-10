@@ -1,5 +1,7 @@
 
 <?php
+// Démarrage de la session OBLIGATOIRE pour mémoriser l'email entre les pages
+session_start();
 require '../vendor/autoload.php';
 require '../app/config/db.php';
 use Smarty\Smarty;
@@ -197,6 +199,109 @@ Flight::route('POST /cookies/save', function(){
 Flight::route('/mentions_legales', function(){
     Flight::render('mentions_legales.tpl', ['titre' => 'Mentions_Legales']);
 });
+
+// ============================================================
+// GESTION MOT DE PASSE OUBLIÉ
+// ============================================================
+
+// ÉTAPE 1 : DEMANDER L'EMAIL
+Flight::route('GET /mot-de-passe-oublie', function(){
+    Flight::render('mdp/etape1_email.tpl', ['titre' => 'Mot de passe oublié']);
+});
+
+Flight::route('POST /mot-de-passe-oublie', function(){
+    $email = Flight::request()->data->email;
+    $db = Flight::get('db');
+
+    // 1. Vérifier si l'utilisateur existe
+    $stmt = $db->prepare("SELECT id_utilisateur FROM UTILISATEURS WHERE email = :email");
+    $stmt->execute([':email' => $email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        // 2. Générer un code à 6 chiffres
+        $code = rand(100000, 999999);
+        $expiration = date('Y-m-d H:i:s', strtotime('+15 minutes')); // Valide 15 min
+
+        // 3. Sauvegarder dans la BDD
+        $update = $db->prepare("UPDATE UTILISATEURS SET token_recuperation = :code, date_expiration_token = :exp WHERE email = :email");
+        $update->execute([':code' => $code, ':exp' => $expiration, ':email' => $email]);
+
+        // 4. SIMULATION D'ENVOI D'EMAIL (Pour le dev local)
+        // On écrit le code dans un fichier 'code_mail.txt' à la racine pour que tu puisses le lire
+        file_put_contents('../code_mail.txt', "Le code pour $email est : $code");
+
+        // On stocke l'email en session pour l'étape d'après
+        $_SESSION['reset_email'] = $email;
+        Flight::redirect('/mot-de-passe-oublie/code');
+    } else {
+        // Pour la sécurité, on peut dire "Si le compte existe, un email a été envoyé"
+        // Mais pour le dev, on affiche une erreur
+        Flight::render('mdp/etape1_email.tpl', ['error' => 'Aucun compte associé à cet email.']);
+    }
+});
+
+// ÉTAPE 2 : SAISIR LE CODE
+Flight::route('GET /mot-de-passe-oublie/code', function(){
+    if(!isset($_SESSION['reset_email'])) Flight::redirect('/mot-de-passe-oublie');
+    Flight::render('mdp/etape2_code.tpl', ['titre' => 'Vérification du code']);
+});
+
+Flight::route('POST /mot-de-passe-oublie/verify', function(){
+    $code = Flight::request()->data->code;
+    $email = $_SESSION['reset_email'];
+    $db = Flight::get('db');
+
+    // Vérifier le code et l'expiration
+    $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE email = :email AND token_recuperation = :code AND date_expiration_token > NOW()");
+    $stmt->execute([':email' => $email, ':code' => $code]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        // Code bon ! On autorise le changement
+        $_SESSION['reset_authorized'] = true;
+        Flight::redirect('/mot-de-passe-oublie/nouveau');
+    } else {
+        Flight::render('mdp/etape2_code.tpl', ['error' => 'Code invalide ou expiré.']);
+    }
+});
+
+// ÉTAPE 3 : NOUVEAU MOT DE PASSE
+Flight::route('GET /mot-de-passe-oublie/nouveau', function(){
+    if(!isset($_SESSION['reset_authorized']) || !$_SESSION['reset_authorized']) Flight::redirect('/mot-de-passe-oublie');
+    Flight::render('mdp/etape3_nouveau.tpl', ['titre' => 'Nouveau mot de passe']);
+});
+
+Flight::route('POST /mot-de-passe-oublie/save', function(){
+    $mdp = Flight::request()->data->mdp;
+    $confirm = Flight::request()->data->confirm_mdp;
+    $email = $_SESSION['reset_email'];
+
+    if ($mdp !== $confirm) {
+        Flight::render('mdp/etape3_nouveau.tpl', ['error' => 'Les mots de passe ne correspondent pas.']);
+        return;
+    }
+
+    // Hashage et sauvegarde [cite: 904]
+    $hash = password_hash($mdp, PASSWORD_BCRYPT);
+    $db = Flight::get('db');
+
+    // On met à jour le MDP et on vide le token pour qu'il ne soit plus réutilisable
+    $stmt = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :hash, token_recuperation = NULL, date_expiration_token = NULL WHERE email = :email");
+    $stmt->execute([':hash' => $hash, ':email' => $email]);
+
+    // Nettoyage session
+    unset($_SESSION['reset_email']);
+    unset($_SESSION['reset_authorized']);
+
+    if (file_exists('../code_mail.txt')) {
+        unlink('../code_mail.txt');
+    }
+
+    // Redirection vers connexion avec succès (tu peux ajouter un paramètre GET pour afficher un message)
+    Flight::redirect('/connexion');
+});
+
 
 // -----------------------------------------------------------
 // DÉMARRAGE

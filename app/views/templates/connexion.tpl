@@ -79,7 +79,7 @@
                         <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
                     </div>
                     
-                    <a href="/mot-de-passe-oublie" class="text-decoration-none small mt-2 d-block text-start ms-3" style="color: #0dcaf0;">
+                    <a href="mot-de-passe-oublie" class="text-decoration-none small mt-2 d-block text-start ms-3" style="color: #0dcaf0;">
                         Mot de passe oublié ?
                     </a>
                 </div>

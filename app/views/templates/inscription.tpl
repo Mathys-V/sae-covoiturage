@@ -13,7 +13,7 @@
             
             <form action="traitement_inscription.php" method="POST">
                 
-                <div class="bloc-etape" id="step-1">        
+                <div class="d-none bloc-etape" id="step-1">        
                     <div class="mb-5">
                         <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
                             Quelle est votre adresse mail ?<span class="asterisque">*</span>
@@ -112,8 +112,8 @@
                         <h3 style="color: #8c52ff;">Avez-vous une voiture ?</h3>
                     </div>
                     <div class="text-center mt-5 mb-4 d-flex justify-content-center gap-3">
-                        <button type="submit" name="voiture" value="oui" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(7);">Oui</button>
-                        <button type="submit" name="voiture" value="non" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(8);">Non</button>
+                        <button type="submit" name="voiture" value="oui" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(7); return false;">Oui</button>
+                        <button type="submit" name="voiture" value="non" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(8); return false;">Non</button>
                     </div>
                 </div>
 
@@ -143,6 +143,7 @@
                         <label class="form-label adresse-texte fw-bold mb-3">
                             Nombre de places? <span class="asterisque">*</span>
                         </label>
+                    </div>
                     <div class="number-input-container">
                     <input type="number" id="nbPlacesInput" name="nb_places" class="form-control number-field" value="1" min="1" max="8" readonly>
 
@@ -161,25 +162,15 @@
                 </div>
 
 
-                <div class="bloc-etape d-none" id="step-8">        
-    
-                <div class="text-center mt-4">
-                    <div class="mb-4">
-                        <i class="bi bi-check-circle-fill" style="font-size: 5rem; color: #8c52ff;"></i>
+                <div class=" bloc-etape" id="step-8">
+                    <p class="form-label text-center fw-bold mb-3" style="center">
+                        Votre compte a été créé avec succès
+                    </p>
+
+                    <div class="text-center mt-5 mb-4">
+                        <button type="submit" class="btn btn-inscription fw-bold" onclick="window.location.href='/sae-covoiturage/public'">Continuer</button>
                     </div>
-
-                    <h2 style="color: #452b85; font-weight: bold;">Félicitations !</h2>
-                    <p class="mt-3 fs-5" style="color: #666;">Votre compte a été créé avec succès.</p>
-                    <p class="small text-muted">Vous allez recevoir un email de confirmation.</p>
                 </div>
-
-                <div class="text-center mt-5 mb-5">
-                    <button type="button" class="btn btn-inscription fw-bold" onclick="window.location.href='/sae-covoiturage/public/accueil'">
-                        Accéder à l'accueil
-                    </button>
-                </div>
-            </div>
-
             </form>
         </div>
 
@@ -199,7 +190,28 @@
 
         let etapeVisee = document.getElementById('step-' + numeroEtape);
         if(etapeVisee) etapeVisee.classList.remove('d-none');
+
+    
+        let headerFixe = document.querySelector('.card > div.text-center'); 
+        let footerText = document.querySelector('.texte-champ');
+
+        if (numeroEtape === 8) {
+            if(headerFixe) headerFixe.classList.add('d-none');
+        } else {
+            if(headerFixe) headerFixe.classList.remove('d-none');
+        }
+
+        if (numeroEtape === 6 || numeroEtape === 8) {
+            if(footerText && footerText.parentElement) {
+                footerText.parentElement.classList.add('d-none');
+            }
+        } else {
+            if(footerText && footerText.parentElement) {
+                footerText.parentElement.classList.remove('d-none');
+            }
+        }
     }
+    
 
     function verifierEmail() {
         const emailInput = document.getElementById('emailInput');

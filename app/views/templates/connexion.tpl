@@ -4,7 +4,7 @@
     /* --- SECTION BACKGROUND --- */
     .login-section {
         /* Chemin relatif depuis le fichier CSS ou absolu depuis la racine publique */
-        background-image: url('/assets/img/Image-IUT-connexion.jpg');
+        background-image: url('/sae-covoiturage/public/assets/img/Image-IUT-connexion.jpg');
         background-size: cover;
         background-position: center;
         min-height: 80vh; 
@@ -48,35 +48,50 @@
         cursor: pointer;
         color: var(--main-purple);
     }
+
+    .toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--main-purple);
+    font-size: 1.5rem;
+    z-index: 10;
+}
 </style>
 
 <main class="login-section">
     <div class="card-login">
         <h2 class="card-title">Se connecter</h2>
         
-        <form action="/connexion" method="POST">
-            <div class="mb-3">
-                <label for="emailInput" class="form-label text-purple fw-bold">Adresse email</label>
-                <input type="email" name="email" class="form-control custom-input" id="emailInput" placeholder="exemple@etu.u-picardie.fr" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="passwordInput" class="form-label text-purple fw-bold">Mot de passe</label>
-                <div class="password-group">
-                    <input type="password" name="password" class="form-control custom-input" id="passwordInput" placeholder="Votre mot de passe" required>
-                    <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
+            <form action="/connexion" method="POST">
+                
+                <div class="mb-3">
+                    <label for="emailInput" class="form-label text-purple fw-bold">Adresse email</label>
+                    <input type="email" name="email" class="form-control custom-input" id="emailInput" placeholder="exemple@etu.u-picardie.fr" required>
                 </div>
-                <a href="/mot-de-passe-oublie" class="text-decoration-none small mt-2 d-block text-end" style="color: #0dcaf0;">Mot de passe oublié ?</a>
-            </div>
 
-            <div class="text-center d-grid gap-2">
-                <button type="submit" class="btn btn-purple py-2 fs-5">Connexion</button>
-            </div>
+                <div class="mb-3">
+                    <label for="passwordInput" class="form-label text-purple fw-bold">Mot de passe</label>
+                    <div class="password-group">
+                        <input type="password" name="password" class="form-control custom-input" id="passwordInput" placeholder="Votre mot de passe" style="padding-right: 50px;" required>
+                        <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
+                    </div>
+                    
+                    <a href="/mot-de-passe-oublie" class="text-decoration-none small mt-2 d-block text-start ms-3" style="color: #0dcaf0;">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
 
-            <div class="text-center mt-3">
-                <a href="/sae-covoiturage/public/inscription" class="text-decoration-none fw-bold text-purple">S'inscrire</a>
-            </div>
-        </form>
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="submit" class="btn btn-purple py-2 px-5 fs-5">Connexion</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="{$base_url}/inscription" class="text-decoration-none fw-bold text-purple">S'inscrire</a>
+                </div>
+            </form>
     </div>
 </main>
 

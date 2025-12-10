@@ -11,7 +11,7 @@
     {include file='includes/header.tpl'}
 
     <section class="section-heros">
-        <img src="assets/img/image-BU-accueil.png" class="img-heros" alt="image-BU" width="auto" height="900px">
+        <img src="assets/img/Image-BU-accueil.png" class="img-heros" alt="image-BU" width="auto" height="900px">
         <div class="card mx-auto p-4" style="width: 600px; height : auto;">
             <div class="card-body">
                 <h1 class="card-title text-center mb-3">COVOIT</h1>
@@ -65,12 +65,42 @@
         </div>
     </section>
 
+    <section class="section-steps">
+        <div class="steps-wave"></div>
+
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-circle">1</div>
+                <p>
+                    <strong>
+                        Créez votre compte<br>
+                        rapidement sur<br>
+                        monCovoitJV
+                    </strong>
+                </p>
+            </div>
+
+            <div class="step-line"></div>
+
+            <div class="step-item">
+                <div class="step-circle">2</div>
+                <p>
+                    <strong>
+                        Gérez vos trajets<br>
+                        en toute<br>
+                        simplicité
+                    </strong>
+                </p>
+            </div>
+        </div>
+    </section>
+
     {include file='includes/footer.tpl'}
 </body>
-
 <style>
     body {
         background-color: #452b85;
+        position: relative;
     }
 
     /* section-heros */
@@ -156,48 +186,134 @@
         font-weight: bold;
     }
 
+    /* section steps */
+    .section-steps {
+        position: relative;
+        background-color: white;
+        padding: 380px 50px 420px;
+        overflow: hidden;
+    }
+
+    /* vague en haut */
+    .steps-wave {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 140px;
+        background-color: #452b85;
+        border-bottom-left-radius: 60% 40%;
+        border-bottom-right-radius: 60% 40%;
+    }
+    
+    .steps-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 60px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-item {
+        text-align: center;
+        max-width: 300px;
+    }
+
+    .step-item p {
+        margin-top: 20px;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #452b85;
+        line-height: 1.4;
+    }
+
+    /* cercle */
+    .step-circle {
+        width: 90px;
+        height: 90px;
+        background-color: #8c52ff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+        box-shadow: 0 10px 25px rgba(140, 82, 255, 0.4);
+        border: 4px solid white;
+        margin: 0 auto;
+    }
+
+    /* ligne pointillée */
+    .step-line {
+        flex: 1;
+        height: 4px;
+        border-top: 4px dashed #8c52ff;
+        margin-top: -40px;
+    }
+
+
     /* Responsive */
     @media (max-width: 1200px) {
-    .section-heros {
-        flex-direction: column;
-        padding: 60px 20px;
-    }
+        .section-heros {
+            flex-direction: column;
+            padding: 60px 20px;
+        }
 
-    .img-heros {
-        display: none;
-    }
+        .img-heros {
+            display: none;
+        }
 
-    .section-heros .card {
-        width: 100% !important;
-        max-width: 500px;
-    }
+        .section-heros .card {
+            width: 100% !important;
+            max-width: 500px;
+        }
 
-    .search-system {
-        gap: 20px;
-    }
-    }
+        .search-system {
+            gap: 20px;
+        }
+        }
 
-    @media (max-width: 768px) {
+        @media (max-width: 768px) {
 
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
+        .card-grid {
+            grid-template-columns: 1fr;
+        }
 
-    .section-prom {
-        padding: 100px 30px;
-    }
+        .section-prom {
+            padding: 100px 30px;
+        }
+
+        .section-steps {
+            padding-bottom: 700px;
+        }
+
+        .steps-container {
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .step-line {
+            width: 4px;
+            height: 60px;
+            border-top: none;
+            border-left: 4px dashed #8c52ff;
+            margin: 0;
+        }
     }
 
     @media (max-width: 576px) {
-    .search-system > div {
-        width: 100% !important;
-    }
+        .search-system > div {
+            width: 100% !important;
+        }
 
-    label {
-        display: inline-block;
-        margin-bottom: 5px;
+        label {
+            display: inline-block;
+            margin-bottom: 5px;
+        }
     }
-    }
-
 </style>
 </html>

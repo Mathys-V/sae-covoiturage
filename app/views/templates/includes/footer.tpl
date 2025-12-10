@@ -49,7 +49,7 @@
     }
 </style>
 
-<footer class="footer-custom py-4 mt-5">
+<footer class="footer-custom py-4">
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
             

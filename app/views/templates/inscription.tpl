@@ -11,9 +11,9 @@
 
         <div class="card-scrollable px-4 px-md-5 py-3 flex-grow-1 bg-white">
             
-            <form action="traitement_inscription.php" method="POST">
+            <form action="" method="POST">
                 
-                <div class="d-none bloc-etape" id="step-1">        
+                <div class="bloc-etape" id="step-1">        
                     <div class="mb-5">
                         <label for="emailInput" class="form-label adresse-texte fw-bold mb-3">
                             Quelle est votre adresse mail ?<span class="asterisque">*</span>
@@ -112,8 +112,8 @@
                         <h3 style="color: #8c52ff;">Avez-vous une voiture ?</h3>
                     </div>
                     <div class="text-center mt-5 mb-4 d-flex justify-content-center gap-3">
-                        <button type="submit" name="voiture" value="oui" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(7); return false;">Oui</button>
-                        <button type="submit" name="voiture" value="non" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(8); return false;">Non</button>
+                        <button type="button" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(7)">Oui</button>
+                        <button type="button" name="voiture" value="non" class="btn btn-inscription btn-petit fw-bold" onclick="soumettreSansVoiture()">Non</button>
                     </div>
                 </div>
 
@@ -131,8 +131,8 @@
                         <input type="text" id="modelInput" name="model" class="form-control" placeholder="Fiesta 5" required>
                     </div>
                     <div class="mb-4">
-                        <label for="villeInput" class="form-label ville-texte fw-bold mb-3">Sa plaque d’immatriculation ? <span class="asterisque">*</span></label>
-                        <input type="text" id="villeInput" name="ville" class="form-control" placeholder="XX-000-XX" required>
+                        <label for="immatInput" class="form-label immat-texte fw-bold mb-3">Sa plaque d’immatriculation ? <span class="asterisque">*</span></label>
+                        <input type="text" id="immatInput" name="immat" class="form-control" placeholder="XX-000-XX" required>
                     </div>
                     <div class="mb-4">
                         <label for="couleurInput" class="form-label couleur-texte fw-bold mb-3">La couleur ?</label>
@@ -157,12 +157,12 @@
                     </div>
 
                     <div class="text-center mt-5 mb-4">
-                        <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(8); return false;">Continuer</button>
+                        <button type="submit" name="voiture" value="oui" class="btn btn-inscription fw-bold">S'inscrire</button>
                     </div>
                 </div>
 
 
-                <div class=" bloc-etape" id="step-8">
+                <div class="d-none bloc-etape" id="step-8">
                     <p class="form-label text-center fw-bold mb-3" style="center">
                         Votre compte a été créé avec succès
                     </p>
@@ -252,6 +252,29 @@
         if (nouvelleValeur >= 1 && nouvelleValeur <= 8) {
             input.value = nouvelleValeur;
         }
+    }
+
+    function soumettreSansVoiture() {
+        // 1. On récupère tous les champs de l'étape 7 (la voiture)
+        // On cible tous les inputs dans la div #step-7
+        let champsVoiture = document.querySelectorAll('#step-7 input');
+
+        // 2. On leur enlève l'attribut 'required' pour que le navigateur nous laisse passer
+        champsVoiture.forEach(function(champ) {
+            champ.removeAttribute('required');
+            // Optionnel : on peut aussi les désactiver pour être sûr qu'ils soient ignorés
+            champ.disabled = true; 
+        });
+
+        let form = document.querySelector('form');
+        let hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'voiture';
+        hiddenInput.value = 'non';
+        form.appendChild(hiddenInput);
+
+        // 4. On envoie le formulaire !
+        form.submit();
     }
 </script>
 

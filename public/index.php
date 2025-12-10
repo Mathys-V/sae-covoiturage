@@ -94,6 +94,117 @@ Flight::route('/inscription', function(){
     Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
 });
 
+// TRAITEMENT DE L'INSCRIPTION
+Flight::route('POST /inscription', function(){
+    // 1. Récupération des données du formulaire
+    $data = Flight::request()->data;
+    $db = Flight::get('db');
+
+    // Vérification basique des mots de passe
+    if ($data->mdp !== $data->{'conf-mdp'}) {
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => 'Les mots de passe ne correspondent pas.'
+        ]);
+        return; // On arrête tout
+    }
+
+    try {
+        // DÉBUT TRANSACTION (Tout ou rien)
+        $db->beginTransaction();
+
+        // A. INSERTION DE L'ADRESSE
+        // Note : Votre table a "numero" et "voie", mais le formulaire a "rue". 
+        // On combine rue + complément dans "voie" pour simplifier selon votre BDD.
+        $stmtAddr = $db->prepare("INSERT INTO ADRESSES (voie, code_postal, ville, pays) VALUES (:voie, :cp, :ville, 'France')");
+        $voie_complete = $data->rue . ($data->complement ? ' ' . $data->complement : '');
+        
+        $stmtAddr->execute([
+            ':voie' => $voie_complete,
+            ':cp' => $data->post,
+            ':ville' => $data->ville
+        ]);
+        $id_adresse = $db->lastInsertId();
+
+        // B. INSERTION DE L'UTILISATEUR
+        // Hachage du mot de passe (INDISPENSABLE)
+        $hash = password_hash($data->mdp, PASSWORD_DEFAULT);
+        
+        $stmtUser = $db->prepare("
+            INSERT INTO UTILISATEURS (id_adresse, email, mot_de_passe, nom, prenom, date_naissance, telephone, active_flag, date_inscription) 
+            VALUES (:id_addr, :email, :mdp, :nom, :prenom, :dob, :tel, 'Y', NOW())
+        ");
+        
+        $stmtUser->execute([
+            ':id_addr' => $id_adresse,
+            ':email' => $data->email,
+            ':mdp' => $hash,
+            ':nom' => $data->nom,
+            ':prenom' => $data->prenom,
+            ':dob' => $data->date,
+            ':tel' => $data->telephone
+        ]);
+        $id_utilisateur = $db->lastInsertId();
+
+        // C. INSERTION VÉHICULE (Si "oui")
+        if ($data->voiture === 'oui') {
+        // 1. Créer la voiture
+        $stmtCar = $db->prepare("
+            INSERT INTO VEHICULES (marque, modele, nb_places_totales, couleur, immatriculation, type_vehicule) 
+            VALUES (:marque, :modele, :places, :couleur, :immat, 'voiture')
+        ");
+    
+        // CORRECTION ICI : On prend directement 'immat' qui vient du formulaire
+        $immat = $data->immat; 
+
+        $stmtCar->execute([
+            ':marque' => $data->marque,
+            ':modele' => $data->model,
+            ':places' => (int)$data->nb_places,
+            ':couleur' => $data->couleur,
+            ':immat' => $immat
+        ]);
+        $id_vehicule = $db->lastInsertId();
+
+        // 2. Lier Utilisateur <-> Voiture (Table POSSESSIONS)
+        $stmtPoss = $db->prepare("
+            INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule, est_proprietaire_principal) 
+            VALUES (:id_user, :id_car, 'Y')
+        ");
+        $stmtPoss->execute([
+            ':id_user' => $id_utilisateur,
+            ':id_car' => $id_vehicule
+        ]);
+        }
+
+        // Si tout est bon, on valide la transaction
+        $db->commit();
+
+        // Message de succès et redirection vers la connexion
+        $_SESSION['flash_success'] = "Compte créé avec succès ! Connectez-vous.";
+        Flight::redirect('/connexion');
+
+    } catch (PDOException $e) {
+        // En cas d'erreur (ex: email déjà pris), on annule tout
+        $db->rollBack();
+
+        // Gestion spécifique de l'erreur "Email déjà pris" (Code SQL 23000 pour Duplicate entry)
+        $errorMsg = "Une erreur technique est survenue.";
+        if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+            $errorMsg = "Cet email est déjà utilisé par un autre compte.";
+        } else {
+            // Pour le débogage (à retirer en prod) :
+            $errorMsg .= " " . $e->getMessage();
+        }
+
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => $errorMsg,
+            'formData' => $data // Optionnel : pour remplir les champs si erreur
+        ]);
+    }
+});
+
 // FAQ
 Flight::route('/faq', function(){
     Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
@@ -351,6 +462,7 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
     // Redirection vers connexion avec succès (tu peux ajouter un paramètre GET pour afficher un message)
     Flight::redirect('/connexion');
 });
+
 
 
 // -----------------------------------------------------------

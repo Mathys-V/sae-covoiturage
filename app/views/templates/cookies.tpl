@@ -81,12 +81,14 @@
                 
                 <div class="col-md-5 text-end">
                     <div class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="perf" id="perf_accept" value="1" checked>
-                        <label class="btn btn-toggle-custom btn-accept rounded-start-pill px-3" for="perf_accept">Accepter</label>
+    <input type="radio" class="btn-check" name="perf" id="perf_accept" value="1" 
+           {if $consent.performance == 1}checked{/if}>
+    <label class="btn btn-toggle-custom btn-accept rounded-start-pill px-3" for="perf_accept">Accepter</label>
 
-                        <input type="radio" class="btn-check" name="perf" id="perf_refuse" value="0">
-                        <label class="btn btn-toggle-custom btn-refuse rounded-end-pill px-3" for="perf_refuse">Refuser</label>
-                    </div>
+    <input type="radio" class="btn-check" name="perf" id="perf_refuse" value="0" 
+           {if $consent.performance == 0}checked{/if}>
+    <label class="btn btn-toggle-custom btn-refuse rounded-end-pill px-3" for="perf_refuse">Refuser</label>
+</div>
                 </div>
 
                 <div class="col-md-1 text-end">
@@ -112,12 +114,14 @@
                 
                 <div class="col-md-5 text-end">
                     <div class="btn-group" role="group">
-                        <input type="radio" class="btn-check" name="marketing" id="market_accept" value="1">
-                        <label class="btn btn-toggle-custom btn-accept rounded-start-pill px-3" for="market_accept">Accepter</label>
+    <input type="radio" class="btn-check" name="marketing" id="market_accept" value="1" 
+           {if $consent.marketing == 1}checked{/if}>
+    <label class="btn btn-toggle-custom btn-accept rounded-start-pill px-3" for="market_accept">Accepter</label>
 
-                        <input type="radio" class="btn-check" name="marketing" id="market_refuse" value="0" checked>
-                        <label class="btn btn-toggle-custom btn-refuse rounded-end-pill px-3" for="market_refuse">Refuser</label>
-                    </div>
+    <input type="radio" class="btn-check" name="marketing" id="market_refuse" value="0" 
+           {if $consent.marketing == 0}checked{/if}>
+    <label class="btn btn-toggle-custom btn-refuse rounded-end-pill px-3" for="market_refuse">Refuser</label>
+</div>
                 </div>
 
                 <div class="col-md-1 text-end">

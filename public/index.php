@@ -146,9 +146,31 @@ Flight::route('GET /recherche/resultats', function(){
 });
 
 //8 Page cookies 
+// Afficher la page de choix des cookies (AVEC MÉMOIRE)
 Flight::route('GET /cookies', function(){
-    Flight::render('cookies.tpl', ['titre' => 'Gestion des cookies']);
+    
+    // 1. Valeurs par défaut (si l'utilisateur vient pour la première fois)
+    $consent = [
+        'performance' => 1, // On propose "Accepter" par défaut
+        'marketing'   => 0  // On propose "Refuser" par défaut
+    ];
+
+    // 2. Si le cookie existe déjà, on écrase avec les choix de l'utilisateur
+    if (isset($_COOKIE['cookie_consent'])) {
+        $saved = json_decode($_COOKIE['cookie_consent'], true);
+        // Sécurité : on s'assure que c'est bien un tableau avant de fusionner
+        if (is_array($saved)) {
+            $consent = array_merge($consent, $saved);
+        }
+    }
+
+    // 3. On envoie la variable $consent à la vue Smarty
+    Flight::render('cookies.tpl', [
+        'titre' => 'Gestion des cookies',
+        'consent' => $consent
+    ]);
 });
+
 //9 Page cookies préférences
 Flight::route('POST /cookies/save', function(){
     $data = Flight::request()->data;

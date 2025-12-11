@@ -199,6 +199,11 @@ Flight::route('/faq', function(){
     Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
 });
 
+// Contact
+Flight::route('/contact', function(){
+    Flight::render('contact.tpl', ['titre' => 'Contactez-nous']);
+});
+
 // Carte
 Flight::route('/carte', function(){
     Flight::render('carte.tpl', ['titre' => 'Carte']);

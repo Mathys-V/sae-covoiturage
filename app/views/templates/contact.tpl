@@ -79,20 +79,23 @@
             max-width: 500px; /* Largeur max des champs comme sur l'image */
             padding: 12px 20px;
             border-radius: 30px; /* Bords très arrondis */
-            border: none;
             background-color: white;
             font-family: inherit;
             font-size: 1em;
             box-sizing: border-box;
             
-            /* Lueur violette externe comme sur l'image */
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); 
+            /* AJOUT DE LA BORDURE LUMINEUSE VIOLETTE */
+            border: 2px solid #8B5CF6; 
+            box-shadow: 0 0 10px 2px rgba(139, 92, 246, 0.6); 
+
             outline: none;
-            transition: box-shadow 0.3s ease;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
         }
 
         .form-input:focus, .form-textarea:focus {
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+            /* Rendre la bordure plus intense au focus */
+            border-color: #a78bfa;
+            box-shadow: 0 0 15px 4px rgba(139, 92, 246, 0.8);
         }
 
         .form-textarea {

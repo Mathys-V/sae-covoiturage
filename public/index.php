@@ -96,26 +96,23 @@ Flight::route('/inscription', function(){
 
 // TRAITEMENT DE L'INSCRIPTION
 Flight::route('POST /inscription', function(){
-    // 1. Récupération des données du formulaire
     $data = Flight::request()->data;
     $db = Flight::get('db');
 
-    // Vérification basique des mots de passe
+    // 1. Vérification Mots de passe
     if ($data->mdp !== $data->{'conf-mdp'}) {
         Flight::render('inscription.tpl', [
             'titre' => 'S\'inscrire',
-            'error' => 'Les mots de passe ne correspondent pas.'
+            'error' => 'Les mots de passe ne correspondent pas.',
+            'formData' => $data
         ]);
-        return; // On arrête tout
+        return;
     }
 
     try {
-        // DÉBUT TRANSACTION (Tout ou rien)
         $db->beginTransaction();
 
-        // A. INSERTION DE L'ADRESSE
-        // Note : Votre table a "numero" et "voie", mais le formulaire a "rue". 
-        // On combine rue + complément dans "voie" pour simplifier selon votre BDD.
+        // 2. Insertion Adresse
         $stmtAddr = $db->prepare("INSERT INTO ADRESSES (voie, code_postal, ville, pays) VALUES (:voie, :cp, :ville, 'France')");
         $voie_complete = $data->rue . ($data->complement ? ' ' . $data->complement : '');
         
@@ -126,9 +123,8 @@ Flight::route('POST /inscription', function(){
         ]);
         $id_adresse = $db->lastInsertId();
 
-        // B. INSERTION DE L'UTILISATEUR
-        // Hachage du mot de passe (INDISPENSABLE)
-        $hash = password_hash($data->mdp, PASSWORD_DEFAULT);
+        // 3. Insertion Utilisateur (BCRYPT)
+        $hash = password_hash($data->mdp, PASSWORD_BCRYPT);
         
         $stmtUser = $db->prepare("
             INSERT INTO UTILISATEURS (id_adresse, email, mot_de_passe, nom, prenom, date_naissance, telephone, active_flag, date_inscription) 
@@ -146,62 +142,55 @@ Flight::route('POST /inscription', function(){
         ]);
         $id_utilisateur = $db->lastInsertId();
 
-        // C. INSERTION VÉHICULE (Si "oui")
+        // 4. Insertion Véhicule (Si voiture = oui)
         if ($data->voiture === 'oui') {
-        // 1. Créer la voiture
-        $stmtCar = $db->prepare("
-            INSERT INTO VEHICULES (marque, modele, nb_places_totales, couleur, immatriculation, type_vehicule) 
-            VALUES (:marque, :modele, :places, :couleur, :immat, 'voiture')
-        ");
-    
-        // CORRECTION ICI : On prend directement 'immat' qui vient du formulaire
-        $immat = $data->immat; 
+            
+            $immat = strtoupper(trim($data->immat)); // Mise en majuscule et nettoyage
 
-        $stmtCar->execute([
-            ':marque' => $data->marque,
-            ':modele' => $data->model,
-            ':places' => (int)$data->nb_places,
-            ':couleur' => $data->couleur,
-            ':immat' => $immat
-        ]);
-        $id_vehicule = $db->lastInsertId();
+            // MODIFICATION DEMANDÉE : Vérification format Plaque (Nouveau AA-123-AA ou Ancien 123 AAA 00)
+            // Regex : 2 lettres - 3 chiffres - 2 lettres OU 1 à 4 chiffres - 2/3 lettres - 2 chiffres
+            $regexImmat = '~^(([A-Z]{2}[- ]?\d{3}[- ]?[A-Z]{2})|(\d{1,4}[- ]?[A-Z]{2,3}[- ]?\d{2}))$~';
 
-        // 2. Lier Utilisateur <-> Voiture (Table POSSESSIONS)
-        $stmtPoss = $db->prepare("
-            INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule, est_proprietaire_principal) 
-            VALUES (:id_user, :id_car, 'Y')
-        ");
-        $stmtPoss->execute([
-            ':id_user' => $id_utilisateur,
-            ':id_car' => $id_vehicule
-        ]);
+            if (!preg_match($regexImmat, $immat)) {
+                $db->rollBack(); // On annule tout
+                Flight::render('inscription.tpl', [
+                    'titre' => 'S\'inscrire',
+                    'error' => 'Format de plaque d\'immatriculation invalide (ex: AA-123-AA).',
+                    'formData' => $data
+                ]);
+                return;
+            }
+
+            $stmtCar = $db->prepare("
+                INSERT INTO VEHICULES (marque, modele, nb_places_totales, couleur, immatriculation, type_vehicule, details_supplementaires) 
+                VALUES (:marque, :modele, :places, :couleur, :immat, 'voiture', ' ')
+            ");
+            
+            $stmtCar->execute([
+                ':marque' => $data->marque,
+                ':modele' => $data->model,
+                ':places' => (int)$data->nb_places,
+                ':couleur' => $data->couleur,
+                ':immat' => $immat
+            ]);
+            $id_vehicule = $db->lastInsertId();
+
+            $stmtPoss = $db->prepare("INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule) VALUES (:id_user, :id_car)");
+            $stmtPoss->execute([':id_user' => $id_utilisateur, ':id_car' => $id_vehicule]);
         }
 
-        // Si tout est bon, on valide la transaction
         $db->commit();
 
-        // Message de succès et redirection vers la connexion
         $_SESSION['flash_success'] = "Compte créé avec succès ! Connectez-vous.";
         Flight::redirect('/connexion');
 
     } catch (PDOException $e) {
-        // En cas d'erreur (ex: email déjà pris), on annule tout
         $db->rollBack();
-
-        // Gestion spécifique de l'erreur "Email déjà pris" (Code SQL 23000 pour Duplicate entry)
-        $errorMsg = "Une erreur technique est survenue.";
+        $errorMsg = "Erreur technique.";
         if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-            $errorMsg = "Cet email est déjà utilisé par un autre compte.";
-        } else {
-            // Pour le débogage (à retirer en prod) :
-            $errorMsg .= " " . $e->getMessage();
+            $errorMsg = "Cet email est déjà utilisé.";
         }
-
-        Flight::render('inscription.tpl', [
-            'titre' => 'S\'inscrire',
-            'error' => $errorMsg,
-            'formData' => $data // Optionnel : pour remplir les champs si erreur
-        ]);
+        Flight::render('inscription.tpl', ['error' => $errorMsg, 'formData' => $data]);
     }
 });
 

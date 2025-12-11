@@ -23,29 +23,49 @@
                             Veuillez entrer une adresse email valide (avec un @).
                         </div>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="button" class="btn btn-inscription fw-bold" onclick="verifierEmail()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
                 <div class="d-none bloc-etape" id="step-2">
+    
                     <div class="mb-4">
                         <label for="mdpInput" class="form-label mdp-texte fw-bold mb-3">
                             Entrez votre mot de passe <span class="asterisque">*</span>
                         </label>
-                        <input type="password" id="mdpInput" name="mdp" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" id="mdpInput" name="mdp" class="form-control border-end-0" required>
+                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" onclick="togglePassword('mdpInput', 'icon-mdp')">
+                                <i class="bi bi-eye" id="icon-mdp" style="color: #8c52ff;"></i>
+                            </span>
+                        </div>
                     </div>
+
                     <div class="mb-4">
                         <label for="confMdpInput" class="form-label mdp-texte fw-bold mb-3">
                             Confirmez votre mot de passe <span class="asterisque">*</span>
                         </label>
-                        <input type="password" id="confMdpInput" name="conf-mdp" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" id="confMdpInput" name="conf-mdp" class="form-control border-end-0" required>
+                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" onclick="togglePassword('confMdpInput', 'icon-conf')">
+                                <i class="bi bi-eye" id="icon-conf" style="color: #8c52ff;"></i>
+                            </span>
+                        </div>
+        
                         <div id="error-mdp" class="text-danger mt-2 small d-none">
                             Les mots de passe ne correspondent pas ou sont vides.
                         </div>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+
+                    <div class="text-center mt-4 mb-1">
                         <button type="button" class="btn btn-inscription fw-bold" onclick="verifierMDP()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -62,8 +82,11 @@
                         </label>
                         <input type="text" id="prenomInput" name="prenom" class="form-control" autocomplete="given-name" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
-                        <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(4); return false;">Continuer</button>
+                    <div class="text-center mt-4 mb-1">
+                        <button type="button" class="btn btn-inscription fw-bold" onclick="validerEtape3()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -72,7 +95,7 @@
                         <label for="dateInput" class="form-label date-texte fw-bold mb-3">
                             Quelle est votre date de naissance ? <span class="asterisque">*</span>
                         </label>
-                        <input type="date" id="dateInput" name="date" class="form-control" required>
+                        <input type="date" id="dateInput" name="date" class="form-control"  required>
                     </div>
                     <div class="mb-4">
                         <label for="telInput" class="form-label tel-texte fw-bold mb-3">
@@ -80,30 +103,36 @@
                         </label>
                         <input type="tel" id="telInput" name="telephone" class="form-control" placeholder="0612345678" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
-                        <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(5); return false;">Continuer</button>
+                    <div class="text-center mt-4 mb-1">
+                        <button type="button" class="btn btn-inscription fw-bold" onclick="validerEtape4()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
                 <div class="d-none bloc-etape" id="step-5">
                     <div class="mb-4">
                         <label for="rueInput" class="form-label rue-texte fw-bold mb-3">Votre rue ? <span class="asterisque">*</span></label>
-                        <input type="text" id="rueInput" name="rue" class="form-control" required>
+                        <input type="text" id="rueInput" name="rue" class="form-control" placeholder="1 Rue Albert Catoire" required>
                     </div>
                     <div class="mb-4">
                         <label for="complementInput" class="form-label complement-texte fw-bold mb-3">Un complément ?</label>
-                        <input type="text" id="complementInput" name="complement" class="form-control">
+                        <input type="text" id="complementInput" name="complement" class="form-control" placeholder="Bâtiment A">
                     </div>
                     <div class="mb-4">
                         <label for="villeInput" class="form-label ville-texte fw-bold mb-3">Votre ville ? <span class="asterisque">*</span></label>
-                        <input type="text" id="villeInput" name="ville" class="form-control" required>
+                        <input type="text" id="villeInput" name="ville" class="form-control" placeholder="Amiens" required>
                     </div>
                     <div class="mb-4">
                         <label for="postInput" class="form-label post-texte fw-bold mb-3">Le code postal ? <span class="asterisque">*</span></label>
-                        <input type="text" id="postInput" name="post" class="form-control" required>
+                        <input type="number" id="postInput" name="post" class="form-control" maxlength="5" pattern="[0-9]{5}"  placeholder="80000" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
-                        <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(6); return false;">Continuer</button>
+                    <div class="text-center mt-4 mb-1">
+                        <button type="button" class="btn btn-inscription fw-bold" onclick="validerEtape5()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -112,8 +141,8 @@
                         <h3 style="color: #8c52ff;">Avez-vous une voiture ?</h3>
                     </div>
                     <div class="text-center mt-5 mb-4 d-flex justify-content-center gap-3">
-                        <button type="button" class="btn btn-inscription btn-petit fw-bold" onclick="changerEtape(7)">Oui</button>
-                        <button type="button" name="voiture" value="non" class="btn btn-inscription btn-petit fw-bold" onclick="soumettreSansVoiture()">Non</button>
+                        <button type="button" class="btn btn-inscription btn-petit fw-bold" onclick="choisirVoiture()">Oui</button>
+                        <button type="button" class="btn btn-inscription btn-petit fw-bold" onclick="soumettreSansVoiture()">Non</button>
                     </div>
                 </div>
 
@@ -156,8 +185,11 @@
                         </div>
                     </div>
 
-                    <div class="text-center mt-5 mb-4">
-                        <button type="submit" name="voiture" value="oui" class="btn btn-inscription fw-bold">S'inscrire</button>
+                    <div class="text-center mt-4 mb-1">
+                        <button type="button" class="btn btn-inscription fw-bold" onclick="soumettreAvecVoiture()">S'inscrire</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -191,7 +223,6 @@
         let etapeVisee = document.getElementById('step-' + numeroEtape);
         if(etapeVisee) etapeVisee.classList.remove('d-none');
 
-    
         let headerFixe = document.querySelector('.card > div.text-center'); 
         let footerText = document.querySelector('.texte-champ');
 
@@ -212,7 +243,6 @@
         }
     }
     
-
     function verifierEmail() {
         const emailInput = document.getElementById('emailInput');
         const errorMsg = document.getElementById('error-email');
@@ -246,23 +276,52 @@
     function modifierPlaces(direction) {
         const input = document.getElementById('nbPlacesInput');
         let valeur = parseInt(input.value);
-    
         let nouvelleValeur = valeur + direction;
-    
+        
         if (nouvelleValeur >= 1 && nouvelleValeur <= 8) {
             input.value = nouvelleValeur;
         }
     }
 
-    function soumettreSansVoiture() {
-        // 1. On récupère tous les champs de l'étape 7 (la voiture)
-        // On cible tous les inputs dans la div #step-7
-        let champsVoiture = document.querySelectorAll('#step-7 input');
+    // CORRECTION : Fonction pour valider les étapes intermédiaires
+    function validerEtape3() {
+        const nom = document.getElementById('nomInput').value.trim();
+        const prenom = document.getElementById('prenomInput').value.trim();
+        
+        if (nom && prenom) {
+            changerEtape(4);
+        }
+    }
 
-        // 2. On leur enlève l'attribut 'required' pour que le navigateur nous laisse passer
+    function validerEtape4() {
+        const date = document.getElementById('dateInput').value;
+        const tel = document.getElementById('telInput').value;
+        
+        if (date && tel.length === 10) {
+            changerEtape(5);
+        }
+    }
+
+    function validerEtape5() {
+        const rue = document.getElementById('rueInput').value.trim();
+        const ville = document.getElementById('villeInput').value.trim();
+        const post = document.getElementById('postInput').value.trim();
+        
+        if (rue && ville && post.length === 5) {
+            changerEtape(6);
+        }
+    }
+
+    // CORRECTION : Fonction pour passer à l'étape voiture
+    function choisirVoiture() {
+        changerEtape(7);
+    }
+
+    // CORRECTION : Fonction pour soumettre SANS voiture
+    function soumettreSansVoiture() {
+        let champsVoiture = document.querySelectorAll('#step-7 input');
         champsVoiture.forEach(function(champ) {
             champ.removeAttribute('required');
-            // Optionnel : on peut aussi les désactiver pour être sûr qu'ils soient ignorés
             champ.disabled = true; 
         });
 
@@ -273,8 +332,47 @@
         hiddenInput.value = 'non';
         form.appendChild(hiddenInput);
 
-        // 4. On envoie le formulaire !
         form.submit();
+    }
+
+    // CORRECTION : Fonction pour soumettre AVEC voiture
+    function soumettreAvecVoiture() {
+        const marque = document.getElementById('marqueInput').value.trim();
+        const modele = document.getElementById('modelInput').value.trim();
+        const immat = document.getElementById('immatInput').value.trim();
+        const places = document.getElementById('nbPlacesInput').value;
+
+        // Validation des champs obligatoires
+        if (!marque || !modele || !immat) {
+            alert('Veuillez remplir tous les champs obligatoires de la voiture.');
+            return;
+        }
+
+        // On ajoute un champ caché pour indiquer "voiture=oui"
+        let form = document.querySelector('form');
+        let hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'voiture';
+        hiddenInput.value = 'oui';
+        form.appendChild(hiddenInput);
+
+        // Soumission du formulaire
+        form.submit();
+    }
+
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        }
     }
 </script>
 
@@ -400,6 +498,25 @@
     /* Petite ligne entre les deux boutons flèches */
     .spinner-btn:first-child {
         border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    //Pour les boutons cacher/montrer mdp
+    .input-group .form-control {
+        border: 2px solid #8c52ff;
+        border-right: none; /* On enlève le côté droit de l'input */
+        border-radius: 12px 0 0 12px;
+    }
+
+    .input-group .input-group-text {
+        border: 2px solid #8c52ff;
+        border-left: none; /* On enlève le côté gauche de l'icône */
+        border-radius: 0 12px 12px 0;
+        background-color: white;
+    }
+
+    .input-group .form-control:focus {
+        box-shadow: none; /* On gère le shadow manuellement si besoin */
+        border-color: #8c52ff;
     }
 
 </style>

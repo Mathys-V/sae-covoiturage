@@ -23,29 +23,49 @@
                             Veuillez entrer une adresse email valide (avec un @).
                         </div>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="button" class="btn btn-inscription fw-bold" onclick="verifierEmail()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
                 <div class="d-none bloc-etape" id="step-2">
+    
                     <div class="mb-4">
                         <label for="mdpInput" class="form-label mdp-texte fw-bold mb-3">
                             Entrez votre mot de passe <span class="asterisque">*</span>
                         </label>
-                        <input type="password" id="mdpInput" name="mdp" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" id="mdpInput" name="mdp" class="form-control border-end-0" required>
+                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" onclick="togglePassword('mdpInput', 'icon-mdp')">
+                                <i class="bi bi-eye" id="icon-mdp" style="color: #8c52ff;"></i>
+                            </span>
+                        </div>
                     </div>
+
                     <div class="mb-4">
                         <label for="confMdpInput" class="form-label mdp-texte fw-bold mb-3">
                             Confirmez votre mot de passe <span class="asterisque">*</span>
                         </label>
-                        <input type="password" id="confMdpInput" name="conf-mdp" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" id="confMdpInput" name="conf-mdp" class="form-control border-end-0" required>
+                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" onclick="togglePassword('confMdpInput', 'icon-conf')">
+                                <i class="bi bi-eye" id="icon-conf" style="color: #8c52ff;"></i>
+                            </span>
+                        </div>
+        
                         <div id="error-mdp" class="text-danger mt-2 small d-none">
                             Les mots de passe ne correspondent pas ou sont vides.
                         </div>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+
+                    <div class="text-center mt-4 mb-1">
                         <button type="button" class="btn btn-inscription fw-bold" onclick="verifierMDP()">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -62,8 +82,11 @@
                         </label>
                         <input type="text" id="prenomInput" name="prenom" class="form-control" autocomplete="given-name" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(4); return false;">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -72,7 +95,7 @@
                         <label for="dateInput" class="form-label date-texte fw-bold mb-3">
                             Quelle est votre date de naissance ? <span class="asterisque">*</span>
                         </label>
-                        <input type="date" id="dateInput" name="date" class="form-control" required>
+                        <input type="date" id="dateInput" name="date" class="form-control"  required>
                     </div>
                     <div class="mb-4">
                         <label for="telInput" class="form-label tel-texte fw-bold mb-3">
@@ -80,30 +103,36 @@
                         </label>
                         <input type="tel" id="telInput" name="telephone" class="form-control" placeholder="0612345678" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(5); return false;">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
                 <div class="d-none bloc-etape" id="step-5">
                     <div class="mb-4">
                         <label for="rueInput" class="form-label rue-texte fw-bold mb-3">Votre rue ? <span class="asterisque">*</span></label>
-                        <input type="text" id="rueInput" name="rue" class="form-control" required>
+                        <input type="text" id="rueInput" name="rue" class="form-control" placeholder="1 Rue Albert Catoire" required>
                     </div>
                     <div class="mb-4">
                         <label for="complementInput" class="form-label complement-texte fw-bold mb-3">Un complément ?</label>
-                        <input type="text" id="complementInput" name="complement" class="form-control">
+                        <input type="text" id="complementInput" name="complement" class="form-control" placeholder="Bâtiment A">
                     </div>
                     <div class="mb-4">
                         <label for="villeInput" class="form-label ville-texte fw-bold mb-3">Votre ville ? <span class="asterisque">*</span></label>
-                        <input type="text" id="villeInput" name="ville" class="form-control" required>
+                        <input type="text" id="villeInput" name="ville" class="form-control" placeholder="Amiens" required>
                     </div>
                     <div class="mb-4">
                         <label for="postInput" class="form-label post-texte fw-bold mb-3">Le code postal ? <span class="asterisque">*</span></label>
-                        <input type="text" id="postInput" name="post" class="form-control" required>
+                        <input type="number" id="postInput" name="post" class="form-control" maxlength="5" pattern="[0-9]{5}"  placeholder="80000" required>
                     </div>
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="submit" class="btn btn-inscription fw-bold" onclick="changerEtape(6); return false;">Continuer</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -156,8 +185,11 @@
                         </div>
                     </div>
 
-                    <div class="text-center mt-5 mb-4">
+                    <div class="text-center mt-4 mb-1">
                         <button type="submit" name="voiture" value="oui" class="btn btn-inscription fw-bold">S'inscrire</button>
+                    </div>
+                    <div class="text-center mt-0">
+                        <a href="/sae-covoiturage/public/connexion" class="text-decoration-none fw-bold text-purple" style="margin-top=0">Se connecter</a>
                     </div>
                 </div>
 
@@ -275,6 +307,21 @@
 
         // 4. On envoie le formulaire !
         form.submit();
+    }
+
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (input.type === "password") {
+            input.type = "text"; // On montre le texte
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash"); // On change l'icône (oeil barré)
+        } else {
+            input.type = "password"; // On cache le texte
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye"); // On remet l'icône normale
+        }
     }
 </script>
 
@@ -400,6 +447,25 @@
     /* Petite ligne entre les deux boutons flèches */
     .spinner-btn:first-child {
         border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    //Pour les boutons cacher/montrer mdp
+    .input-group .form-control {
+        border: 2px solid #8c52ff;
+        border-right: none; /* On enlève le côté droit de l'input */
+        border-radius: 12px 0 0 12px;
+    }
+
+    .input-group .input-group-text {
+        border: 2px solid #8c52ff;
+        border-left: none; /* On enlève le côté gauche de l'icône */
+        border-radius: 0 12px 12px 0;
+        background-color: white;
+    }
+
+    .input-group .form-control:focus {
+        box-shadow: none; /* On gère le shadow manuellement si besoin */
+        border-color: #8c52ff;
     }
 
 </style>

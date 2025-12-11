@@ -75,6 +75,24 @@
             text-align: center; text-decoration: none;
         }
         .btn-outline-purple:hover { background-color: var(--main-purple); color: white; }
+
+        /* --- CSS POUR L'ALERTE FLOTTANTE (TOAST) --- */
+        .flash-message-container {
+            position: fixed;      /* Fixe par rapport à l'écran */
+            top: 20px;            /* Décalage du haut */
+            left: 50%;            /* Centré horizontalement */
+            transform: translateX(-50%); /* Correction pour centrage parfait */
+            z-index: 9999;        /* Au-dessus de TOUT (header, images...) */
+            width: 90%;           /* Largeur responsive */
+            max-width: 600px;     /* Largeur max sur PC */
+            animation: slideDown 0.5s ease-out; /* Petite animation d'arrivée */
+        }
+
+        /* Animation de descente */
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -210,10 +228,10 @@
 </nav>
 
 {if isset($flash_success)}
-    <div class="container mt-3">
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #198754;">
+    <div class="flash-message-container">
+        <div class="alert alert-success alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #198754; background-color: #d1e7dd; color: #0f5132;">
             <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
                 <div>
                     <strong>Succès !</strong> {$flash_success}
                 </div>
@@ -226,6 +244,7 @@
         setTimeout(function() {
             let alert = document.querySelector('.alert');
             if(alert) {
+                // On utilise l'API Bootstrap pour fermer proprement avec l'effet fade
                 let bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
             }

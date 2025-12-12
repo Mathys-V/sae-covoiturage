@@ -126,7 +126,7 @@
         <a href="{if isset($user)}/sae-covoiturage/public/reservations{else}/sae-covoiturage/public/connexion{/if}" 
             class="btn btn-purple w-100"
         {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos réservations.\n\nCliquez sur OK pour vous connecter.');"{/if}>
-        Reservations
+        Mes réservations
         </a>
 
         <div class="vr mx-2 d-none d-lg-block"></div>

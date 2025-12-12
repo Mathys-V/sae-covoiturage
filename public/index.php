@@ -542,7 +542,7 @@ Flight::route('GET /trajet/nouveau', function(){
 });
 
 // 2. TRAITEMENT DU FORMULAIRE (Route POST)
-// C'est celle qui gère l'envoi et la création des trajets multiples
+// TRAITEMENT DU FORMULAIRE
 Flight::route('POST /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -550,35 +550,33 @@ Flight::route('POST /trajet/nouveau', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupérer Véhicule
+    // 1. Véhicule
     $stmtVehicule = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = :id LIMIT 1");
     $stmtVehicule->execute([':id' => $userId]);
     $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
 
     if(!$vehicule) {
-        Flight::render('proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé à votre compte.']);
+        Flight::render('proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé.']);
         return;
     }
 
     try {
         $db->beginTransaction();
 
-        // 2. Dates
         $dateDebut = new DateTime($data->date . ' ' . $data->heure);
         
-        // Gestion date de fin (Régulier ou unique)
         if ($data->regulier === 'Y' && !empty($data->date_fin)) {
             $dateFin = new DateTime($data->date_fin . ' 23:59:59');
         } else {
             $dateFin = clone $dateDebut;
         }
 
-        // BOUCLE DE GÉNÉRATION
         $compteur = 0;
         
         while ($dateDebut <= $dateFin) {
             
-            // CORRECTION ICI : Remplacement de 'description' par 'commentaires'
+            // On insère l'adresse complète dans ville_depart/arrivee
+            // C'est temporaire mais ça suffit pour le géocodage sur la carte
             $sql = "INSERT INTO TRAJETS (
                         id_conducteur, id_vehicule, 
                         ville_depart, code_postal_depart, rue_depart,
@@ -597,11 +595,11 @@ Flight::route('POST /trajet/nouveau', function(){
             $stmt->execute([
                 ':conducteur' => $userId,
                 ':vehicule'   => $vehicule['id_vehicule'],
-                ':depart'     => $data->depart,
+                ':depart'     => $data->depart, // Contient maintenant "15 Rue X, Amiens"
                 ':arrivee'    => $data->arrivee,
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
                 ':places'     => (int)$data->places,
-                ':desc'       => $data->description // La variable PHP reste $data->description (venant du formulaire)
+                ':desc'       => $data->description
             ]);
 
             $compteur++;
@@ -616,7 +614,7 @@ Flight::route('POST /trajet/nouveau', function(){
         $db->commit();
 
         if ($compteur > 1) {
-            $_SESSION['flash_success'] = "$compteur trajets ont été créés jusqu'au " . $dateFin->format('d/m/Y') . " !";
+            $_SESSION['flash_success'] = "$compteur trajets créés jusqu'au " . $dateFin->format('d/m/Y') . " !";
         } else {
             $_SESSION['flash_success'] = "Trajet publié avec succès !";
         }
@@ -626,12 +624,22 @@ Flight::route('POST /trajet/nouveau', function(){
     } catch (Exception $e) {
         $db->rollBack();
         Flight::render('proposer_trajet.tpl', [
-            'error' => "Erreur technique : " . $e->getMessage(),
+            'error' => "Erreur : " . $e->getMessage(),
             'titre' => 'Proposer un trajet'
         ]);
     }
 });
 
+// PAGE PROFIL
+Flight::route('GET /profil', function(){
+    // On vérifie si l'utilisateur est connecté, sinon on le vire vers la connexion
+    if(!isset($_SESSION['user'])) {
+        Flight::redirect('/connexion');
+        return;
+    }
+
+    Flight::render('profil.tpl', ['titre' => 'Mon Profil']);
+});
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------

@@ -1,148 +1,89 @@
 {include file='includes/header.tpl'}
 
 <style>
-    /* --- STYLE SPECIFIQUE PAGE PROPOSER --- */
-    .propose-section {
-        background-color: #f8f9fa; 
-        /* CORRECTION ICI : On utilise flex-grow pour remplir l'espace, 
-           mais on enlève le 90vh rigide qui causait le chevauchement */
-        flex-grow: 1; 
-        display: flex;
-        justify-content: center;
-        /* CORRECTION ICI : On aligne en haut (start) au lieu de centrer, 
-           pour éviter que ça déborde si l'écran est petit */
-        align-items: flex-start; 
-        padding: 60px 20px 80px 20px; /* Marge Haut et Bas augmentées */
-    }
-
-    .form-card {
-        background-color: #e9e4f5; /* Le fond lilas */
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15);
-        max-width: 600px;
-        width: 100%;
-        padding: 40px;
-        border: 2px solid #fff;
-        position: relative; /* Pour le z-index */
+    /* --- CSS (Les accolades sont suivies d'espaces pour plaire à Smarty) --- */
+    .propose-section { background-color: #f8f9fa; min-height: 90vh; display: flex; justify-content: center; padding: 40px 20px; }
+    
+    .form-card { 
+        background-color: #e9e4f5; 
+        border-radius: 20px; 
+        box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15); 
+        max-width: 600px; 
+        width: 100%; 
+        padding: 40px; 
+        border: 2px solid #fff; 
+        position: relative; 
         z-index: 1;
     }
 
-    .form-title {
-        color: #000;
-        font-weight: 800;
-        font-size: 2rem;
-        text-align: center;
-        margin-bottom: 30px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Labels */
-    .custom-label {
-        font-weight: 600;
-        color: #000;
-        margin-bottom: 8px;
-        display: block;
-        text-align: center;
-    }
-    
+    .form-title { color: #000; font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 30px; font-family: 'Poppins', sans-serif; }
+    .custom-label { font-weight: 600; color: #000; margin-bottom: 8px; display: block; text-align: center; }
     .required-star { color: #dc3545; margin-left: 3px; }
-
-    /* Inputs arrondies */
-    .form-control-rounded {
-        border-radius: 12px;
-        border: 2px solid #8c52ff;
-        padding: 12px 15px;
-        text-align: center;
-        font-size: 1rem;
-        background-color: white;
-    }
     
-    .form-control-rounded:focus {
-        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2);
-        border-color: #452b85;
+    .form-control-rounded { 
+        border-radius: 12px; 
+        border: 2px solid #8c52ff; 
+        padding: 12px 15px; 
+        text-align: center; 
+        font-size: 1rem; 
+        background-color: white; 
     }
-
+    .form-control-rounded:focus { box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2); border-color: #452b85; }
+    
     /* Toggle Switch */
-    .toggle-container {
-        display: flex;
-        justify-content: center;
-        margin: 10px auto;
-        background: #fff;
-        border: 2px solid #8c52ff;
-        border-radius: 50px;
-        width: fit-content;
-        overflow: hidden;
-        position: relative;
-    }
-
+    .toggle-container { display: flex; justify-content: center; margin: 10px auto; background: #fff; border: 2px solid #8c52ff; border-radius: 50px; width: fit-content; overflow: hidden; position: relative; }
     .toggle-radio { display: none; }
-
-    .toggle-label {
-        padding: 8px 30px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s;
-        margin: 0;
-        z-index: 2;
-    }
-
-    #regulier_non:checked + label {
-        background-color: #ff4d4d; /* Rouge */
-        color: white;
-    }
+    .toggle-label { padding: 8px 30px; cursor: pointer; font-weight: bold; transition: all 0.3s; margin: 0; z-index: 2; }
     
-    #regulier_oui:checked + label {
-        background-color: #198754; /* Vert (Bootstrap Success) */
-        color: white;
-        box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-    }
+    #regulier_non:checked + label { background-color: #ff4d4d; color: white; }
+    #regulier_oui:checked + label { background-color: #198754; color: white; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
 
-    /* Zone Date de Fin (Cachée par défaut) */
-    #date_fin_wrapper {
-        transition: all 0.3s ease-in-out;
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-        margin-top: 0;
-    }
-    #date_fin_wrapper.visible {
-        opacity: 1;
-        max-height: 200px;
-        margin-top: 20px;
-    }
+    #date_fin_wrapper { transition: all 0.3s ease-in-out; opacity: 0; max-height: 0; overflow: hidden; margin-top: 0; }
+    #date_fin_wrapper.visible { opacity: 1; max-height: 200px; margin-top: 20px; }
 
-    /* Bouton Submit */
-    .btn-submit-trajet {
-        background-color: #8c52ff;
-        color: white;
-        font-weight: bold;
-        font-size: 1.2rem;
-        padding: 15px;
+    .btn-submit-trajet { 
+        background-color: #8c52ff; 
+        color: white; 
+        font-weight: bold; 
+        font-size: 1.2rem; 
+        padding: 15px; 
+        width: 100%; 
+        border-radius: 15px; 
+        border: none; 
+        transition: transform 0.2s, box-shadow 0.2s; 
+        margin-top: 20px; 
+    }
+    .btn-submit-trajet:hover { background-color: #703ccf; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3); color: white; }
+    
+    .input-number-group { display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .input-number-group input { width: 80px; text-align: center; font-weight: bold; font-size: 1.2rem; }
+
+    /* --- STYLE POUR L'AUTOCOMPLÉTION --- */
+    .autocomplete-suggestions {
+        text-align: left;
+        border: 1px solid #ddd;
+        background: #fff;
+        overflow: auto;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        position: absolute;
+        z-index: 9999;
         width: 100%;
-        border-radius: 15px;
-        border: none;
-        transition: transform 0.2s, box-shadow 0.2s;
-        margin-top: 20px;
+        max-height: 200px;
+        left: 0;
+        top: 100%;
     }
-
-    .btn-submit-trajet:hover {
-        background-color: #703ccf;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3);
-        color: white;
+    .autocomplete-suggestion {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 0.9rem;
     }
-
-    .input-number-group {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
+    .autocomplete-suggestion:hover {
+        background-color: #f0f0f0;
+        color: #8c52ff;
     }
-    .input-number-group input {
-        width: 80px;
-        text-align: center;
-        font-weight: bold;
-        font-size: 1.2rem;
+    .autocomplete-wrapper {
+        position: relative;
     }
 </style>
 
@@ -156,16 +97,22 @@
             </div>
         {/if}
 
-        <form action="/sae-covoiturage/public/trajet/nouveau" method="POST">
+        <form action="/sae-covoiturage/public/trajet/nouveau" method="POST" autocomplete="off">
             
             <div class="mb-4">
                 <label class="custom-label">Lieu de départ ?<span class="required-star">*</span></label>
-                <input type="text" name="depart" class="form-control form-control-rounded" placeholder="Ex: Amiens Centre" required>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="depart" name="depart" class="form-control form-control-rounded" placeholder="Entrez une adresse précise..." required>
+                    <div id="suggestions-depart" class="autocomplete-suggestions"></div>
+                </div>
             </div>
 
             <div class="mb-4">
                 <label class="custom-label">Destination ?<span class="required-star">*</span></label>
-                <input type="text" name="arrivee" class="form-control form-control-rounded" placeholder="Ex: IUT d'Amiens" required>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="arrivee" name="arrivee" class="form-control form-control-rounded" placeholder="Entrez une adresse précise..." required>
+                    <div id="suggestions-arrivee" class="autocomplete-suggestions"></div>
+                </div>
             </div>
 
             <div class="mb-4 text-center">
@@ -206,7 +153,6 @@
                     <div class="p-3 mt-3 rounded-4 border border-2 border-white" style="background-color: rgba(255,255,255,0.5);">
                         <label class="custom-label mb-2">Jusqu'à quelle date répéter ce trajet ?</label>
                         <input type="date" name="date_fin" class="form-control form-control-rounded">
-                        <small class="text-muted d-block mt-2">Ex: Jusqu'aux prochaines vacances</small>
                     </div>
                 </div>
             </div>
@@ -227,10 +173,10 @@
 </div>
 
 <script>
+    // --- GESTION DATE FIN (Toggle) ---
     function toggleDateFin(show) {
         const wrapper = document.getElementById('date_fin_wrapper');
         const input = wrapper.querySelector('input');
-        
         if (show) {
             wrapper.classList.add('visible');
             input.required = true;
@@ -240,6 +186,56 @@
             input.value = '';
         }
     }
+
+    // --- AUTOCOMPLÉTION D'ADRESSE (API GOUV FR) ---
+    function setupAutocomplete(inputId, resultsId) {
+        const input = document.getElementById(inputId);
+        const results = document.getElementById(resultsId);
+        let timeout = null;
+
+        input.addEventListener('input', function() {
+            const query = this.value;
+            if (query.length < 3) {
+                results.innerHTML = '';
+                return;
+            }
+
+            // Debounce
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                // MODIFICATION ICI : On utilise la concaténation (+) au lieu de ${}
+                // Cela évite l'erreur de parsing Smarty sans avoir besoin de {literal}
+                fetch('https://api-adresse.data.gouv.fr/search/?q=' + query + '&limit=5')
+                    .then(response => response.json())
+                    .then(data => {
+                        results.innerHTML = '';
+                        if (data.features && data.features.length > 0) {
+                            data.features.forEach(feature => {
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-suggestion';
+                                div.textContent = feature.properties.label;
+                                div.addEventListener('click', function() {
+                                    input.value = feature.properties.label;
+                                    results.innerHTML = '';
+                                });
+                                results.appendChild(div);
+                            });
+                        }
+                    });
+            }, 300);
+        });
+
+        // Fermer la liste si on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (e.target !== input && e.target !== results) {
+                results.innerHTML = '';
+            }
+        });
+    }
+
+    // Activer l'autocomplétion sur les deux champs
+    setupAutocomplete('depart', 'suggestions-depart');
+    setupAutocomplete('arrivee', 'suggestions-arrivee');
 </script>
 
 {include file='includes/footer.tpl'}

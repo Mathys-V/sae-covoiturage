@@ -206,7 +206,19 @@ Flight::route('/contact', function(){
 
 // Carte
 Flight::route('/carte', function(){
-    Flight::render('carte.tpl', ['titre' => 'Carte']);
+
+    $db = Flight::get('db');
+    $stmt = $db->query("SELECT nom_lieu, latitude,longitude FROM LIEUX_FREQUENTS");
+    $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $stmt2 = $db->query("SELECT * FROM TRAJETS WHERE statut_flag = 'A' ORDER BY date_heure_depart ASC");
+    $trajets = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    Flight::render('carte.tpl', [
+        'titre' => 'Carte',
+        'lieux_frequents' => $lieux,
+        'liste_trajets' => $trajets  
+    ]);
 });
 
 // PAGE DE RECHERCHE (Affiche le formulaire et l'historique)

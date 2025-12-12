@@ -216,10 +216,11 @@ Flight::route('/contact', function(){
 });
 
 // 5. Carte (AVEC GESTION DES COORDONNÉES EN PHP)
+
 Flight::route('/carte', function(){
     $db = Flight::get('db');
 
-    // A. Récupérer les lieux depuis la BDD (Sans coordonnées pour l'instant)
+    // A. Récupérer les lieux depuis la BDD
     $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -227,38 +228,51 @@ Flight::route('/carte', function(){
     $stmt2 = $db->query("SELECT * FROM TRAJETS WHERE statut_flag = 'A'");
     $trajets = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    // C. ASTUCE : On ajoute les coordonnées manuellement en PHP
-    // Cela évite d'avoir à modifier la structure de la base de données !
+    // C. ASTUCE : On ajoute les coordonnées PRÉCISES en PHP
     foreach($lieux as &$lieu) {
-        // On nettoie les chaînes pour éviter les soucis d'accents/majuscules
         $nom = strtolower($lieu['nom_lieu']);
         $ville = strtolower($lieu['ville']);
 
+        // 1. IUT d'Amiens (Entrée principale, Avenue des Facultés)
         if (strpos($nom, 'iut') !== false) {
-            $lieu['latitude'] = 49.87172; $lieu['longitude'] = 2.26430;
+            $lieu['latitude'] = 49.870683;
+            $lieu['longitude'] = 2.264032;
         } 
+        // 2. Gare d'Amiens (Parvis de la gare, Place Alphonse Fiquet)
         elseif (strpos($nom, 'gare') !== false && strpos($ville, 'amiens') !== false) {
-            $lieu['latitude'] = 49.89052; $lieu['longitude'] = 2.30154;
+            $lieu['latitude'] = 49.890583; 
+            $lieu['longitude'] = 2.306739;
         }
-        elseif (strpos($ville, 'longueau') !== false) {
-            $lieu['latitude'] = 49.86960; $lieu['longitude'] = 2.35410;
+        // 3. Gare de Longueau (Devant le bâtiment voyageurs)
+        elseif (strpos($nom, 'gare') !== false && strpos($ville, 'longueau') !== false) {
+            $lieu['latitude'] = 49.864238; 
+            $lieu['longitude'] = 2.353159;
         }
+        // 4. Mairie de Dury (Place de la Mairie)
         elseif (strpos($ville, 'dury') !== false) {
-            $lieu['latitude'] = 49.86290; $lieu['longitude'] = 2.27050;
+            $lieu['latitude'] = 49.846271; 
+            $lieu['longitude'] = 2.268248;
         }
-        elseif (strpos($ville, 'amiens') !== false) {
-            // Centre ville par défaut pour Amiens
-            $lieu['latitude'] = 49.89407; $lieu['longitude'] = 2.29575;
+        // 5. Centre-ville de Longueau (Mairie de Longueau par défaut)
+        elseif (strpos($ville, 'longueau') !== false) {
+            $lieu['latitude'] = 49.86830; 
+            $lieu['longitude'] = 2.35780;
         }
+        // 6. Amiens Centre / Boulevard Faidherbe (Coordonnées exactes du boulevard)
+        elseif (strpos($ville, 'amiens') !== false && strpos($nom, 'faidherbe') !== false) {
+            $lieu['latitude'] = 49.88720; 
+            $lieu['longitude'] = 2.30890;
+        }
+        // Par défaut (Centre Amiens)
         else {
-            // Coordonnées par défaut (IUT) si on ne connait pas
-            $lieu['latitude'] = 49.87172; $lieu['longitude'] = 2.26430;
+            $lieu['latitude'] = 49.89407; 
+            $lieu['longitude'] = 2.29575;
         }
     }
 
     Flight::render('carte.tpl', [
         'titre' => 'Carte',
-        'lieux_frequents' => $lieux, // Maintenant ils ont des coordonnées !
+        'lieux_frequents' => $lieux,
         'trajets' => $trajets
     ]);
 });

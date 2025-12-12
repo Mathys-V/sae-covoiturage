@@ -160,8 +160,22 @@
                         <input type="text" id="modelInput" name="model" class="form-control" placeholder="Fiesta 5" required>
                     </div>
                     <div class="mb-4">
-                        <label for="immatInput" class="form-label immat-texte fw-bold mb-3">Sa plaque d’immatriculation ? <span class="asterisque">*</span></label>
-                        <input type="text" id="immatInput" name="immat" class="form-control" placeholder="XX-000-XX" required>
+                        <label for="immatInput" class="form-label immat-texte fw-bold mb-3">
+                            Sa plaque d'immatriculation ? <span class="asterisque">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="immatInput"
+                            name="immat"
+                            class="form-control"
+                            placeholder="AA-123-AA ou 1234-ABC-12"
+                            maxlength="14"
+                            oninput="this.value = this.value.toUpperCase()"
+                            onblur="validerImmatriculation()"
+                            required>
+                        <div class="invalid-feedback">
+                            Format invalide. Exemples : AA-123-AA (nouveau) ou 1234-ABC-12 (ancien)
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label for="couleurInput" class="form-label couleur-texte fw-bold mb-3">La couleur ?</label>
@@ -333,6 +347,26 @@
         form.appendChild(hiddenInput);
 
         form.submit();
+    }
+
+    function validerImmatriculation() {
+        const immatInput = document.getElementById('immatInput');
+        const immat = immatInput.value.trim().toUpperCase();
+    
+        const nouveau = "[A-Z][A-Z][- ]?\\d\\d\\d[- ]?[A-Z][A-Z]";
+    
+        const ancien = "\\d+[- ]?[A-Z][A-Z][A-Z]?[- ]?\\d\\d";
+    
+        const pattern = "^((" + nouveau + ")|(" + ancien + "))$";
+        const regexImmat = new RegExp(pattern);
+
+        if (!regexImmat.test(immat)) {
+            immatInput.classList.add('is-invalid');
+            return false;
+        } else {
+            immatInput.classList.remove('is-invalid');
+            return true;
+        }
     }
 
     // CORRECTION : Fonction pour soumettre AVEC voiture

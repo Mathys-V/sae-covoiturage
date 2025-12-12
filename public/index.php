@@ -198,7 +198,66 @@ Flight::route('POST /inscription', function(){
 });
 
 Flight::route('/mes_trajets', function(){
-    Flight::render('mes_trajets.tpl', ['titre' => 'Mes trajets']);
+    // 1. Vérification de sécurité
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+    
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    // 2. Récupérer les trajets où je suis conducteur + infos voiture
+    // On ne prend que les trajets "Actifs" (statut_flag = 'A') ou "Complets" ('C') si tu veux
+    $sql = "SELECT t.*, v.marque, v.modele, v.immatriculation, v.nb_places_totales 
+            FROM TRAJETS t
+            JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
+            WHERE t.id_conducteur = :id
+            ORDER BY t.date_heure_depart ASC";
+            
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':id' => $idUser]);
+    $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 3. Boucle sur chaque trajet pour récupérer les passagers et formater les dates
+    foreach ($trajets as &$trajet) {
+        
+        // A. Récupérer les passagers via la table RESERVATIONS
+        // On récupère le Nom/Prénom depuis UTILISATEURS via la jointure
+        // On ne prend que les réservations Validées ('V')
+        $sqlPass = "SELECT u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
+                    FROM RESERVATIONS r
+                    JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
+                    WHERE r.id_trajet = :id_trajet 
+                    AND r.statut_code = 'V'";
+        
+        $stmtPass = $db->prepare($sqlPass);
+        $stmtPass->execute([':id_trajet' => $trajet['id_trajet']]);
+        $trajet['passagers'] = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
+
+        // B. Calculer le nombre de places réellement occupées
+        $nb_occupes = 0;
+        foreach($trajet['passagers'] as $p) {
+            $nb_occupes += $p['nb_places_reservees'];
+        }
+
+        $trajet['places_prises'] = $nb_occupes;
+        $trajet['places_restantes'] = $trajet['places_proposees'] - $nb_occupes;
+        
+        // C. Formatage Date et Heure pour l'affichage (Français)
+        $dateObj = new DateTime($trajet['date_heure_depart']);
+        $trajet['date_fmt'] = $dateObj->format('d / m / Y');
+        $trajet['heure_fmt'] = $dateObj->format('H\hi');
+        
+        // Formatage durée (ex: 01:30:00 -> 1h30)
+        $dureeObj = new DateTime($trajet['duree_estimee']);
+        $heures = $dureeObj->format('G');
+        $minutes = $dureeObj->format('i');
+        if($minutes == '00') $trajet['duree_fmt'] = $heures . " heures";
+        else $trajet['duree_fmt'] = $heures . "h" . $minutes;
+    }
+
+    Flight::render('mes_trajets.tpl', [
+        'titre' => 'Mes trajets',
+        'trajets' => $trajets
+    ]);
 });
 
 // FAQ

@@ -21,7 +21,7 @@
         }
 
         #map {
-            height: 600px; 
+            height: 100%; 
             width: 100%;
         }
 
@@ -96,10 +96,10 @@
             width: 30px;
             height: 30px;
             cursor: pointer;
-            z-index: 2001; /* ✅ Déjà présent, mais vérifiez */
-            display: flex; /* ✅ AJOUTEZ ÇA */
-            align-items: center; /* ✅ AJOUTEZ ÇA */
-            justify-content: center; /* ✅ AJOUTEZ ÇA */
+            z-index: 2001;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
         }
 
         .form-control:focus {
@@ -107,56 +107,23 @@
             box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25);
         }
 
-        .coordinates-navbar {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: linear-gradient(135deg, #8c52ff, #452b85);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            box-shadow: 0 8px 25px rgba(140, 82, 255, 0.4);
-            display: none;
-            animation: slideUp 0.3s ease-out;
-            font-weight: 600;
-        }
-
-        .coordinates-navbar.show {
-            display: block;
-        }
-
-        @keyframes slideUp {
-            from { 
-                bottom: -50px; 
-                opacity: 0; 
-            }
-            to { 
-                bottom: 20px; 
-                opacity: 1; 
-            }
-        }
-
         .trip-card {
-    background: white;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border-left: 4px solid #8c52ff; /* Petite touche couleur */
-    cursor: pointer;
-    transition: transform 0.2s;
-}
+            background: white;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid #8c52ff; 
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
         .trip-card:hover {
-        transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-.trip-time { font-weight: 800; color: #000; font-size: 1.1em; width: 55px; display: inline-block; }
-.trip-place { color: #333; font-weight: 500; }
-.trip-duration { font-size: 0.85em; color: #666; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;}
-
-
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .trip-time { font-weight: 800; color: #000; font-size: 1.1em; width: 55px; display: inline-block; }
+        .trip-place { color: #333; font-weight: 500; }
+        .trip-duration { font-size: 0.85em; color: #666; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;}
     </style>
 </head>
 <body>
@@ -168,14 +135,12 @@
         <div class="search-card">
             <h5 style="color: #8c52ff; font-weight: bold;">Rechercher un trajet</h5>
             <div class="input-group mb-2">
-                <input type="text" id="addressInput" class="form-control" placeholder="Adresse (ex: Gare d'Amiens)">
+                <input type="text" id="addressInput" class="form-control" placeholder="Adresse (ex: Gare d'Amiens)" onkeypress="handleEnter(event)">
                 <button class="btn search-btn" onclick="searchAddress()"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
             <div id="resultInfo" class="small text-muted mt-2">
                 Cliquez sur la carte ou cherchez une adresse.
             </div>
-            <input type="hidden" id="latResult">
-            <input type="hidden" id="lngResult">
         </div>
 
         <div id="map-container">
@@ -189,13 +154,12 @@
                     <p id="sidebarAddress" class="text-muted small mb-3">Adresse...</p>
         
                     <h5 style="color: #8c52ff; font-weight: bold; border-top: 1px solid #eee; padding-top: 15px;">
-                     Trajets disponibles ici
+                      Trajets disponibles ici
                     </h5>
                 </div>
 
                 <div id="listeTrajetsContainer" class="p-3" style="background-color: #f8f9fa; flex-grow: 1; overflow-y: auto;">
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -218,7 +182,7 @@
         var currentMarker = null;
         var markersGroup = L.layerGroup().addTo(map);
 
-        // Icône violette personnalisée + Lieu Fréquents
+        // Icône violette personnalisée
         var violetIcon = new L.Icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -228,38 +192,40 @@
             shadowSize: [41, 41]
         });
 
-             // Marqueur par defaut sur l'IUT
-         var iutMarker = L.marker([49.87172, 2.26430], {icon: violetIcon}).addTo(map);
+        // Marqueur par defaut sur l'IUT
+        var iutMarker = L.marker([49.87172, 2.26430], {icon: violetIcon}).addTo(map);
 
-         iutMarker.on('click', function(e) {
-            L.DomEvent.stopPropagation(e); // Empêche le clic de se propager à la carte
+        iutMarker.on('click', function(e) {
+            L.DomEvent.stopPropagation(e);
+            map.flyTo([49.87172, 2.26430], 16, { animate: true, duration: 1 });
     
-        map.flyTo([49.87172, 2.26430], 16, { animate: true, duration: 1 });
-    
-        openSidebar({
-            titre: "IUT d'Amiens",
-            type: "Institut Universitaire de Technologie",
-            adresse: "Avenue des Facultés, 80000 Amiens",
-            desc: "Point de départ principal. Pôle d'enseignement supérieur.",
-            img: "https://www.iut-amiens.fr/wp-content/uploads/2022/01/Bandeau-IUT.jpg"
+            // On récupère les trajets pour Amiens
+            var trajetsLieu = getTrajetsParLieu("Amiens");
+
+            openSidebar({
+                titre: "IUT d'Amiens",
+                type: "Institut Universitaire de Technologie",
+                adresse: "Avenue des Facultés, 80000 Amiens",
+                desc: "Point de départ principal.",
+                img: "https://www.iut-amiens.fr/wp-content/uploads/2022/01/Bandeau-IUT.jpg",
+                trajets: trajetsLieu // On passe les trajets
+            });
         });
-});
 
         // 3. Clic sur la carte
         map.on('click', function(e) {
-            
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
 
-           placeMarker(lat, lng);
+            placeMarker(lat, lng);
     
-        // Ouvrir la sidebar "0 trajets trouvés"
-        openSidebar({
-            titre: "Aucun trajet disponible ici",
-            adresse: "Coordonnées : " + lat.toFixed(5) + ", " + lng.toFixed(5),
-            img: null
-        });
-
+            // Sidebar simple sans API de reverse geocoding pour l'instant
+            openSidebar({
+                titre: "Position sélectionnée",
+                adresse: "Coordonnées : " + lat.toFixed(5) + ", " + lng.toFixed(5),
+                img: null,
+                trajets: [] // Pas de trajets liés à un clic aléatoire
+            });
         });
 
         function placeMarker(lat, lng) {
@@ -281,126 +247,160 @@
             }
         }
 
-// --- GESTION DE LA SIDEBAR ---
-function openSidebar(data) {
-    // Remplir le titre et l'adresse
-    document.getElementById('sidebarTitle').innerText = data.titre;
-    document.getElementById('sidebarAddress').innerText = data.adresse;
+        // --- NOUVEAU : FONCTION DE RECHERCHE D'ADRESSE (Géocodage) ---
+        function searchAddress() {
+            var input = document.getElementById('addressInput');
+            var query = input.value;
 
-    // Gérer l'image
-    var imgEl = document.getElementById('sidebarImg');
-    if(data.img) {
-        imgEl.src = data.img;
-        imgEl.style.display = 'block';
-    } else {
-        imgEl.style.display = 'none';
-    }
+            if(!query) return;
 
-    // ✅ NOUVEAU : Afficher la liste des trajets
-    var container = document.getElementById('listeTrajetsContainer');
-    
-    if(data.trajets && data.trajets.length > 0) {
-        // Il y a des trajets : on les affiche
-        var html = '';
-        data.trajets.forEach(function(trajet) {
-            html += '<div class="trip-card">';
-            html += '  <div class="trip-time">' + trajet.heure + '</div>';
-            html += '  <i class="bi bi-arrow-right mx-2"></i>';
-            html += '  <span class="trip-place">' + trajet.destination + '</span>';
-            html += '  <div class="trip-duration"><i class="bi bi-clock me-1"></i>' + trajet.duree + ' • ' + trajet.places + ' places</div>';
-            html += '</div>';
-        });
-        container.innerHTML = html;
-    } else {
-        // Aucun trajet : message par défaut
-        container.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-emoji-frown fs-1 d-block mb-2"></i>Aucun trajet disponible pour ce lieu.</div>';
-    }
+            // Utilisation de l'API Nominatim (OpenStreetMap) - Gratuit et sans clé
+            var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query);
 
-    // Afficher la sidebar
-    document.getElementById('infoSidebar').classList.add('active');
-    document.querySelector('.search-card').style.opacity = '0';
-}
+            fetch(url)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if(data && data.length > 0) {
+                        // On prend le premier résultat
+                        var result = data[0];
+                        var lat = result.lat;
+                        var lng = result.lon;
+
+                        // On place le marqueur et on centre
+                        placeMarker(lat, lng);
+
+                        // On essaie de trouver des trajets liés à ce nom
+                        var trajetsLieu = getTrajetsParLieu(query);
+
+                        // On ouvre la sidebar avec les infos trouvées
+                        openSidebar({
+                            titre: result.display_name.split(',')[0], // Juste le début de l'adresse
+                            adresse: result.display_name,
+                            img: null,
+                            trajets: trajetsLieu
+                        });
+
+                        document.getElementById('resultInfo').innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Trouvé !</span>';
+                    } else {
+                        document.getElementById('resultInfo').innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Adresse introuvable.</span>';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur:', error);
+                    document.getElementById('resultInfo').innerHTML = '<span class="text-danger">Erreur de connexion.</span>';
+                });
+        }
+
+        // Permet de valider avec la touche Entrée
+        function handleEnter(e) {
+            if(e.key === 'Enter') {
+                searchAddress();
+            }
+        }
+
+        // --- GESTION DE LA SIDEBAR ---
+        function openSidebar(data) {
+            document.getElementById('sidebarTitle').innerText = data.titre;
+            document.getElementById('sidebarAddress').innerText = data.adresse;
+
+            var imgEl = document.getElementById('sidebarImg');
+            if(data.img) {
+                imgEl.src = data.img;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+
+            var container = document.getElementById('listeTrajetsContainer');
+            
+            if(data.trajets && data.trajets.length > 0) {
+                var html = '';
+                data.trajets.forEach(function(trajet) {
+                    html += '<div class="trip-card">';
+                    html += '  <div class="trip-time">' + trajet.heure + '</div>';
+                    html += '  <i class="bi bi-arrow-right mx-2"></i>';
+                    html += '  <span class="trip-place">' + trajet.destination + '</span>';
+                    html += '  <div class="trip-duration"><i class="bi bi-clock me-1"></i>' + trajet.duree + ' • ' + trajet.places + ' places</div>';
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-emoji-frown fs-1 d-block mb-2"></i>Aucun trajet disponible pour ce lieu.</div>';
+            }
+
+            document.getElementById('infoSidebar').classList.add('active');
+            document.querySelector('.search-card').style.opacity = '0';
+        }
 
 {/literal}
     var lieuxFrequents = {json_encode($lieux_frequents|default:[])};
     var trajets = {json_encode($trajets|default:[])};
 {literal}
 
-function getTrajetsParLieu(nomLieu) {
-    console.log("🔍 Recherche trajets pour : " + nomLieu);
-    
-    // Extraire juste le nom de la ville du lieu
-    var ville = '';
-    if(nomLieu.includes('Amiens')) ville = 'Amiens';
-    else if(nomLieu.includes('Dury')) ville = 'Dury';
-    else if(nomLieu.includes('Longueau')) ville = 'Longueau';
-    
-    console.log("📍 Ville extraite : " + ville);
-    
-    // Filtrer les trajets qui partent de cette ville
-    var trajetsFiltre = trajets.filter(function(trajet) {
-        return trajet.ville_depart === ville;
-    });
-    
-    console.log("✅ Trajets trouvés : " + trajetsFiltre.length);
-    
-    return trajetsFiltre.map(function(trajet) {
-        // Formatter la date/heure
-        var dateStr = trajet.date_heure_depart.replace(' ', 'T'); // Format ISO
-        var date = new Date(dateStr);
-        var heure = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-        
-        // Formatter la durée
-        var duree = trajet.duree_estimee;
-        if(duree && duree.length >= 5) {
-            duree = duree.substring(0, 5);
-        }
-        
-        return {
-            heure: heure,
-            destination: trajet.ville_arrivee,
-            duree: duree,
-            places: trajet.places_proposees
-        };
-    });
-}
+        function getTrajetsParLieu(nomLieu) {
+            // Filtrage simple sur le nom de la ville
+            var ville = '';
+            // On nettoie un peu la recherche pour comparer
+            var recherche = nomLieu.toLowerCase();
 
-function chargerLieuxFrequents() {
-    if (!lieuxFrequents || lieuxFrequents.length === 0) {
-        console.log("Aucun lieu fréquent dans la base");
-        return;
-    }
-
-    lieuxFrequents.forEach(function(lieu) {
-        var lat = parseFloat(lieu.latitude);
-        var lng = parseFloat(lieu.longitude);
-        
-        // Créer le marqueur
-        var marker = L.marker([lat, lng], {icon: violetIcon});
-        
-        // Événement au clic
-        marker.on('click', function(e) {
-            L.DomEvent.stopPropagation(e);
-            map.flyTo([lat, lng], 16, { animate: true, duration: 1 });
-
-            var trajetsLieu = getTrajetsParLieu(lieu.nom_lieu);
-
-            openSidebar({
-            titre: lieu.nom_lieu,
-            adresse: (lieu.rue ? lieu.rue + ", " : "") + lieu.ville + " " + lieu.code_postal,
-            img: null,
-            trajets: trajetsLieu  // ✅ Passer les trajets
+            if(recherche.includes('amiens')) ville = 'Amiens';
+            else if(recherche.includes('dury')) ville = 'Dury';
+            else if(recherche.includes('longueau')) ville = 'Longueau';
+            else if(recherche.includes('ailly')) ville = 'Ailly-sur-Noye';
+            
+            var trajetsFiltre = trajets.filter(function(trajet) {
+                // On compare avec la ville de départ du trajet en base
+                return trajet.ville_depart.toLowerCase() === ville.toLowerCase();
             });
-        });
+            
+            return trajetsFiltre.map(function(trajet) {
+                var dateStr = trajet.date_heure_depart.replace(' ', 'T');
+                var date = new Date(dateStr);
+                var heure = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                
+                var duree = trajet.duree_estimee;
+                if(duree && duree.length >= 5) {
+                    duree = duree.substring(0, 5);
+                }
+                
+                return {
+                    heure: heure,
+                    destination: trajet.ville_arrivee,
+                    duree: duree,
+                    places: trajet.places_proposees
+                };
+            });
+        }
 
-        marker.addTo(markersGroup);
-        
-        console.log("✓ Marqueur ajouté : " + lieu.nom_lieu);
-    });
-}
+        function chargerLieuxFrequents() {
+            if (!lieuxFrequents || lieuxFrequents.length === 0) return;
 
-// Lancer le chargement au démarrage
-chargerLieuxFrequents();
+            lieuxFrequents.forEach(function(lieu) {
+                var lat = parseFloat(lieu.latitude);
+                var lng = parseFloat(lieu.longitude);
+                
+                var marker = L.marker([lat, lng], {icon: violetIcon});
+                
+                marker.on('click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    map.flyTo([lat, lng], 16, { animate: true, duration: 1 });
+
+                    var trajetsLieu = getTrajetsParLieu(lieu.nom_lieu);
+
+                    openSidebar({
+                        titre: lieu.nom_lieu,
+                        adresse: (lieu.rue ? lieu.rue + ", " : "") + lieu.ville + " " + lieu.code_postal,
+                        img: null,
+                        trajets: trajetsLieu 
+                    });
+                });
+
+                marker.addTo(markersGroup);
+            });
+        }
+
+        // Lancer le chargement au démarrage
+        chargerLieuxFrequents();
 
     </script>
 {/literal}

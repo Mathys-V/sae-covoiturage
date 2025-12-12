@@ -204,20 +204,51 @@ Flight::route('/contact', function(){
     Flight::render('contact.tpl', ['titre' => 'Contactez-nous']);
 });
 
-// Carte
+// 5. Carte (AVEC GESTION DES COORDONNÉES EN PHP)
 Flight::route('/carte', function(){
-
     $db = Flight::get('db');
-    $stmt = $db->query("SELECT nom_lieu, latitude,longitude FROM LIEUX_FREQUENTS");
+
+    // A. Récupérer les lieux depuis la BDD (Sans coordonnées pour l'instant)
+    $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $stmt2 = $db->query("SELECT * FROM TRAJETS WHERE statut_flag = 'A' ORDER BY date_heure_depart ASC");
+
+    // B. Récupérer les trajets pour les filtres
+    $stmt2 = $db->query("SELECT * FROM TRAJETS WHERE statut_flag = 'A'");
     $trajets = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    // C. ASTUCE : On ajoute les coordonnées manuellement en PHP
+    // Cela évite d'avoir à modifier la structure de la base de données !
+    foreach($lieux as &$lieu) {
+        // On nettoie les chaînes pour éviter les soucis d'accents/majuscules
+        $nom = strtolower($lieu['nom_lieu']);
+        $ville = strtolower($lieu['ville']);
+
+        if (strpos($nom, 'iut') !== false) {
+            $lieu['latitude'] = 49.87172; $lieu['longitude'] = 2.26430;
+        } 
+        elseif (strpos($nom, 'gare') !== false && strpos($ville, 'amiens') !== false) {
+            $lieu['latitude'] = 49.89052; $lieu['longitude'] = 2.30154;
+        }
+        elseif (strpos($ville, 'longueau') !== false) {
+            $lieu['latitude'] = 49.86960; $lieu['longitude'] = 2.35410;
+        }
+        elseif (strpos($ville, 'dury') !== false) {
+            $lieu['latitude'] = 49.86290; $lieu['longitude'] = 2.27050;
+        }
+        elseif (strpos($ville, 'amiens') !== false) {
+            // Centre ville par défaut pour Amiens
+            $lieu['latitude'] = 49.89407; $lieu['longitude'] = 2.29575;
+        }
+        else {
+            // Coordonnées par défaut (IUT) si on ne connait pas
+            $lieu['latitude'] = 49.87172; $lieu['longitude'] = 2.26430;
+        }
+    }
 
     Flight::render('carte.tpl', [
         'titre' => 'Carte',
-        'lieux_frequents' => $lieux,
-        'liste_trajets' => $trajets  
+        'lieux_frequents' => $lieux, // Maintenant ils ont des coordonnées !
+        'trajets' => $trajets
     ]);
 });
 

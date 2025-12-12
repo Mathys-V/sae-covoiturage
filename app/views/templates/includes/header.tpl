@@ -251,3 +251,26 @@
         }, 4000);
     </script>
 {/if}
+{if isset($flash_error)}
+    <div class="flash-message-container">
+        <div class="alert alert-danger alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #dc3545; background-color: #f8d7da; color: #842029;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+                <div>
+                    <strong>Attention !</strong> {$flash_error}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    
+    <script>
+        setTimeout(function() {
+            let alert = document.querySelector('.alert-danger');
+            if(alert) {
+                let bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 5000); // On laisse l'erreur affichée un peu plus longtemps (5s)
+    </script>
+{/if}

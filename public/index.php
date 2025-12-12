@@ -20,20 +20,27 @@ Flight::register('view', 'Smarty\Smarty', [], function($smarty) {
     $smarty->setCompileDir('../tmp/templates_c');
 });
 
+// 2. MOTEUR DE RENDU (Mise à jour pour gérer les ERREURS)
 Flight::map('render', function($template, $data){
     
-    // 1. Injection de l'utilisateur
+    if (!is_array($data)) { $data = []; }
+
+    // Injection Utilisateur
     if(isset($_SESSION['user'])){
-        Flight::view()->assign('user', $_SESSION['user']);
+        $data['user'] = $_SESSION['user'];
     }
 
-    // 2. --- AJOUT SYSTEME FLASH (Message temporaire) ---
+    // Injection Succès (Vert)
     if(isset($_SESSION['flash_success'])){
-        Flight::view()->assign('flash_success', $_SESSION['flash_success']);
-        // On le supprime immédiatement pour qu'il ne réapparaisse pas au rechargement
+        $data['flash_success'] = $_SESSION['flash_success'];
         unset($_SESSION['flash_success']); 
     }
-    // --------------------------------------------------
+
+    // --- NOUVEAU : Injection Erreur (Rouge) ---
+    if(isset($_SESSION['flash_error'])){
+        $data['flash_error'] = $_SESSION['flash_error'];
+        unset($_SESSION['flash_error']); 
+    }
 
     Flight::view()->assign($data);
     Flight::view()->display($template);
@@ -502,6 +509,128 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
 
 
 
+// ============================================================
+// GESTION DES TRAJETS (PROPOSER)
+// ============================================================
+
+// 1. AFFICHER LE FORMULAIRE (Route GET)
+
+Flight::route('GET /trajet/nouveau', function(){
+    // 1. Vérifier si connecté
+    if(!isset($_SESSION['user'])) {
+        $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet."; // Erreur Rouge
+        Flight::redirect('/connexion');
+        return;
+    }
+
+    // 2. Vérifier si l'utilisateur a une voiture
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+    
+    $stmt = $db->prepare("SELECT COUNT(*) FROM POSSESSIONS WHERE id_utilisateur = :id");
+    $stmt->execute([':id' => $userId]);
+    $hasCar = $stmt->fetchColumn();
+
+    if ($hasCar == 0) {
+        // Erreur Rouge + Redirection vers l'accueil (Règle le bug de l'image qui disparaît)
+        $_SESSION['flash_error'] = "Erreur : Vous devez ajouter un véhicule à votre profil avant de proposer un trajet !";
+        Flight::redirect('/'); 
+        return;
+    }
+
+    Flight::render('proposer_trajet.tpl', ['titre' => 'Proposer un trajet']);
+});
+
+// 2. TRAITEMENT DU FORMULAIRE (Route POST)
+// C'est celle qui gère l'envoi et la création des trajets multiples
+Flight::route('POST /trajet/nouveau', function(){
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+
+    $data = Flight::request()->data;
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Récupérer Véhicule
+    $stmtVehicule = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = :id LIMIT 1");
+    $stmtVehicule->execute([':id' => $userId]);
+    $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
+
+    if(!$vehicule) {
+        Flight::render('proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé à votre compte.']);
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // 2. Dates
+        $dateDebut = new DateTime($data->date . ' ' . $data->heure);
+        
+        // Gestion date de fin (Régulier ou unique)
+        if ($data->regulier === 'Y' && !empty($data->date_fin)) {
+            $dateFin = new DateTime($data->date_fin . ' 23:59:59');
+        } else {
+            $dateFin = clone $dateDebut;
+        }
+
+        // 3. Boucle de création
+        $compteur = 0;
+        
+        while ($dateDebut <= $dateFin) {
+            
+            $sql = "INSERT INTO TRAJETS (
+                        id_conducteur, id_vehicule, 
+                        ville_depart, code_postal_depart, rue_depart,
+                        ville_arrivee, code_postal_arrivee, rue_arrivee,
+                        date_heure_depart, duree_estimee, 
+                        places_proposees, description, statut_flag
+                    ) VALUES (
+                        :conducteur, :vehicule, 
+                        :depart, '00000', '', 
+                        :arrivee, '00000', '', 
+                        :dateheure, '01:00:00', 
+                        :places, :desc, 'A'
+                    )";
+            
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                ':conducteur' => $userId,
+                ':vehicule'   => $vehicule['id_vehicule'],
+                ':depart'     => $data->depart,
+                ':arrivee'    => $data->arrivee,
+                ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
+                ':places'     => (int)$data->places,
+                ':desc'       => $data->description
+            ]);
+
+            $compteur++;
+
+            if ($data->regulier === 'Y') {
+                $dateDebut->modify('+1 week');
+            } else {
+                break;
+            }
+        }
+
+        $db->commit();
+
+        if ($compteur > 1) {
+            $_SESSION['flash_success'] = "$compteur trajets ont été créés jusqu'au " . $dateFin->format('d/m/Y') . " !";
+        } else {
+            $_SESSION['flash_success'] = "Trajet publié avec succès !";
+        }
+        
+        Flight::redirect('/');
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        Flight::render('proposer_trajet.tpl', [
+            'error' => "Erreur technique : " . $e->getMessage(),
+            'titre' => 'Proposer un trajet'
+        ]);
+    }
+});
+
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------
@@ -509,3 +638,4 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
 
 Flight::start();
 ?>
+

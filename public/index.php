@@ -515,30 +515,34 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
 
 // 1. AFFICHER LE FORMULAIRE (Route GET)
 
+
 Flight::route('GET /trajet/nouveau', function(){
-    // 1. Vérifier si connecté
     if(!isset($_SESSION['user'])) {
-        $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet."; // Erreur Rouge
+        $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet.";
         Flight::redirect('/connexion');
         return;
     }
 
-    // 2. Vérifier si l'utilisateur a une voiture
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
     
+    // Vérif voiture
     $stmt = $db->prepare("SELECT COUNT(*) FROM POSSESSIONS WHERE id_utilisateur = :id");
     $stmt->execute([':id' => $userId]);
-    $hasCar = $stmt->fetchColumn();
-
-    if ($hasCar == 0) {
-        // Erreur Rouge + Redirection vers l'accueil (Règle le bug de l'image qui disparaît)
-        $_SESSION['flash_error'] = "Erreur : Vous devez ajouter un véhicule à votre profil avant de proposer un trajet !";
+    if ($stmt->fetchColumn() == 0) {
+        $_SESSION['flash_error'] = "Erreur : Vous devez ajouter un véhicule à votre profil !";
         Flight::redirect('/'); 
         return;
     }
 
-    Flight::render('proposer_trajet.tpl', ['titre' => 'Proposer un trajet']);
+    // --- AJOUT EXPERT : Récupérer les Lieux Fréquents ---
+    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+    $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
+
+    Flight::render('proposer_trajet.tpl', [
+        'titre' => 'Proposer un trajet',
+        'lieux_frequents' => $lieux // On envoie les lieux à la vue
+    ]);
 });
 
 // 2. TRAITEMENT DU FORMULAIRE (Route POST)

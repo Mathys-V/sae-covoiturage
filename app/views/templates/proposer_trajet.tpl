@@ -1,21 +1,101 @@
 {include file='includes/header.tpl'}
 
 <style>
-    /* (Garder le même CSS que précédemment) */
-    .propose-section { background-color: #f8f9fa; min-height: 90vh; display: flex; justify-content: center; padding: 40px 20px; }
-    .form-card { background-color: #e9e4f5; border-radius: 20px; box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15); max-width: 600px; width: 100%; padding: 40px; border: 2px solid #fff; }
-    .form-title { color: #000; font-weight: 800; font-size: 2rem; text-align: center; margin-bottom: 30px; font-family: 'Poppins', sans-serif; }
-    .custom-label { font-weight: 600; color: #000; margin-bottom: 8px; display: block; text-align: center; }
-    .required-star { color: #dc3545; margin-left: 3px; }
-    .form-control-rounded { border-radius: 12px; border: 2px solid #8c52ff; padding: 12px 15px; text-align: center; font-size: 1rem; background-color: white; }
-    .form-control-rounded:focus { box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2); border-color: #452b85; }
+    /* --- STYLE SPECIFIQUE PAGE PROPOSER --- */
+    .propose-section {
+        background-color: #f8f9fa; 
+        /* CORRECTION ICI : On utilise flex-grow pour remplir l'espace, 
+           mais on enlève le 90vh rigide qui causait le chevauchement */
+        flex-grow: 1; 
+        display: flex;
+        justify-content: center;
+        /* CORRECTION ICI : On aligne en haut (start) au lieu de centrer, 
+           pour éviter que ça déborde si l'écran est petit */
+        align-items: flex-start; 
+        padding: 60px 20px 80px 20px; /* Marge Haut et Bas augmentées */
+    }
+
+    .form-card {
+        background-color: #e9e4f5; /* Le fond lilas */
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15);
+        max-width: 600px;
+        width: 100%;
+        padding: 40px;
+        border: 2px solid #fff;
+        position: relative; /* Pour le z-index */
+        z-index: 1;
+    }
+
+    .form-title {
+        color: #000;
+        font-weight: 800;
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 30px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Labels */
+    .custom-label {
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 8px;
+        display: block;
+        text-align: center;
+    }
     
+    .required-star { color: #dc3545; margin-left: 3px; }
+
+    /* Inputs arrondies */
+    .form-control-rounded {
+        border-radius: 12px;
+        border: 2px solid #8c52ff;
+        padding: 12px 15px;
+        text-align: center;
+        font-size: 1rem;
+        background-color: white;
+    }
+    
+    .form-control-rounded:focus {
+        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2);
+        border-color: #452b85;
+    }
+
     /* Toggle Switch */
-    .toggle-container { display: flex; justify-content: center; margin: 10px auto; background: #fff; border: 2px solid #8c52ff; border-radius: 50px; width: fit-content; overflow: hidden; position: relative; }
+    .toggle-container {
+        display: flex;
+        justify-content: center;
+        margin: 10px auto;
+        background: #fff;
+        border: 2px solid #8c52ff;
+        border-radius: 50px;
+        width: fit-content;
+        overflow: hidden;
+        position: relative;
+    }
+
     .toggle-radio { display: none; }
-    .toggle-label { padding: 8px 30px; cursor: pointer; font-weight: bold; transition: all 0.3s; margin: 0; z-index: 2; }
-    #regulier_non:checked + label { background-color: #ff4d4d; color: white; }
-    #regulier_oui:checked + label { background-color: #8c52ff; color: white; }
+
+    .toggle-label {
+        padding: 8px 30px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        margin: 0;
+        z-index: 2;
+    }
+
+    #regulier_non:checked + label {
+        background-color: #ff4d4d; /* Rouge */
+        color: white;
+    }
+    
+    #regulier_oui:checked + label {
+        background-color: #198754; /* Vert (Bootstrap Success) */
+        color: white;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+    }
 
     /* Zone Date de Fin (Cachée par défaut) */
     #date_fin_wrapper {
@@ -27,14 +107,43 @@
     }
     #date_fin_wrapper.visible {
         opacity: 1;
-        max-height: 200px; /* Assez pour afficher le champ */
+        max-height: 200px;
         margin-top: 20px;
     }
 
-    .btn-submit-trajet { background-color: #8c52ff; color: white; font-weight: bold; font-size: 1.2rem; padding: 15px; width: 100%; border-radius: 15px; border: none; transition: transform 0.2s, box-shadow 0.2s; margin-top: 20px; }
-    .btn-submit-trajet:hover { background-color: #703ccf; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3); color: white; }
-    .input-number-group { display: flex; justify-content: center; align-items: center; gap: 10px; }
-    .input-number-group input { width: 80px; text-align: center; font-weight: bold; font-size: 1.2rem; }
+    /* Bouton Submit */
+    .btn-submit-trajet {
+        background-color: #8c52ff;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        padding: 15px;
+        width: 100%;
+        border-radius: 15px;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 20px;
+    }
+
+    .btn-submit-trajet:hover {
+        background-color: #703ccf;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3);
+        color: white;
+    }
+
+    .input-number-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+    .input-number-group input {
+        width: 80px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
 </style>
 
 <div class="propose-section">
@@ -124,11 +233,11 @@
         
         if (show) {
             wrapper.classList.add('visible');
-            input.required = true; // Devient obligatoire si "Oui"
+            input.required = true;
         } else {
             wrapper.classList.remove('visible');
-            input.required = false; // Plus obligatoire
-            input.value = ''; // On vide pour être propre
+            input.required = false;
+            input.value = '';
         }
     }
 </script>

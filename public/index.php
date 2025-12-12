@@ -573,17 +573,18 @@ Flight::route('POST /trajet/nouveau', function(){
             $dateFin = clone $dateDebut;
         }
 
-        // 3. Boucle de création
+        // BOUCLE DE GÉNÉRATION
         $compteur = 0;
         
         while ($dateDebut <= $dateFin) {
             
+            // CORRECTION ICI : Remplacement de 'description' par 'commentaires'
             $sql = "INSERT INTO TRAJETS (
                         id_conducteur, id_vehicule, 
                         ville_depart, code_postal_depart, rue_depart,
                         ville_arrivee, code_postal_arrivee, rue_arrivee,
                         date_heure_depart, duree_estimee, 
-                        places_proposees, description, statut_flag
+                        places_proposees, commentaires, statut_flag
                     ) VALUES (
                         :conducteur, :vehicule, 
                         :depart, '00000', '', 
@@ -600,7 +601,7 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':arrivee'    => $data->arrivee,
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
                 ':places'     => (int)$data->places,
-                ':desc'       => $data->description
+                ':desc'       => $data->description // La variable PHP reste $data->description (venant du formulaire)
             ]);
 
             $compteur++;

@@ -10,10 +10,6 @@ use Smarty\Smarty;
 // CONFIGURATION SMARTY & FLIGHT
 // -----------------------------------------------------------
 
-// -----------------------------------------------------------
-// CONFIGURATION SMARTY & FLIGHT
-// -----------------------------------------------------------
-
 // 1. On enregistre Smarty
 Flight::register('view', 'Smarty\Smarty', [], function($smarty) {
     $smarty->setTemplateDir('../app/views/templates');
@@ -277,20 +273,28 @@ Flight::route('/carte', function(){
     ]);
 });
 
-// PAGE DE RECHERCHE (Affiche le formulaire et l'historique)
+
+// PAGE DE RECHERCHE
 Flight::route('GET /recherche', function(){
-    // On récupère le cookie 'historique_recherche'
+    $db = Flight::get('db');
+
+    // 1. Récupérer l'historique (Cookie)
     $historique = [];
     if(isset($_COOKIE['historique_recherche'])) {
-        // Le cookie contient du JSON, on le décode en tableau PHP
         $historique = json_decode($_COOKIE['historique_recherche'], true);
     }
 
+    // 2. Récupérer les Lieux Fréquents (POUR L'AUTOCOMPLÉTION)
+    $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+    $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     Flight::render('recherche.tpl', [
         'titre' => 'Rechercher un trajet',
-        'historique' => array_reverse($historique) // On inverse pour avoir les plus récents en haut
+        'historique' => array_reverse($historique),
+        'lieux_frequents' => $lieux // <-- C'est ça qui manquait !
     ]);
 });
+
 
 // TRAITEMENT DE LA RECHERCHE (Sauvegarde + Résultats)
 Flight::route('GET /recherche/resultats', function(){
@@ -298,75 +302,115 @@ Flight::route('GET /recherche/resultats', function(){
     $arrivee = Flight::request()->query->arrivee;
     $date = Flight::request()->query->date;
 
-    // --- 1. GESTION DE L'HISTORIQUE (COOKIES) ---
-    // On vérifie d'abord si l'utilisateur a accepté les cookies de performance
-    $consent = ['performance' => 1]; // Par défaut on accepte (ou 0 selon ta politique)
+    // 1. HISTORIQUE (inchangé)
+    $consent = ['performance' => 1]; 
     if (isset($_COOKIE['cookie_consent'])) {
         $consent = json_decode($_COOKIE['cookie_consent'], true);
     }
-
-    // Si l'utilisateur a accepté la performance, on sauvegarde l'historique
     if ($consent['performance'] == 1) {
-        
-        $nouvelleRecherche = [
-            'depart' => $depart,
-            'arrivee' => $arrivee,
-            'date' => $date,
-            'timestamp' => time()
-        ];
-
+        $nouvelleRecherche = ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date, 'timestamp' => time()];
         $historique = [];
         if(isset($_COOKIE['historique_recherche'])) {
             $historique = json_decode($_COOKIE['historique_recherche'], true);
         }
-
-        // On filtre pour enlever les doublons exacts
         $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
-            return !($h['depart'] == $nouvelleRecherche['depart'] 
-                && $h['arrivee'] == $nouvelleRecherche['arrivee'] 
-                && $h['date'] == $nouvelleRecherche['date']);
+            return !($h['depart'] == $nouvelleRecherche['depart'] && $h['arrivee'] == $nouvelleRecherche['arrivee'] && $h['date'] == $nouvelleRecherche['date']);
         });
-
-        // On ajoute la nouvelle à la fin
         $historique[] = $nouvelleRecherche;
-
-        // On garde seulement les 3 dernières
-        if(count($historique) > 3) {
-            $historique = array_slice($historique, -3);
-        }
-
-        // On sauvegarde le Cookie (Valable 30 jours)
+        if(count($historique) > 3) $historique = array_slice($historique, -3);
         setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
     } 
-    // FIN DU IF COOKIES : Le code continue pour afficher les résultats même si refusé
 
-    // --- 2. REQUÊTE SQL (RECHERCHE) ---
+    // --- 2. FONCTION DE NETTOYAGE INTELLIGENTE ---
+    function nettoyerInput($str) {
+        $str = strtolower($str);
+        // Enlever le contenu entre parenthèses ex: "(Longueau)"
+        $str = preg_replace('/\s*\(.*?\)/', '', $str);
+        // Enlever les codes postaux
+        $str = preg_replace('/\d{5}/', '', $str);
+        // Enlever les mots clés de lieux
+        $mots = ['gare de ', 'gare d\'', 'iut ', 'campus ', 'ville de ', 'mairie de ', 'place ', 'rue '];
+        $str = str_replace($mots, '', $str);
+        return trim($str);
+    }
+
+    $depClean = nettoyerInput($depart);
+    $arrClean = nettoyerInput($arrivee);
+
+    // --- 3. REQUÊTE SQL HYPER-PERMISSIVE ---
     $db = Flight::get('db');
     
-    // On récupère les trajets qui correspondent + infos conducteur + infos voiture
+    // On cherche : 
+    // 1. Si la ville BDD contient le mot nettoyé (ex: BDD="Longueau", Clean="Longueau")
+    // 2. OU SI l'input brut contient la ville BDD (ex: Input="Gare de Longueau", BDD="Longueau")
+    
     $sql = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
             FROM TRAJETS t
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
-            WHERE t.ville_depart LIKE :depart 
-            AND t.ville_arrivee LIKE :arrivee
+            WHERE 
+                (t.ville_depart LIKE :depClean OR :depRaw LIKE CONCAT('%', t.ville_depart, '%'))
+            AND 
+                (t.ville_arrivee LIKE :arrClean OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%'))
             AND t.date_heure_depart >= :date
-            AND t.statut_flag = 'A'"; // A = Actif
+            AND t.statut_flag = 'A'
+            ORDER BY t.date_heure_depart ASC";
             
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        ':depart' => "%$depart%", 
-        ':arrivee' => "%$arrivee%",
-        ':date' => $date . ' 00:00:00' // À partir de minuit ce jour-là
+        ':depClean' => "%$depClean%",
+        ':depRaw'   => $depart,
+        ':arrClean' => "%$arrClean%",
+        ':arrRaw'   => $arrivee,
+        ':date'     => $date . ' 00:00:00'
     ]);
     
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- 3. AFFICHAGE ---
+    // --- 4. GESTION DES ALTERNATIVES (Si vide) ---
+    $message = null;
+    $typeResultat = 'exact'; // Par défaut
+
+    if (empty($trajets)) {
+        $typeResultat = 'alternatif'; // On change le type
+
+        // Tentative 2 : On cherche juste par destination (Priorité à l'arrivée)
+        $sqlAlt = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+                   FROM TRAJETS t
+                   JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
+                   JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
+                   WHERE (t.ville_arrivee LIKE :arrClean OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%'))
+                   AND t.date_heure_depart >= :date
+                   AND t.statut_flag = 'A'
+                   ORDER BY t.date_heure_depart ASC LIMIT 5";
+                   
+        $stmtAlt = $db->prepare($sqlAlt);
+        $stmtAlt->execute([
+            ':arrClean' => "%$arrClean%",
+            ':arrRaw'   => $arrivee,
+            ':date'     => $date . ' 00:00:00'
+        ]);
+        $trajets = $stmtAlt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($trajets)) {
+            // Message spécifique destination
+            $message = "Trajet exact indisponible. Voici des <strong>alternatives</strong> vers votre destination :";
+        } else {
+            // Tentative 3 : Si toujours rien, on montre tout (Les prochains départs globaux)
+            $trajets = $db->query("SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele FROM TRAJETS t JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule WHERE t.date_heure_depart >= '$date 00:00:00' AND t.statut_flag = 'A' ORDER BY t.date_heure_depart ASC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Message générique
+            $message = "Aucun trajet correspondant. Voici les <strong>prochains départs</strong> disponibles sur la plateforme :";
+        }
+    }
+
+    // --- 5. AFFICHAGE ---
     Flight::render('resultats_recherche.tpl', [
         'titre' => 'Résultats',
         'trajets' => $trajets,
-        'recherche' => ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date]
+        'recherche' => ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date],
+        'message_info' => $message,   // Le texte à afficher
+        'type_resultat' => $typeResultat // Pour changer la couleur si besoin
     ]);
 });
 

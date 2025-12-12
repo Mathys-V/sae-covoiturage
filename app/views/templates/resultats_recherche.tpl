@@ -20,46 +20,68 @@
         </div>
     </div>
 
+    {if isset($message_info) && $message_info}
+        <div class="alert alert-warning border-0 shadow-sm rounded-4 text-center py-3 mb-4" style="background-color: #fff3cd; color: #856404;">
+            <div class="d-flex align-items-center justify-content-center gap-2 fs-5">
+                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                <span>{$message_info}</span>
+            </div>
+        </div>
+    {elseif isset($trajets) && $trajets|@count > 0}
+        <div class="alert alert-success border-0 shadow-sm rounded-4 text-center py-2 mb-4" style="background-color: #d1e7dd; color: #0f5132;">
+            <i class="bi bi-check-circle-fill me-2"></i> {$trajets|@count} trajet(s) exact(s) trouvé(s) !
+        </div>
+    {/if}
     {if isset($trajets) && $trajets|@count > 0}
         {foreach from=$trajets item=trajet}
-            <div class="card border-0 shadow-sm mb-3" style="background-color: #f0ebf8; border-radius: 20px;">
+            <div class="card border-0 shadow-sm mb-3" style="background-color: #f0ebf8; border-radius: 20px; transition: transform 0.2s;">
                 <div class="card-body p-4">
                     <div class="row">
                         <div class="col-md-4 border-end border-secondary border-opacity-25">
-                            <h5 class="fw-bold mb-3">Informations du conducteur</h5>
+                            <h5 class="fw-bold mb-3" style="color: #452b85;">Informations du conducteur</h5>
                             <div class="d-flex align-items-center mb-3">
                                 <div class="me-3">
-                                    <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                    <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm" width="60" height="60" style="object-fit: cover;">
                                 </div>
                                 <div>
-                                    <div class="fw-bold">{$trajet.prenom} {$trajet.nom|upper}</div>
-                                    <small class="text-muted">Étudiant</small>
+                                    <div class="fw-bold fs-5">{$trajet.prenom} {$trajet.nom|upper}</div>
+                                    <small class="text-muted"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
                                 </div>
                             </div>
                             
-                            <h6 class="fw-bold mt-4">Trajet prévu</h6>
-                            <p class="mb-1">Le {$trajet.date_heure_depart|date_format:"%d/%m/%Y"}</p>
-                            <p class="mb-1 fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right"></i> {$trajet.ville_arrivee}</p>
-                            <p class="mb-0">Départ : {$trajet.date_heure_depart|date_format:"%H:%M"}</p>
+                            <div class="bg-white rounded-3 p-3 mt-3 shadow-sm">
+                                <h6 class="fw-bold mb-2" style="color: #8c52ff;">Trajet prévu</h6>
+                                <p class="mb-1"><i class="bi bi-calendar-event me-2"></i> Le {$trajet.date_heure_depart|date_format:"%d/%m/%Y"}</p>
+                                <p class="mb-1 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> {$trajet.ville_depart} <i class="bi bi-arrow-right mx-1"></i> {$trajet.ville_arrivee}</p>
+                                <p class="mb-0 text-success fw-bold"><i class="bi bi-clock-fill me-2"></i> Départ : {$trajet.date_heure_depart|date_format:"%H:%M"}</p>
+                            </div>
                         </div>
 
-                        <div class="col-md-8 ps-md-4">
-                            <h5 class="fw-bold mb-3">Informations véhicule</h5>
-                            <p class="mb-1">
-                                <span class="fw-bold">{$trajet.places_proposees} places</span> disponibles
-                            </p>
-                            <p class="text-muted">{$trajet.marque} {$trajet.modele}</p>
+                        <div class="col-md-8 ps-md-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="fw-bold mb-3" style="color: #452b85;">Détails du voyage</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6">
+                                        {$trajet.places_proposees} places disponibles
+                                    </span>
+                                    <span class="text-muted"><i class="bi bi-car-front-fill me-1"></i> {$trajet.marque} {$trajet.modele}</span>
+                                </div>
 
-                            <h5 class="fw-bold mt-4">Description rapide</h5>
-                            <p class="text-muted fst-italic">
-                                "{$trajet.commentaires|default:'Aucune description renseignée.'}"
-                            </p>
+                                <div class="p-3 rounded-3" style="background-color: rgba(140, 82, 255, 0.1);">
+                                    <p class="text-muted fst-italic mb-0">
+                                        <i class="bi bi-chat-quote-fill me-2" style="color: #8c52ff;"></i>
+                                        "{$trajet.commentaires|default:'Aucune description renseignée par le conducteur.'}"
+                                    </p>
+                                </div>
+                            </div>
 
-                            <div class="d-flex justify-content-center mt-4 gap-3">
-                                <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5" style="background-color: #8c52ff; border-radius: 50px; width: auto !important;">
-                                    Réserver
+                            <div class="d-flex justify-content-end mt-4 gap-3">
+                                <button class="btn btn-outline-dark rounded-pill px-4 hover-shadow">
+                                    <i class="bi bi-flag-fill me-1"></i> Signaler
+                                </button>
+                                <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5 shadow-sm" style="background-color: #8c52ff; border-radius: 50px; width: auto !important; transition: all 0.3s;">
+                                    Réserver ce trajet
                                 </a>
-                                <button class="btn btn-dark btn-sm rounded-pill px-3">Signaler</button>
                             </div>
                         </div>
                     </div>
@@ -69,10 +91,10 @@
     {else}
         <div class="alert alert-info text-center rounded-4 py-5 mb-5" role="alert" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
             <i class="bi bi-emoji-frown fs-1 d-block mb-3"></i>
-            <h4 class="fw-bold">Oups ! Aucun trajet disponible.</h4>
-            <p>Personne n'a proposé de trajet pour <strong>{$recherche.depart}</strong> vers <strong>{$recherche.arrivee}</strong> à cette date.</p>
+            <h4 class="fw-bold">Oups ! Vraiment aucun trajet disponible.</h4>
+            <p>Même en cherchant des alternatives, nous n'avons rien trouvé pour cette date.</p>
             
-            <a href="/sae-covoiturage/public/trajet/nouveau" class="btn btn-purple mt-3 px-4" style="width: auto !important;">
+            <a href="/sae-covoiturage/public/trajet/nouveau" class="btn text-white mt-3 px-4 fw-bold" style="background-color: #8c52ff; border-radius: 50px;">
                 Soyez le premier à en proposer un !
             </a>
         </div>

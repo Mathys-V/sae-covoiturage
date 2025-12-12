@@ -6,156 +6,206 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte - MonCovoitJV</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <style>
-        /* --- Styles spécifiques à la carte --- */
+        body { overflow: hidden; } 
+        
         #map-container {
-            height: calc(100vh - 160px);
+            height: calc(100vh - 80px);
             width: 100%;
             position: relative;
             z-index: 1;
         }
 
-        #map {
-            height: 100%; 
-            width: 100%;
-        }
+        #map { height: 100%; width: 100%; }
 
-        /* --- Barre de recherche flottante --- */
+        /* --- CARTE DE RECHERCHE FLOTTANTE --- */
         .search-card {
             position: absolute;
             top: 20px;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
+            left: 20px;
             z-index: 1000;
             background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 350px;
-            border: 1px solid #8c52ff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 340px; /* Un peu plus large pour les input groups */
+            border: 1px solid rgba(140, 82, 255, 0.2);
         }
 
-        .search-btn {
+        .search-title {
+            color: #452b85;
+            font-weight: 800;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Style des Input Groups (L'icône est dans une boite à côté) */
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #eee;
+            color: #8c52ff; /* Couleur de l'icone */
+            border-radius: 10px 0 0 10px !important;
+            border-right: none;
+        }
+
+        .form-control-map {
+            border-left: none;
+            border-color: #eee;
+            background-color: #f8f9fa;
+            border-radius: 0 10px 10px 0 !important;
+            height: 45px;
+        }
+
+        .form-control-map:focus {
+            box-shadow: none;
+            border-color: #eee;
+            background-color: white;
+        }
+        
+        /* Focus sur tout le groupe quand on clique */
+        .input-group:focus-within .input-group-text,
+        .input-group:focus-within .form-control-map {
+            border-color: #8c52ff;
+            background-color: white;
+        }
+
+        .btn-search-map {
+            width: 100%;
             background-color: #8c52ff;
             color: white;
             border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
         }
-        .search-btn:hover {
-            background-color: #703ccf;
-            color: white;
-        }
+        
+        .btn-search-map:hover { background-color: #703ccf; color: white; }
 
-        /* --- Panneau latéral d'information --- */
-        .info-sidebar {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 380px;
-            height: calc(100% - 20px);
-            background: white;
-            z-index: 2000;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            transform: translateX(-120%);
-            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            padding: 0;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-sidebar.active {
-            transform: translateX(0);
-        }
-
-        .sidebar-hero-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .sidebar-content {
-            padding: 20px;
-        }
-
-        .close-sidebar-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
+        /* --- MARQUEURS CSS PUR (Pour éviter les bugs d'images) --- */
+        .marker-pin {
             width: 30px;
             height: 30px;
-            cursor: pointer;
-            z-index: 2001;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            border-radius: 50% 50% 50% 0;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.3);
         }
 
-        .form-control:focus {
-            border-color: #8c52ff;
-            box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25);
+        /* L'icône à l'intérieur du marqueur */
+        .marker-pin i {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 14px;
+            margin-top: 2px; /* Petit ajustement optique */
         }
 
-        .trip-card {
+        /* Couleurs des marqueurs */
+        .marker-gold { background: #FFD700; border: 2px solid #fff; }
+        .marker-green { background: #28a745; border: 2px solid #fff; }
+        .marker-purple { background: #8c52ff; border: 2px solid #fff; }
+
+        /* Ombre sous le marqueur */
+        .marker-shadow {
+            width: 14px; height: 4px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            margin-top: 30px; margin-left: 8px;
+            filter: blur(2px);
+        }
+
+        /* --- Sidebar & Légende (Inchangés) --- */
+        .info-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            height: calc(100% - 40px);
             background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 4px solid #8c52ff; 
-            cursor: pointer;
-            transition: transform 0.2s;
+            z-index: 2000;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex; flex-direction: column; overflow: hidden;
         }
-        .trip-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .trip-time { font-weight: 800; color: #000; font-size: 1.1em; width: 55px; display: inline-block; }
-        .trip-place { color: #333; font-weight: 500; }
-        .trip-duration { font-size: 0.85em; color: #666; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px;}
+        .info-sidebar.active { transform: translateX(0); }
+        .sidebar-header { padding: 20px; background-color: #452b85; color: white; position: relative; }
+        .close-sidebar-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center;}
+        
+        .trip-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border-left: 5px solid #8c52ff; cursor: pointer; transition: transform 0.2s; border: 1px solid #f0f0f0; }
+        .trip-card:hover { transform: translateY(-3px); border-color: #8c52ff; }
+        .trip-time { font-size: 1.2rem; font-weight: 800; color: #452b85; }
+        .trip-meta { font-size: 0.85rem; color: #666; margin-top: 5px; display: flex; justify-content: space-between; }
+
+        .legend-card { position: absolute; bottom: 20px; left: 20px; background: white; padding: 10px 15px; border-radius: 8px; z-index: 1000; font-size: 0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
 <body>
 
     {include file='includes/header.tpl'} 
 
-    <div class="container-fluid p-1 position-relative">
+    <div class="container-fluid p-0 position-relative">
         
         <div class="search-card">
-            <h5 style="color: #8c52ff; font-weight: bold;">Rechercher un trajet</h5>
-            <div class="input-group mb-2">
-                <input type="text" id="addressInput" class="form-control" placeholder="Adresse (ex: Gare d'Amiens)" onkeypress="handleEnter(event)">
-                <button class="btn search-btn" onclick="searchAddress()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div class="search-title">
+                <i class="bi bi-map-fill"></i> Trouver un trajet
             </div>
-            <div id="resultInfo" class="small text-muted mt-2">
-                Cliquez sur la carte ou cherchez une adresse.
+            
+            <div class="input-group mb-3">
+                <span class="input-group-text">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </span>
+                <input type="text" id="departInput" class="form-control form-control-map" placeholder="Départ (ex: Amiens)" onkeypress="handleEnter(event)">
             </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">
+                    <i class="bi bi-flag-fill"></i>
+                </span>
+                <input type="text" id="arriveeInput" class="form-control form-control-map" placeholder="Arrivée (ex: IUT)" onkeypress="handleEnter(event)">
+            </div>
+
+            <button class="btn-search-map" onclick="rechercherTrajet()">
+                Rechercher
+            </button>
+
+            <div id="searchStatus" class="mt-2 text-center small text-muted"></div>
+        </div>
+
+        <div class="legend-card">
+            <div class="legend-item"><span class="dot" style="background: #FFD700;"></span> Lieux Fréquents</div>
+            <div class="legend-item"><span class="dot" style="background: #28a745;"></span> Trajets Trouvés</div>
         </div>
 
         <div id="map-container">
             <div id="map"></div>
+            
             <div id="infoSidebar" class="info-sidebar">
-                <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
-    
-                <img id="sidebarImg" class="sidebar-hero-img" src="" style="display:none;">
-                <div class="sidebar-content pb-0">
-                    <h2 id="sidebarTitle" style="font-size: 24px; font-weight:bold; margin-bottom: 5px;">Titre</h2>
-                    <p id="sidebarAddress" class="text-muted small mb-3">Adresse...</p>
-        
-                    <h5 style="color: #8c52ff; font-weight: bold; border-top: 1px solid #eee; padding-top: 15px;">
-                      Trajets disponibles ici
-                    </h5>
+                <div class="sidebar-header">
+                    <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
+                    <h4 class="m-0 fw-bold" id="sidebarTitle">Résultats</h4>
+                    <small id="sidebarSubtitle" class="opacity-75">Trajets disponibles</small>
                 </div>
 
                 <div id="listeTrajetsContainer" class="p-3" style="background-color: #f8f9fa; flex-grow: 1; overflow-y: auto;">
@@ -169,238 +219,145 @@
    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 {literal}
     <script>
-        // 1. Initialisation de la carte centrée sur l'IUT d'Amiens
-        var map = L.map('map').setView([49.87172, 2.26430], 16);
-        setTimeout(function(){ map.invalidateSize()}, 400);
-
-        // 2. Ajout du fond de carte OpenStreetMap 
+        var map = L.map('map').setView([49.89407, 2.29575], 13);
+        
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        var currentMarker = null;
-        var markersGroup = L.layerGroup().addTo(map);
+        var markersLayer = L.layerGroup().addTo(map); 
+        var frequentLayer = L.layerGroup().addTo(map); 
 
-        // Icône violette personnalisée
-        var violetIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-
-        // Marqueur par defaut sur l'IUT
-        var iutMarker = L.marker([49.87172, 2.26430], {icon: violetIcon}).addTo(map);
-
-        iutMarker.on('click', function(e) {
-            L.DomEvent.stopPropagation(e);
-            map.flyTo([49.87172, 2.26430], 16, { animate: true, duration: 1 });
-    
-            // On récupère les trajets pour Amiens
-            var trajetsLieu = getTrajetsParLieu("Amiens");
-
-            openSidebar({
-                titre: "IUT d'Amiens",
-                type: "Institut Universitaire de Technologie",
-                adresse: "Avenue des Facultés, 80000 Amiens",
-                desc: "Point de départ principal.",
-                img: "https://www.iut-amiens.fr/wp-content/uploads/2022/01/Bandeau-IUT.jpg",
-                trajets: trajetsLieu // On passe les trajets
+        // --- GÉNÉRATEUR DE MARQUEURS CSS (Sans image) ---
+        function createCustomMarker(color) {
+            return L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class='marker-pin ${color}'><i class='fa-solid fa-location-dot'></i></div><div class='marker-shadow'></div>`,
+                iconSize: [30, 42],
+                iconAnchor: [15, 42],
+                popupAnchor: [0, -35]
             });
-        });
+        }
 
-        // 3. Clic sur la carte
-        map.on('click', function(e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
+        var goldIcon = createCustomMarker('marker-gold');
+        var greenIcon = createCustomMarker('marker-green');
+        var purpleIcon = createCustomMarker('marker-purple');
 
-            placeMarker(lat, lng);
-    
-            // Sidebar simple sans API de reverse geocoding pour l'instant
-            openSidebar({
-                titre: "Position sélectionnée",
-                adresse: "Coordonnées : " + lat.toFixed(5) + ", " + lng.toFixed(5),
-                img: null,
-                trajets: [] // Pas de trajets liés à un clic aléatoire
+{/literal}
+        var lieuxFrequents = {json_encode($lieux_frequents|default:[])};
+        var tousLesTrajets = {json_encode($trajets|default:[])};
+{literal}
+
+        function afficherLieuxFrequents() {
+            lieuxFrequents.forEach(function(lieu) {
+                if(lieu.latitude && lieu.longitude) {
+                    var marker = L.marker([lieu.latitude, lieu.longitude], {icon: goldIcon})
+                        .bindPopup('<b>' + lieu.nom_lieu + '</b><br><span class="text-muted">Lieu fréquent</span>');
+                    marker.on('click', function(){ map.flyTo([lieu.latitude, lieu.longitude], 15); });
+                    marker.addTo(frequentLayer);
+                }
             });
-        });
+        }
+        afficherLieuxFrequents();
 
-        function placeMarker(lat, lng) {
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
+        function rechercherTrajet() {
+            var departTxt = document.getElementById('departInput').value.toLowerCase().trim();
+            var arriveeTxt = document.getElementById('arriveeInput').value.toLowerCase().trim();
+            var statusDiv = document.getElementById('searchStatus');
+
+            if(departTxt === "" && arriveeTxt === "") {
+                statusDiv.innerHTML = "Veuillez saisir au moins une ville.";
+                return;
             }
-            currentMarker = L.marker([lat, lng], {icon: violetIcon}).addTo(map);
-            map.flyTo([lat, lng], 15);
+
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche en cours...';
+            
+            var resultats = tousLesTrajets.filter(function(trajet) {
+                var matchDepart = true;
+                var matchArrivee = true;
+                if (departTxt !== "") matchDepart = trajet.ville_depart.toLowerCase().includes(departTxt);
+                if (arriveeTxt !== "") matchArrivee = trajet.ville_arrivee.toLowerCase().includes(arriveeTxt);
+                return matchDepart && matchArrivee;
+            });
+
+            markersLayer.clearLayers(); 
+            
+            if (resultats.length > 0) {
+                statusDiv.innerHTML = '<span class="text-success">' + resultats.length + ' trajet(s) trouvé(s) !</span>';
+                afficherResultatsSidebar(resultats);
+                placerMarqueursResultats(resultats);
+            } else {
+                statusDiv.innerHTML = '<span class="text-danger">Aucun trajet ne correspond.</span>';
+                document.getElementById('infoSidebar').classList.remove('active');
+            }
+        }
+
+        function afficherResultatsSidebar(trajets) {
+            var container = document.getElementById('listeTrajetsContainer');
+            var html = '';
+
+            trajets.forEach(function(t) {
+                var dateObj = new Date(t.date_heure_depart.replace(' ', 'T'));
+                var heure = ('0'+dateObj.getHours()).slice(-2) + ':' + ('0'+dateObj.getMinutes()).slice(-2);
+                var date = ('0'+dateObj.getDate()).slice(-2) + '/' + ('0'+(dateObj.getMonth()+1)).slice(-2);
+
+                html += `
+                <div class="trip-card" onclick="focusTrajet('${t.ville_depart}')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="trip-time">${heure}</span>
+                            <span class="text-muted small">(${date})</span>
+                        </div>
+                        <span class="badge bg-success">${t.places_proposees} pl.</span>
+                    </div>
+                    <div class="mt-2">
+                        <strong>${t.ville_depart}</strong> <i class="bi bi-arrow-right text-muted"></i> <strong>${t.ville_arrivee}</strong>
+                    </div>
+                    <div class="trip-meta">
+                        <span><i class="bi bi-car-front"></i> Voiture</span>
+                        <span><i class="bi bi-person"></i> Conducteur</span>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('sidebarTitle').innerText = "Résultats";
+            document.getElementById('sidebarSubtitle').innerText = trajets.length + " trajet(s) correspondant(s)";
+            document.getElementById('infoSidebar').classList.add('active');
+        }
+
+        function placerMarqueursResultats(trajets) {
+            if(trajets.length > 0) {
+                var premierTrajet = trajets[0];
+                var query = premierTrajet.ville_depart;
+
+                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
+                .then(res => res.json())
+                .then(data => {
+                    if(data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        var marker = L.marker([lat, lon], {icon: greenIcon})
+                            .bindPopup("<b>Zone de départ trouvée</b><br>" + query)
+                            .addTo(markersLayer);
+                        map.flyTo([lat, lon], 14);
+                    }
+                });
+            }
         }
 
         function closeSidebar() {
             document.getElementById('infoSidebar').classList.remove('active');
-            document.querySelector('.search-card').style.opacity = '1';
-            document.getElementById('listeTrajetsContainer').innerHTML = '';
-
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-                currentMarker = null;
-            }
         }
 
-        // --- NOUVEAU : FONCTION DE RECHERCHE D'ADRESSE (Géocodage) ---
-        function searchAddress() {
-            var input = document.getElementById('addressInput');
-            var query = input.value;
-
-            if(!query) return;
-
-            // Utilisation de l'API Nominatim (OpenStreetMap) - Gratuit et sans clé
-            var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query);
-
-            fetch(url)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if(data && data.length > 0) {
-                        // On prend le premier résultat
-                        var result = data[0];
-                        var lat = result.lat;
-                        var lng = result.lon;
-
-                        // On place le marqueur et on centre
-                        placeMarker(lat, lng);
-
-                        // On essaie de trouver des trajets liés à ce nom
-                        var trajetsLieu = getTrajetsParLieu(query);
-
-                        // On ouvre la sidebar avec les infos trouvées
-                        openSidebar({
-                            titre: result.display_name.split(',')[0], // Juste le début de l'adresse
-                            adresse: result.display_name,
-                            img: null,
-                            trajets: trajetsLieu
-                        });
-
-                        document.getElementById('resultInfo').innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Trouvé !</span>';
-                    } else {
-                        document.getElementById('resultInfo').innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Adresse introuvable.</span>';
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Erreur:', error);
-                    document.getElementById('resultInfo').innerHTML = '<span class="text-danger">Erreur de connexion.</span>';
-                });
-        }
-
-        // Permet de valider avec la touche Entrée
         function handleEnter(e) {
-            if(e.key === 'Enter') {
-                searchAddress();
-            }
+            if(e.key === 'Enter') rechercherTrajet();
         }
 
-        // --- GESTION DE LA SIDEBAR ---
-        function openSidebar(data) {
-            document.getElementById('sidebarTitle').innerText = data.titre;
-            document.getElementById('sidebarAddress').innerText = data.adresse;
-
-            var imgEl = document.getElementById('sidebarImg');
-            if(data.img) {
-                imgEl.src = data.img;
-                imgEl.style.display = 'block';
-            } else {
-                imgEl.style.display = 'none';
-            }
-
-            var container = document.getElementById('listeTrajetsContainer');
-            
-            if(data.trajets && data.trajets.length > 0) {
-                var html = '';
-                data.trajets.forEach(function(trajet) {
-                    html += '<div class="trip-card">';
-                    html += '  <div class="trip-time">' + trajet.heure + '</div>';
-                    html += '  <i class="bi bi-arrow-right mx-2"></i>';
-                    html += '  <span class="trip-place">' + trajet.destination + '</span>';
-                    html += '  <div class="trip-duration"><i class="bi bi-clock me-1"></i>' + trajet.duree + ' • ' + trajet.places + ' places</div>';
-                    html += '</div>';
-                });
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-emoji-frown fs-1 d-block mb-2"></i>Aucun trajet disponible pour ce lieu.</div>';
-            }
-
-            document.getElementById('infoSidebar').classList.add('active');
-            document.querySelector('.search-card').style.opacity = '0';
+        window.focusTrajet = function(ville) {
+            console.log("Focus sur " + ville);
         }
-
-{/literal}
-    var lieuxFrequents = {json_encode($lieux_frequents|default:[])};
-    var trajets = {json_encode($trajets|default:[])};
-{literal}
-
-        function getTrajetsParLieu(nomLieu) {
-            // Filtrage simple sur le nom de la ville
-            var ville = '';
-            // On nettoie un peu la recherche pour comparer
-            var recherche = nomLieu.toLowerCase();
-
-            if(recherche.includes('amiens')) ville = 'Amiens';
-            else if(recherche.includes('dury')) ville = 'Dury';
-            else if(recherche.includes('longueau')) ville = 'Longueau';
-            else if(recherche.includes('ailly')) ville = 'Ailly-sur-Noye';
-            
-            var trajetsFiltre = trajets.filter(function(trajet) {
-                // On compare avec la ville de départ du trajet en base
-                return trajet.ville_depart.toLowerCase() === ville.toLowerCase();
-            });
-            
-            return trajetsFiltre.map(function(trajet) {
-                var dateStr = trajet.date_heure_depart.replace(' ', 'T');
-                var date = new Date(dateStr);
-                var heure = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-                
-                var duree = trajet.duree_estimee;
-                if(duree && duree.length >= 5) {
-                    duree = duree.substring(0, 5);
-                }
-                
-                return {
-                    heure: heure,
-                    destination: trajet.ville_arrivee,
-                    duree: duree,
-                    places: trajet.places_proposees
-                };
-            });
-        }
-
-        function chargerLieuxFrequents() {
-            if (!lieuxFrequents || lieuxFrequents.length === 0) return;
-
-            lieuxFrequents.forEach(function(lieu) {
-                var lat = parseFloat(lieu.latitude);
-                var lng = parseFloat(lieu.longitude);
-                
-                var marker = L.marker([lat, lng], {icon: violetIcon});
-                
-                marker.on('click', function(e) {
-                    L.DomEvent.stopPropagation(e);
-                    map.flyTo([lat, lng], 16, { animate: true, duration: 1 });
-
-                    var trajetsLieu = getTrajetsParLieu(lieu.nom_lieu);
-
-                    openSidebar({
-                        titre: lieu.nom_lieu,
-                        adresse: (lieu.rue ? lieu.rue + ", " : "") + lieu.ville + " " + lieu.code_postal,
-                        img: null,
-                        trajets: trajetsLieu 
-                    });
-                });
-
-                marker.addTo(markersGroup);
-            });
-        }
-
-        // Lancer le chargement au démarrage
-        chargerLieuxFrequents();
 
     </script>
 {/literal}

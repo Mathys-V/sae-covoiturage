@@ -275,16 +275,66 @@
         const confMdpInput = document.getElementById('confMdpInput'); 
         const errorMsg = document.getElementById('error-mdp');
 
-        if (mdpInput.value.length > 0 && mdpInput.value === confMdpInput.value) {
-            errorMsg.classList.add('d-none');
-            mdpInput.classList.remove('is-invalid');
-            confMdpInput.classList.remove('is-invalid');
-            changerEtape(3);
-        } else {
-            errorMsg.classList.remove('d-none');
-            mdpInput.classList.add('is-invalid');
-            confMdpInput.classList.add('is-invalid');
+        const mdp = mdpInput.value;
+        const confMdp = confMdpInput.value;
+
+        // 1. Vérifier la correspondance
+        if (mdp !== confMdp) {
+            afficherErreur("Les mots de passe ne correspondent pas.");
+            return;
         }
+
+        // 2. Vérifier la longueur (min 8)
+        if (mdp.length < 8) {
+            afficherErreur("Le mot de passe doit faire au moins 8 caractères.");
+            return;
+        }
+
+        // 3. Vérifier le contenu sans Regex
+        let aUneLettre = false;
+        let aUnChiffre = false;
+        let aUnSpecial = false;
+
+        // Liste des caractères spéciaux autorisés (ou logique inverse)
+        // Ici, on considère "spécial" tout ce qui n'est ni lettre ni chiffre.
+        for (let i = 0; i < mdp.length; i++) {
+            let char = mdp[i];
+
+            if (char >= '0' && char <= '9') {
+                aUnChiffre = true;
+            } 
+            else if (char.toLowerCase() !== char.toUpperCase()) {
+                // Si la minuscule est différente de la majuscule, c'est une lettre
+                aUneLettre = true;
+            } 
+            else {
+                // Si ce n'est ni un chiffre ni une lettre, c'est un caractère spécial
+                aUnSpecial = true;
+            }
+        }
+
+        if (!aUneLettre || !aUnChiffre || !aUnSpecial) {
+            afficherErreur("Il faut au moins 1 lettre, 1 chiffre et 1 caractère spécial.");
+            return;
+        }
+
+        // Tout est bon
+        errorMsg.classList.add('d-none');
+        mdpInput.classList.remove('is-invalid');
+        confMdpInput.classList.remove('is-invalid');
+        changerEtape(3);
+    }
+
+    // Petite fonction utilitaire pour ne pas répéter le code d'erreur
+    function afficherErreur(message) {
+        const errorMsg = document.getElementById('error-mdp');
+        const mdpInput = document.getElementById('mdpInput');
+        const confMdpInput = document.getElementById('confMdpInput');
+
+        errorMsg.textContent = message;
+        errorMsg.classList.remove('d-none');
+        mdpInput.classList.add('is-invalid');
+        confMdpInput.classList.add('is-invalid');
     }
 
     function modifierPlaces(direction) {
@@ -551,6 +601,15 @@
     .input-group .form-control:focus {
         box-shadow: none; /* On gère le shadow manuellement si besoin */
         border-color: #8c52ff;
+    }
+
+    .form-control.is-invalid + .input-group-text {
+        border-color: #dc3545; /* Rouge danger */
+    }
+
+    /* 2. Change la couleur de l'ICÔNE elle-même */
+    .form-control.is-invalid + .input-group-text i {
+        color: #dc3545 !important; /* Force le rouge sur l'icône */
     }
 
 </style>

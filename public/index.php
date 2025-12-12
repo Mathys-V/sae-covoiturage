@@ -201,6 +201,10 @@ Flight::route('POST /inscription', function(){
     }
 });
 
+Flight::route('/mes_trajets', function(){
+    Flight::render('mes_trajets.tpl', ['titre' => 'Mes trajets']);
+});
+
 // FAQ
 Flight::route('/faq', function(){
     Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
@@ -644,6 +648,18 @@ Flight::route('GET /profil', function(){
 
     Flight::render('profil.tpl', ['titre' => 'Mon Profil']);
 });
+Flight::route('GET /api/check-email', function(){
+    $email = Flight::request()->query->email;
+    $db = Flight::get('db');
+
+    $stmt = $db->prepare("SELECT COUNT(*) FROM UTILISATEURS WHERE email = :email");
+    $stmt->execute([':email' => $email]);
+    $count = $stmt->fetchColumn();
+
+    // Renvoie une réponse JSON
+    Flight::json(['exists' => ($count > 0)]);
+});
+
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------

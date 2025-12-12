@@ -19,8 +19,13 @@
                             Quelle est votre adresse mail ?<span class="asterisque">*</span>
                         </label>
                         <input type="email" id="emailInput" name="email" class="form-control email-input" placeholder="exemple@mcovoitjv.com" required>
+    
                         <div id="error-email" class="text-danger mt-2 small d-none">
                             Veuillez entrer une adresse email valide (avec un @).
+                        </div>
+
+                        <div id="error-email-doublon" class="text-danger mt-2 small d-none">
+                            Cette adresse email possède déjà un compte. <a href="/sae-covoiturage/public/connexion">Connectez-vous ici</a>.
                         </div>
                     </div>
                     <div class="text-center mt-4 mb-1">
@@ -256,19 +261,47 @@
             }
         }
     }
-    
-    function verifierEmail() {
+
+    async function verifierEmail() {
         const emailInput = document.getElementById('emailInput');
-        const errorMsg = document.getElementById('error-email');
-        if (emailInput.checkValidity()) {
-            errorMsg.classList.add('d-none');
-            emailInput.classList.remove('is-invalid');
-            changerEtape(2);
-        } else {
-            errorMsg.classList.remove('d-none');
+        const errorFormat = document.getElementById('error-email');
+        const errorDoublon = document.getElementById('error-email-doublon');
+        
+        // 1. Reset des erreurs visuelles
+        errorFormat.classList.add('d-none');
+        errorDoublon.classList.add('d-none');
+        emailInput.classList.remove('is-invalid');
+
+        // 2. Vérification du format HTML5 (le @, etc.)
+        if (!emailInput.checkValidity()) {
+            errorFormat.classList.remove('d-none');
             emailInput.classList.add('is-invalid');
+            return; // On arrête tout si le format est mauvais
+        }
+
+        // 3. Vérification en base de données via AJAX
+        try {
+            // On appelle la route qu'on a créée dans index.php
+            // Ajustez le chemin "/sae-covoiturage/public" si votre dossier s'appelle différemment
+            const emailValue = emailInput.value;
+            const response = await fetch('/sae-covoiturage/public/api/check-email?email=' + encodeURIComponent(emailValue));
+            const data = await response.json();
+
+            if (data.exists) {
+                // L'email existe déjà en BDD
+                errorDoublon.classList.remove('d-none');
+                emailInput.classList.add('is-invalid');
+            } else {
+                // L'email est libre, on passe à l'étape 2
+                changerEtape(2);
+            }
+        } catch (error) {
+            console.error("Erreur lors de la vérification email:", error);
+            // En cas de panne serveur, on laisse passer ou on affiche une alerte générique
+            alert("Impossible de vérifier l'email pour le moment. Veuillez réessayer.");
         }
     }
+    
 
     function verifierMDP() {
         const mdpInput = document.getElementById('mdpInput');

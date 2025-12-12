@@ -124,22 +124,22 @@
         <a href="/sae-covoiturage/public/recherche" class="btn btn-purple w-100">Rechercher</a>
 
         <a href="{if isset($user)}/sae-covoiturage/public/reservations{else}/sae-covoiturage/public/connexion{/if}" 
-           class="btn btn-purple w-100"
-           {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos réservations.\n\nCliquez sur OK pour vous connecter.');"{/if}>
-           Reservations
+            class="btn btn-purple w-100"
+        {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos réservations.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+        Reservations
         </a>
 
         <div class="vr mx-2 d-none d-lg-block"></div>
 
         <div class="d-none d-lg-flex align-items-center gap-1">
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
-               title="{if isset($user)}Mon Profil{else}Se connecter{/if}"
-               {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+            title="{if isset($user)}Mon Profil{else}Se connecter{/if}"
+            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <div class="user-avatar-btn">
                     {if isset($user) && !empty($user.photo_profil)}
-                         <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}" class="rounded-circle" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}" class="rounded-circle" style="width:100%; height:100%; object-fit:cover;">
                     {else}
-                         <i class="bi bi-person-fill fs-4"></i>
+                        <i class="bi bi-person-fill fs-4"></i>
                     {/if}
                 </div>
             </a>
@@ -152,22 +152,22 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
                     
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}"
-                           {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes_trajets{else}/sae-covoiturage/public/connexion{/if}"
+                        {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                             <i class="bi bi-car-front me-2"></i> Mes trajets
                         </a>
                     </li>
 
                     <li>
                         <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}"
-                           {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+                        {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                             <i class="bi bi-chat-dots me-2"></i> Messages
                         </a>
                     </li>
 
                     <li>
                         <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}"
-                           {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+                        {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                             <i class="bi bi-person-circle me-2"></i> Profil
                         </a>
                     </li>
@@ -194,20 +194,20 @@
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
             <a href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}" 
-               class="mobile-link"
-               {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+            class="mobile-link"
+            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <i class="bi bi-car-front me-2"></i> Mes trajets
             </a>
 
             <a href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}" 
-               class="mobile-link"
-               {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+                class="mobile-link"
+                {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <i class="bi bi-chat-dots me-2"></i> Messages
             </a>
 
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
-               class="mobile-link"
-               {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
+                class="mobile-link"
+                {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <i class="bi bi-person-circle me-2"></i> Mon Profil
             </a>
 
@@ -222,7 +222,7 @@
             {/if}
         </div>
 
-      </div>
+    </div>
     </div>
   </div>
 </nav>

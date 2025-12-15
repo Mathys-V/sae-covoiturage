@@ -80,7 +80,7 @@
 
     </div>
 
-    <script src="/sae-covoiturage/public/assets/js/script_faq.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/js_faq.js"></script>
     
 </body>
 </html>

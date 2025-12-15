@@ -1,112 +1,12 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* --- DESIGN SYSTEM COOKIES --- */
-    
-    .cookie-card {
-        background-color: #3b2875;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(59, 40, 117, 0.15);
-        overflow: hidden;
-    }
-
-    .cookie-header {
-        background-color: rgba(0, 0, 0, 0.2);
-        padding: 40px 20px;
-    }
-
-    .cookie-item {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 25px 20px;
-        margin-bottom: 15px;
-        transition: background-color 0.2s;
-    }
-    
-    .cookie-item:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* --- SWITCHES CUSTOM --- */
-    .btn-group-custom {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 50px;
-        padding: 4px;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .btn-toggle-custom {
-        border: none;
-        border-radius: 50px !important;
-        padding: 8px 24px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.7);
-        background: transparent;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        display: flex;          
-        align-items: center;    
-        justify-content: center;
-        height: 100%;           
-    }
-
-    .btn-toggle-custom:hover {
-        color: white;
-    }
-
-    /* ETAT ACTIVE - VERT (Accepter) */
-    .btn-check:checked + .btn-accept {
-        background-color: #00c853 !important;
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);
-    }
-
-    /* ETAT ACTIVE - ROUGE (Refuser) */
-    .btn-check:checked + .btn-refuse {
-        background-color: #ff3d00 !important;
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
-    }
-
-    /* Badge Essentiels */
-    .badge-required {
-        background-color: rgba(255, 255, 255, 0.15);
-        color: #fff;
-        padding: 8px 16px;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: default;
-        height: 40px;
-    }
-
-    /* Animation Chevron */
-    .btn-collapse-icon {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background 0.2s;
-    }
-    .btn-collapse-icon:hover {
-        background-color: rgba(255,255,255,0.2);
-    }
-    .transition-icon { transition: transform 0.3s ease; }
-    [aria-expanded="true"] .transition-icon { transform: rotate(180deg); }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_cookies.css">
 
 <div class="container mt-5 mb-5 flex-grow-1">
     
     <div class="cookie-card text-white">
         
-        <div class="cookie-header text-center">
+        <div class="cookie-header">
             <h1 class="fw-bold m-0 mb-3">🍪 Paramètres des cookies</h1>
             <p class="text-white-50 mx-auto mb-0" style="max-width: 600px;">
                 Nous respectons votre vie privée. Choisissez les cookies que vous souhaitez activer pour une expérience optimale sur MonCovoitJV.
@@ -118,8 +18,9 @@
                 
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
+                        
                         <div class="col-md-6 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#descEssentiels" style="cursor: pointer;">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex-center-v">
                                 <i class="bi bi-shield-lock-fill me-3 fs-3 text-white-50"></i>
                                 <div>
                                     <div class="fs-5 fw-bold">Cookies Essentiels</div>
@@ -139,6 +40,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="collapse mt-3 ps-md-5" id="descEssentiels">
                         <p class="small text-white-50 m-0 border-start border-2 border-white border-opacity-25 ps-3">
                             Ces cookies sont indispensables au bon fonctionnement du site (connexion, sécurité). Ils ne peuvent pas être désactivés.
@@ -148,8 +50,9 @@
 
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
+                        
                         <div class="col-md-6 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#descPerf" style="cursor: pointer;">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex-center-v">
                                 <i class="bi bi-lightning-charge-fill me-3 fs-3 text-warning"></i>
                                 <div>
                                     <div class="fs-5 fw-bold">Performance de contenu</div>
@@ -172,6 +75,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="collapse mt-3 ps-md-5" id="descPerf">
                         <p class="small text-white-50 m-0 border-start border-2 border-white border-opacity-25 ps-3">
                             Activez cette option pour sauvegarder votre historique de recherche et retrouver vos trajets précédents facilement.
@@ -181,8 +85,9 @@
 
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
+                        
                         <div class="col-md-6 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#descMarket" style="cursor: pointer;">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex-center-v">
                                 <i class="bi bi-graph-up-arrow me-3 fs-3 text-info"></i>
                                 <div>
                                     <div class="fs-5 fw-bold">Marketing et ciblage</div>
@@ -205,6 +110,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="collapse mt-3 ps-md-5" id="descMarket">
                         <p class="small text-white-50 m-0 border-start border-2 border-white border-opacity-25 ps-3">
                             Ces cookies permettent de vous proposer des offres adaptées (Option fictive pour ce projet).

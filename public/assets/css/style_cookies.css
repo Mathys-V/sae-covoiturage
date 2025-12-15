@@ -1,0 +1,107 @@
+/* --- DESIGN SYSTEM COOKIES --- */
+
+.cookie-card {
+    background-color: #3b2875;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(59, 40, 117, 0.15);
+    overflow: hidden;
+}
+
+.cookie-header {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 40px 20px;
+    text-align: center; /* Assure le centrage global dans le header */
+}
+
+/* Style des items (lignes) */
+.cookie-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px 20px;
+    margin-bottom: 15px;
+    transition: background-color 0.2s;
+}
+
+.cookie-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- SWITCHES CUSTOM --- */
+.btn-group-custom {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center; /* Centrage vertical des éléments dans le groupe */
+}
+
+.btn-toggle-custom {
+    border: none;
+    border-radius: 50px !important;
+    padding: 8px 24px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;          
+    align-items: center;    /* Centrage vertical */
+    justify-content: center;/* Centrage horizontal */
+    height: 100%;           
+}
+
+.btn-toggle-custom:hover {
+    color: white;
+}
+
+/* ETAT ACTIVE - VERT (Accepter) */
+.btn-check:checked + .btn-accept {
+    background-color: #00c853 !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);
+}
+
+/* ETAT ACTIVE - ROUGE (Refuser) */
+.btn-check:checked + .btn-refuse {
+    background-color: #ff3d00 !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
+}
+
+/* Badge Essentiels */
+.badge-required {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* Centrage */
+    gap: 8px;
+    cursor: default;
+    height: 40px; /* Hauteur fixe pour alignement */
+}
+
+/* Animation Chevron */
+.btn-collapse-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+.btn-collapse-icon:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+.transition-icon { transition: transform 0.3s ease; }
+[aria-expanded="true"] .transition-icon { transform: rotate(180deg); }
+
+/* Utilitaire Flexbox pour alignement vertical */
+.d-flex-center-v {
+    display: flex;
+    align-items: center;
+}

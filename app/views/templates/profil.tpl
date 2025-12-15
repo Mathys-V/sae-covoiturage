@@ -236,17 +236,17 @@
                     <i class="bi bi-chevron-right"></i>
                 </a>
                 
-                <a href="/sae-covoiturage/public/mot-de-passe-oublie" class="settings-item">
+                <a href="/sae-covoiturage/public/profil/gestion_mdp" class="settings-item">
                     <span>Mot de passe</span>
                     <i class="bi bi-chevron-right"></i>
                 </a>
 
-                <a href="#" class="settings-item">
+                <a href="/sae-covoiturage/public/profil/modifier_adresse" class="settings-item">
                     <span>Adresse postale</span>
                     <i class="bi bi-chevron-right"></i>
                 </a>
 
-                <a href="#" class="settings-item">
+                <a href="/sae-covoiturage/public/profil/preferences" class="settings-item">
                     <span>Préférences de communication</span>
                     <i class="bi bi-chevron-right"></i>
                 </a>

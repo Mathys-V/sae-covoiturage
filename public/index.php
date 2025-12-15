@@ -776,6 +776,249 @@ Flight::route('GET /api/check-email', function(){
     Flight::json(['exists' => ($count > 0)]);
 });
 
+
+// -----------------------------------------------------------
+// GESTION PROFIL : MODIFICATION ADRESSE
+// -----------------------------------------------------------
+
+// 1. AFFICHER LA PAGE (GET)
+Flight::route('GET /profil/modifier_adresse', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    $sql = "SELECT a.* FROM ADRESSES a
+            JOIN UTILISATEURS u ON u.id_adresse = a.id_adresse
+            WHERE u.id_utilisateur = :id";
+            
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':id' => $idUser]);
+    $adresse = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    Flight::render('modifier_adresse.tpl', [
+        'titre' => 'Modifier mon adresse',
+        'adresse' => $adresse
+    ]);
+});
+
+// 2. TRAITER LE FORMULAIRE (POST) - VERSION CORRIGÉE & NETTOYÉE
+Flight::route('POST /profil/modifier_adresse', function(){
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    
+    // Récupération de l'ID adresse
+    $stmtUser = $db->prepare("SELECT id_adresse FROM UTILISATEURS WHERE id_utilisateur = :id");
+    $stmtUser->execute([':id' => $idUser]);
+    $userRef = $stmtUser->fetch(PDO::FETCH_ASSOC);
+    $idAdresse = $userRef['id_adresse'];
+
+    // --- NETTOYAGE DES DONNÉES (TRIM) ---
+    // On enlève les espaces avant/après chaque valeur reçue
+    $rue = trim(Flight::request()->data->rue); 
+    $complement = trim(Flight::request()->data->complement);
+    $ville = trim(Flight::request()->data->ville);
+    $cp = trim(Flight::request()->data->cp);
+
+    // Concaténation 'voie'
+    $voieComplete = $rue;
+    if(!empty($complement)) {
+        $voieComplete .= ' ' . $complement;
+    }
+
+    // Mise à jour BDD
+    $update = $db->prepare("UPDATE ADRESSES SET 
+                            numero = NULL, 
+                            voie = :voie, 
+                            ville = :ville, 
+                            code_postal = :cp 
+                            WHERE id_adresse = :id_addr");
+                            
+    $update->execute([
+        ':voie' => $voieComplete,
+        ':ville' => $ville,
+        ':cp' => $cp,
+        ':id_addr' => $idAdresse
+    ]);
+
+    // Succès
+    Flight::render('modifier_adresse.tpl', [
+        'titre' => 'Modifier mon adresse',
+        'success' => true,
+        'adresse' => ['voie' => $voieComplete, 'ville' => $ville, 'code_postal' => $cp]
+    ]);
+});
+
+// ============================================================
+// MENU GESTION MOT DE PASSE (Page intermédiaire)
+// ============================================================
+
+Flight::route('GET /profil/gestion_mdp', function(){
+    // Vérification de sécurité
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    Flight::render('gestion_mdp.tpl', [
+        'titre' => 'Gérer le mot de passe'
+    ]);
+});
+
+
+// ============================================================
+// GESTION MODIFICATION MOT DE PASSE
+// ============================================================
+
+// 1. ROUTE GET : Indispensable pour AFFICHER la page
+Flight::route('GET /profil/modifier_mdp', function(){
+    // Sécurité : Si pas connecté, on redirige
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    Flight::render('modifier_mdp.tpl', [
+        'titre' => 'Modifier le mot de passe'
+    ]);
+});
+
+// 2. ROUTE POST : Pour TRAITER le formulaire (celle que vous avez déjà sûrement)
+Flight::route('POST /profil/modifier_mdp', function(){
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    $data = Flight::request()->data;
+
+    // Récupérer le hash actuel
+    $stmt = $db->prepare("SELECT mot_de_passe FROM UTILISATEURS WHERE id_utilisateur = :id");
+    $stmt->execute([':id' => $idUser]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $errors = [];
+
+    // A. Vérif MDP Actuel
+    if (!password_verify($data->current_password, $user['mot_de_passe'])) {
+        $errors['current'] = "Le mot de passe n'est pas celui actuel";
+    }
+
+    // B. Vérif Format Nouveau (Redondance sécurité serveur)
+    $regex = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/';
+    if (!preg_match($regex, $data->new_password)) {
+        $errors['format'] = "Format invalide.";
+    }
+
+    // C. Vérif Correspondance
+    if ($data->new_password !== $data->confirm_password) {
+        $errors['confirm'] = "Erreur correspondance.";
+    }
+
+    // ERREUR : On renvoie vers le form
+    if (!empty($errors)) {
+        Flight::render('modifier_mdp.tpl', [
+            'titre' => 'Modifier le mot de passe',
+            'errors' => $errors,
+            'formData' => ['new_password' => $data->new_password] 
+        ]);
+        return;
+    }
+
+    // SUCCÈS : Update + Affichage Modale
+    $newHash = password_hash($data->new_password, PASSWORD_BCRYPT);
+    $update = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :mdp WHERE id_utilisateur = :id");
+    $update->execute([':mdp' => $newHash, ':id' => $idUser]);
+
+    Flight::render('modifier_mdp.tpl', [
+        'titre' => 'Modifier le mot de passe',
+        'success' => true // Déclenche la modale
+    ]);
+});
+
+
+// ============================================================
+// PRÉFÉRENCES DE COMMUNICATION (Menu & Sous-pages)
+// ============================================================
+
+// 1. LE MENU PRINCIPAL
+Flight::route('GET /profil/preferences', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    Flight::render('preferences/menu.tpl', ['titre' => 'Préférences de communication']);
+});
+
+// 2. PAGE NOTIFICATIONS PUSH
+Flight::route('GET /profil/preferences/push', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    Flight::render('preferences/push.tpl', ['titre' => 'Notifications Push']);
+});
+
+// 3. PAGE E-MAILS
+Flight::route('GET /profil/preferences/emails', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    Flight::render('preferences/emails.tpl', ['titre' => 'Gestion des E-mails']);
+});
+
+// ============================================================
+// PAGE TÉLÉPHONE : LECTURE ET SAUVEGARDE BDD
+// ============================================================
+
+// 1. AFFICHER LA PAGE (Lecture BDD)
+Flight::route('GET /profil/preferences/telephone', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur']; //
+
+    // Récupération du numéro dans la table UTILISATEURS
+    $stmt = $db->prepare("SELECT telephone FROM UTILISATEURS WHERE id_utilisateur = :id");
+    $stmt->execute([':id' => $idUser]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Si null, on met une chaine vide
+    $telBDD = $result['telephone'] ?? '';
+
+    Flight::render('preferences/telephone.tpl', [
+        'titre' => 'Notifications par téléphone',
+        'tel_bdd' => $telBDD 
+    ]);
+});
+
+// 2. SAUVEGARDER (AJAX POST)
+Flight::route('POST /profil/preferences/telephone/save', function(){
+    if(!isset($_SESSION['user'])) return; 
+    
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    $rawTel = $data['telephone'] ?? '';
+
+    // A. NETTOYAGE : On enlève tout ce qui n'est pas un chiffre (espaces, tirets...)
+    $cleanTel = preg_replace('/[^0-9]/', '', $rawTel);
+
+    // B. VALIDATION : On vérifie si c'est un numéro français valide (10 chiffres, commence par 0)
+    // Si c'est vide, on accepte (l'utilisateur supprime son numéro)
+    if (!empty($cleanTel) && !preg_match('/^0[1-9][0-9]{8}$/', $cleanTel)) {
+        Flight::json(['success' => false, 'message' => 'Format invalide (10 chiffres requis)']);
+        return;
+    }
+
+    // C. MISE A JOUR BDD
+    try {
+        $stmt = $db->prepare("UPDATE UTILISATEURS SET telephone = :tel WHERE id_utilisateur = :id");
+        $stmt->execute([
+            ':tel' => $cleanTel, // On enregistre le numéro "propre" (0612345678)
+            ':id' => $idUser
+        ]);
+
+        // Mise à jour session
+        $_SESSION['user']['telephone'] = $cleanTel;
+
+        Flight::json(['success' => true]);
+    } catch(Exception $e) {
+        Flight::json(['success' => false, 'message' => 'Erreur SQL']);
+    }
+});
+
+
+
 // -----------------------------------------------------------
 // DÉMARRAGE
 // -----------------------------------------------------------

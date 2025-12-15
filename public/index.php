@@ -1,4 +1,3 @@
-
 <?php
 // Démarrage de la session OBLIGATOIRE pour mémoriser l'email entre les pages
 session_start();

@@ -1,56 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* --- SECTION BACKGROUND --- */
-    .login-section {
-        background-image: url('/sae-covoiturage/public/assets/img/Image-IUT-connexion.jpg');
-        background-size: cover;
-        background-position: center;
-        min-height: 80vh; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .card-login {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        width: 100%;
-        max-width: 400px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border: 2px solid var(--main-purple);
-    }
-
-    .card-title {
-        color: var(--main-purple);
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        font-size: 1.8rem;
-    }
-
-    .custom-input {
-        border: 2px solid var(--main-purple);
-        border-radius: 10px;
-        padding: 10px 15px;
-    }
-    
-    /* Icône oeil */
-    .password-group { position: relative; }
-    
-    .toggle-password {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: var(--main-purple);
-        font-size: 1.2rem; /* Ajusté pour être plus propre */
-        z-index: 10;
-    }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_connexion.css">
 
 <main class="login-section">
     <div class="card-login">
@@ -61,6 +11,7 @@
                 <i class="bi bi-exclamation-triangle-fill me-2"></i> {$error}
             </div>
         {/if}
+        
         <form action="/sae-covoiturage/public/connexion" method="POST">
             
             <div class="mb-3">

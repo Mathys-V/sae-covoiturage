@@ -1,5 +1,7 @@
 {include file='includes/header.tpl'}
 
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_mes_trajets.css">
+
 <div class="container mt-4 mb-5 flex-grow-1">
     <div class="row">
         <div class="col-12">
@@ -94,66 +96,11 @@
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-            {/foreach}
+        {/foreach}
     {/if}
 </div>
-
-<style>
-    /* Fond de la page */
-    body {
-        background-color: #452b85;
-        min-height: 100vh;
-    }
-
-    /* Style de la carte (Violet clair) */
-    .card-trajet {
-        background-color: #E6E0F8; 
-        color: #2c2c2c;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-
-    /* Couleur violette pour les titres et éléments forts */
-    .text-purple {
-        color: #8c52ff;
-    }
-
-    /* Trait de séparation vertical (visible seulement sur PC) */
-    @media (min-width: 768px) {
-        .border-end-md {
-            border-right: 1px solid rgba(0,0,0,0.1); 
-        }
-    }
-
-    /* BOUTONS VIOLETS CLAIRS (Gros boutons) */
-    .btn-purple-action {
-        background-color: #8c52ff;
-        color: white;
-        border: none;
-        border-radius: 50px; /* Pill shape */
-        font-size: 1.2rem;
-        transition: transform 0.2s, background-color 0.2s;
-    }
-
-    .btn-purple-action:hover {
-        background-color: #6f42c1;
-        color: white;
-        transform: scale(1.02);
-    }
-
-    /* BOUTON SIGNALER (Violet foncé) */
-    .btn-dark-purple {
-        background-color: #452b85;
-        color: white;
-        font-size: 0.85rem;
-    }
-    .btn-dark-purple:hover {
-        background-color: #2a1a5e; /* Plus foncé au survol */
-        color: white;
-    }
-</style>
 
 {include file='includes/footer.tpl'}

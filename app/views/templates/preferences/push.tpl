@@ -39,7 +39,7 @@
         /* État coché */
         .option-row input:checked + .custom-check { background-color: transparent; }
         .option-row input:checked + .custom-check::after {
-            content: '✔'; color: white; font-size: 16px;
+            content: '✓'; color: white; font-size: 16px;
         }
 
         .text-content { display: flex; flex-direction: column; cursor: pointer; }

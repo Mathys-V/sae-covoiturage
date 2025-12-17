@@ -45,18 +45,15 @@
     .option-row input[type="checkbox"] { display: none; }
     
     .custom-check {
-        position: relative;
-        width: 24px; height: 24px; 
-        border: 2px solid white; border-radius: 6px;
-        flex-shrink: 0;
-        transition: all 0.2s;
-        background-color: transparent;
+        width: 24px; height: 24px; border: 2px solid white; border-radius: 6px;
+        display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0;
+        transition: background 0.2s, border-color 0.2s;
     }
     
     /* État coché */
     .option-row input:checked + .custom-check { background-color: transparent; }
     .option-row input:checked + .custom-check::after {
-        content: '✔'; color: white; font-size: 16px;
+        content: '✓'; color: white; font-size: 16px;
     }
 
     .text-content { display: flex; flex-direction: column; }

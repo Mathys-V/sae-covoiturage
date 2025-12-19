@@ -13,11 +13,14 @@ body {
   overflow-x: hidden;
 }
 
-/* --- SECTION HÉROS (VERSION PRO) --- */
+/* --- SECTION HÉROS (VERSION AVEC IMAGE DE FOND SANS FILTRE) --- */
 .section-heros {
   position: relative;
   padding: 80px 20px 60px;
-  background: linear-gradient(135deg, #452b85 0%, #2a1a5e 100%);
+  background-image: url("/sae-covoiturage/public/assets/img/image-BU-accueil.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,37 +28,30 @@ body {
   overflow: hidden;
 }
 
+/* LE BLOC .section-heros::before QUI FAISAIT L'EFFET VIOLET A ÉTÉ SUPPRIMÉ ICI */
+
 .hero-container {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end; /* Aligné à droite */
   gap: 5rem;
   max-width: 1400px;
   width: 100%;
-  z-index: 1;
-}
-
-/* IMAGE */
-.img-heros {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-  transform: translateY(0);
+  z-index: 2;
 }
 
 /* CARTE "GLASSMORPHISM" */
 .search-card {
+  /* Rendue légèrement plus opaque pour la lisibilité sur l'image brute */
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border-radius: 24px;
   padding: 3rem;
   width: 100%;
   max-width: 500px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   position: relative;
   z-index: 2;
 }
@@ -149,24 +145,8 @@ body {
   box-shadow: 0 20px 30px rgba(140, 82, 255, 0.35);
 }
 
-/* --- ANIMATION FLOTTANTE --- */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
-
 /* --- RESPONSIVE --- */
 @media (min-width: 992px) {
-  .img-heros {
-    animation: float 6s ease-in-out infinite;
-  }
   .hero-container {
     padding-top: 20px;
   }
@@ -175,29 +155,23 @@ body {
 @media (max-width: 992px) {
   .section-heros {
     padding: 40px 20px;
-    display: block;
   }
   .hero-container {
     flex-direction: column;
+    justify-content: center;
     gap: 2rem;
-  }
-  .img-heros {
-    max-width: 80%;
-    max-height: 350px;
-    margin: 0 auto;
-    display: block;
-    order: 1;
   }
   .search-card {
     order: 2;
     padding: 2rem;
+    margin: 0 auto;
   }
   .hero-title {
     font-size: 2.2rem;
   }
 }
 
-/* --- SECTIONS DÉTAILS --- */
+/* --- SECTIONS DÉTAILS (inchangées) --- */
 .section-detail {
   background-color: var(--primary-color);
   padding: 80px 20px;

@@ -17,8 +17,6 @@
 
     <section class="section-heros">
         <div class="hero-container">
-            <img src="/sae-covoiturage/public/assets/img/image-BU-accueil.png" class="img-heros" alt="Campus IUT Amiens">
-
             <div class="search-card">
                 <div class="text-center mb-4">
                     <h1 class="hero-title">monCovoitJV</h1>

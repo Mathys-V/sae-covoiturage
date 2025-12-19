@@ -123,7 +123,7 @@
 
         <a href="/sae-covoiturage/public/recherche" class="btn btn-purple w-100">Rechercher</a>
 
-        <a href="{if isset($user)}/sae-covoiturage/public/reservations{else}/sae-covoiturage/public/connexion{/if}" 
+        <a href="{if isset($user)}/sae-covoiturage/public/mes_reservations{else}/sae-covoiturage/public/connexion{/if}" 
             class="btn btn-purple w-100"
         {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos réservations.\n\nCliquez sur OK pour vous connecter.');"{/if}>
         Mes réservations

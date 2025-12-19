@@ -20,7 +20,7 @@
             <div class="search-card">
                 <div class="text-center mb-4">
                     <h1 class="hero-title">monCovoitJV</h1>
-                    <p class="hero-subtitle">Le covoiturage gratuit et exclusif pour les étudiants de l'IUT d'Amiens.</p>
+                    <p class="hero-subtitle">Le covoiturage gratuit pour les étudiants de l'IUT d'Amiens.</p>
                 </div>
 
                 <form action="/sae-covoiturage/public/recherche/resultats" method="GET"> 

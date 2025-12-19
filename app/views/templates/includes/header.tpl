@@ -271,6 +271,6 @@
                 let bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
             }
-        }, 5000); // On laisse l'erreur affichée un peu plus longtemps (5s)
+        }, 10000); // On laisse l'erreur affichée 10 secondes
     </script>
 {/if}

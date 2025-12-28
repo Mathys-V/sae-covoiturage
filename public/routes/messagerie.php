@@ -1,55 +1,158 @@
 <?php
 
-// ============================================================
-// MESSAGERIE
-// ============================================================
-
-Flight::route('GET /messagerie/conversation/@id', function($id){
-    // 1. Sécurité : Utilisateur connecté ?
+// LISTE DES CONVERSATIONS
+Flight::route('GET /messagerie', function(){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 2. Vérifier que l'utilisateur fait partie du trajet (Conducteur ou Passager)
-    // On vérifie s'il est conducteur
-    $stmt = $db->prepare("SELECT * FROM TRAJETS WHERE id_trajet = :id");
-    $stmt->execute([':id' => $id]);
-    $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 1. Récupérer les trajets (Conducteur ou Passager Validé)
+    $sql = "SELECT t.id_trajet, t.ville_depart, t.ville_arrivee, t.date_heure_depart,
+                   u.prenom as conducteur_prenom, u.nom as conducteur_nom
+            FROM TRAJETS t
+            LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
+            JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
+            WHERE t.id_conducteur = :uid 
+            OR (r.id_passager = :uid AND r.statut_code = 'V')
+            GROUP BY t.id_trajet
+            ORDER BY t.date_heure_depart DESC";
 
-    if (!$trajet) { Flight::redirect('/mes_reservations'); return; }
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':uid' => $userId]);
+    $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // On vérifie s'il est passager (réservation validée)
-    $stmtPass = $db->prepare("SELECT COUNT(*) FROM RESERVATIONS WHERE id_trajet = :id AND id_passager = :user AND statut_code = 'V'");
-    $stmtPass->execute([':id' => $id, ':user' => $userId]);
-    $isPassager = $stmtPass->fetchColumn() > 0;
+    // 2. Pour chaque conversation, récupérer le dernier message et compter les non-lus
+    foreach ($conversations as &$conv) {
+        $id = $conv['id_trajet'];
+        
+        // Dernier message
+        $stmtMsg = $db->prepare("SELECT contenu, date_envoi FROM MESSAGES WHERE id_trajet = ? ORDER BY date_envoi DESC LIMIT 1");
+        $stmtMsg->execute([$id]);
+        $lastMsg = $stmtMsg->fetch(PDO::FETCH_ASSOC);
+        
+        $conv['dernier_message'] = $lastMsg ? $lastMsg['contenu'] : null;
+        $conv['date_dernier_msg'] = $lastMsg ? $lastMsg['date_envoi'] : null;
 
-    $isConducteur = ($trajet['id_conducteur'] == $userId);
-
-    if (!$isConducteur && !$isPassager) {
-        $_SESSION['flash_error'] = "Vous n'avez pas accès à cette conversation.";
-        Flight::redirect('/mes_reservations'); // Ou accueil
-        return;
+        // Calcul des non-lus via Cookie
+        $cookieName = 'last_read_' . $id;
+        $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01';
+        
+        $stmtCount = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND date_envoi > ? AND id_expediteur != ?");
+        $stmtCount->execute([$id, $lastReadDate, $userId]);
+        $conv['nb_non_lus'] = $stmtCount->fetchColumn();
     }
 
-    // 3. Formatage de la date pour l'en-tête
-    $dateObj = new DateTime($trajet['date_heure_depart']);
-    $trajet['date_fmt'] = $dateObj->format('d/m/Y à H\hi');
+    // Trier par date du dernier message (si existe) sinon date trajet
+    usort($conversations, function($a, $b) {
+        $dateA = $a['date_dernier_msg'] ?? $a['date_heure_depart'];
+        $dateB = $b['date_dernier_msg'] ?? $b['date_heure_depart'];
+        return strtotime($dateB) - strtotime($dateA);
+    });
 
-    // 4. (Optionnel) Récupérer les anciens messages ici si vous avez une table MESSAGES
-    // $messages = ...
-
-    Flight::render('messagerie/conversation.tpl', [
-        'titre' => 'Conversation',
-        'trajet' => $trajet
-        // 'messages' => $messages
+    Flight::render('messagerie/liste.tpl', [
+        'titre' => 'Mes Discussions',
+        'conversations' => $conversations
     ]);
 });
 
+// AFFICHER UNE CONVERSATION (Chat)
+Flight::route('GET /messagerie/conversation/@id', function($id){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
 
+    // 1. Vérifier accès (Conducteur ou Passager)
+    $sqlCheck = "SELECT t.* FROM TRAJETS t
+                 LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
+                 WHERE t.id_trajet = :tid 
+                 AND (t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V'))
+                 LIMIT 1";
+    
+    $stmtCheck = $db->prepare($sqlCheck);
+    $stmtCheck->execute([':tid' => $id, ':uid' => $userId]);
+    $trajet = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
+    if (!$trajet) {
+        $_SESSION['flash_error'] = "Vous ne faites pas partie de ce trajet.";
+        Flight::redirect('/messagerie'); 
+        return;
+    }
 
+    // 2. MISE À JOUR DU COOKIE DE LECTURE
+    // On dit que l'utilisateur a lu les messages jusqu'à "maintenant"
+    $now = date('Y-m-d H:i:s');
+    setcookie('last_read_' . $id, $now, time() + (86400 * 30), "/"); // Valide 30 jours
 
+    // 3. Récupérer les messages
+    $sqlMsg = "SELECT m.*, u.nom, u.prenom 
+               FROM MESSAGES m
+               JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur
+               WHERE m.id_trajet = :tid
+               ORDER BY m.date_envoi ASC";
+               
+    $stmtMsg = $db->prepare($sqlMsg);
+    $stmtMsg->execute([':tid' => $id]);
+    $messagesBruts = $stmtMsg->fetchAll(PDO::FETCH_ASSOC);
 
+    // 4. Formatage
+    $messages = [];
+    $lastDate = null;
+
+    foreach($messagesBruts as $msg) {
+        $dateObj = new DateTime($msg['date_envoi']);
+        $dateJour = $dateObj->format('d/m/Y');
+        
+        if ($dateJour !== $lastDate) {
+            $messages[] = ['type' => 'separator', 'date' => $dateJour];
+            $lastDate = $dateJour;
+        }
+
+        $msg['type'] = ($msg['id_expediteur'] == $userId) ? 'self' : 'other';
+        $msg['heure_fmt'] = $dateObj->format('H:i');
+        $msg['nom_affiche'] = ($msg['type'] == 'self') ? 'Moi' : $msg['prenom'] . ' ' . substr($msg['nom'], 0, 1) . '.';
+        
+        $messages[] = $msg;
+    }
+
+    $dateTrajet = new DateTime($trajet['date_heure_depart']);
+    $trajet['date_fmt'] = $dateTrajet->format('d/m/Y à H\hi');
+
+    Flight::render('messagerie/conversation.tpl', [
+        'titre' => 'Conversation',
+        'trajet' => $trajet,
+        'messages' => $messages
+    ]);
+});
+
+// API ENVOYER MESSAGE
+Flight::route('POST /api/messagerie/send', function(){
+    if(!isset($_SESSION['user'])) Flight::json(['success' => false], 401);
+
+    $db = Flight::get('db');
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    $idTrajet = $data['trajet_id'];
+    $contenu = htmlspecialchars(trim($data['message'])); // Sécurité XSS basique
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    if(empty($contenu)) { Flight::json(['success' => false]); return; }
+
+    // Insertion directe liée au Trajet
+    $stmt = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
+    $res = $stmt->execute([
+        ':tid' => $idTrajet,
+        ':uid' => $userId,
+        ':msg' => $contenu
+    ]);
+
+    if ($res) {
+        // On met aussi à jour le cookie de l'expéditeur pour qu'il ne s'auto-notifie pas
+        setcookie('last_read_' . $idTrajet, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
+        Flight::json(['success' => true]);
+    } else {
+        Flight::json(['success' => false]);
+    }
+});
 ?>

@@ -1,0 +1,122 @@
+/* --- LISTE DES CONVERSATIONS --- */
+
+/* Conteneur principal */
+.messagerie-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+/* Titre */
+.page-title {
+  color: #452b85; /* Violet foncé de la charte */
+  font-weight: 800;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Carte de conversation */
+.conversation-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  text-decoration: none !important; /* Enlève le soulignement des liens */
+  display: flex;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.conversation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.1); /* Ombre violette légère */
+  border-color: #e0d4fc;
+}
+
+/* Indicateur Non Lu (Bordure gauche colorée) */
+.conversation-card.unread {
+  border-left: 5px solid #ff3d00;
+  background-color: #fffafa;
+}
+
+/* Icône Voiture/Groupe */
+.conv-icon-box {
+  width: 56px;
+  height: 56px;
+  background-color: #f3f0ff; /* Violet très pâle */
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c52ff;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-right: 20px;
+}
+
+/* Contenu texte */
+.conv-content {
+  flex-grow: 1;
+  overflow: hidden; /* Pour couper le texte trop long */
+}
+
+.conv-trajet-title {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conv-info {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.conv-last-msg {
+  color: #666;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.conv-last-msg.new {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Badge compteur */
+.badge-unread {
+  background: #ff3d00;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: 15px;
+  box-shadow: 0 2px 5px rgba(255, 61, 0, 0.3);
+}
+
+.chevron {
+  color: #ddd;
+  margin-left: 15px;
+  font-size: 1.2rem;
+}
+
+/* État vide */
+.empty-state-box {
+  background: white;
+  border-radius: 20px;
+  padding: 50px 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}

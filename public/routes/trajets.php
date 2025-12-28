@@ -87,6 +87,19 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':desc'       => $data->description
             ]);
 
+            // --- NOUVEAU : CRÉATION DE LA CONVERSATION ---
+            $idTrajet = $db->lastInsertId();
+
+            // 1. Créer la conversation liée au trajet
+            $stmtConv = $db->prepare("INSERT INTO CONVERSATIONS (id_trajet) VALUES (:id)");
+            $stmtConv->execute([':id' => $idTrajet]);
+            $idConv = $db->lastInsertId();
+
+            // 2. Ajouter le conducteur comme participant
+            $stmtPart = $db->prepare("INSERT INTO CONVERSATION_PARTICIPANTS (id_conversation, id_utilisateur) VALUES (:conv, :user)");
+            $stmtPart->execute([':conv' => $idConv, ':user' => $userId]);
+           
+
             $compteur++;
 
             if ($data->regulier === 'Y') {

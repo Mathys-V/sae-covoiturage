@@ -1,0 +1,190 @@
+/* --- CHATBOX / CONVERSATION --- */
+
+/* Empêcher le scroll sur le body pour avoir une app "full screen" */
+body {
+  background-color: #f8f9fa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  margin: 20px auto;
+  width: 95%;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Important pour les coins arrondis */
+  height: 80vh; /* Hauteur fixe */
+}
+
+/* Header du chat */
+.chat-header {
+  padding: 15px 25px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.chat-header-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #452b85;
+  margin: 0;
+}
+
+.chat-header-date {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.btn-back {
+  color: #452b85;
+  font-size: 1.5rem;
+  margin-right: 15px;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+.btn-back:hover {
+  transform: translateX(-3px);
+  color: #8c52ff;
+}
+
+/* Zone des messages */
+.messages-container {
+  flex-grow: 1;
+  overflow-y: auto; /* C'est ICI que ça scrolle */
+  padding: 25px;
+  background-color: #fbfbfd;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Séparateur Date */
+.date-divider {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 0.75rem;
+  color: #aaa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Bulles de message */
+.msg-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+
+.msg-name {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 4px;
+  margin-left: 12px;
+}
+
+.msg-bubble {
+  padding: 12px 18px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  word-wrap: break-word;
+}
+
+/* STYLE : Messages Reçus (Gauche) */
+.msg-row.other {
+  align-self: flex-start;
+}
+.msg-row.other .msg-bubble {
+  background-color: white;
+  color: #333;
+  border: 1px solid #eee;
+  border-bottom-left-radius: 4px;
+}
+
+/* STYLE : Messages Envoyés (Droite) */
+.msg-row.self {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.msg-row.self .msg-name {
+  display: none; /* On cache le nom pour soi-même */
+}
+.msg-row.self .msg-bubble {
+  background: linear-gradient(135deg, #8c52ff, #703ccf);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.msg-row.self .msg-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.msg-time {
+  font-size: 0.65rem;
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* Zone de saisie (Footer) */
+.chat-footer {
+  padding: 15px 20px;
+  background: white;
+  border-top: 1px solid #eee;
+}
+
+.input-group-chat {
+  display: flex;
+  gap: 10px;
+  background: #f0f2f5;
+  padding: 5px;
+  border-radius: 50px;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+
+.input-group-chat:focus-within {
+  background: white;
+  border-color: #8c52ff;
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.1);
+}
+
+.chat-input {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 20px;
+  outline: none;
+  font-size: 1rem;
+}
+
+.btn-send {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  background: #8c52ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.btn-send:hover {
+  background: #703ccf;
+  transform: scale(1.1);
+}

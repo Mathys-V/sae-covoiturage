@@ -115,6 +115,18 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             ':places' => $nbPlacesVoulues
         ]);
 
+        
+        // 1. Récupérer l'ID conversation du trajet
+        $stmtGetConv = $db->prepare("SELECT id_conversation FROM CONVERSATIONS WHERE id_trajet = :id");
+        $stmtGetConv->execute([':id' => $id]);
+        $conv = $stmtGetConv->fetch(PDO::FETCH_ASSOC);
+
+        if ($conv) {
+            // 2. Ajouter le passager aux participants (IGNORE permet d'éviter l'erreur s'il y est déjà)
+            $stmtJoin = $db->prepare("INSERT IGNORE INTO CONVERSATION_PARTICIPANTS (id_conversation, id_utilisateur) VALUES (:conv, :user)");
+            $stmtJoin->execute([':conv' => $conv['id_conversation'], ':user' => $userId]);
+        }
+
         if ($placesDisponibles - $nbPlacesVoulues == 0) {
             $sqlUpdate = "UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id";
             $stmtUpdate = $db->prepare($sqlUpdate);

@@ -134,14 +134,24 @@
         <div class="d-none d-lg-flex align-items-center gap-1">
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
             title="{if isset($user)}Mon Profil{else}Se connecter{/if}"
-            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
-                <div class="user-avatar-btn">
+            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}
+            class="text-decoration-none">
+                
+                <div class="user-avatar-btn position-relative">
                     {if isset($user) && !empty($user.photo_profil)}
                         <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}" class="rounded-circle" style="width:100%; height:100%; object-fit:cover;">
                     {else}
                         <i class="bi bi-person-fill fs-4"></i>
                     {/if}
+
+                    {if isset($nb_notifs) && $nb_notifs > 0}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
+                            {$nb_notifs}
+                            <span class="visually-hidden">messages non lus</span>
+                        </span>
+                    {/if}
                 </div>
+
             </a>
             
             <div class="dropdown">
@@ -159,9 +169,12 @@
                     </li>
 
                     <li>
-                        <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}"
+                        <a class="dropdown-item py-2 d-flex justify-content-between align-items-center" href="{if isset($user)}/sae-covoiturage/public/messagerie{else}/sae-covoiturage/public/connexion{/if}"
                         {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
-                            <i class="bi bi-chat-dots me-2"></i> Messages
+                            <div><i class="bi bi-chat-dots me-2"></i> Messages</div>
+                            {if isset($nb_notifs) && $nb_notifs > 0}
+                                <span class="badge bg-danger rounded-pill">{$nb_notifs}</span>
+                            {/if}
                         </a>
                     </li>
 
@@ -199,10 +212,13 @@
                 <i class="bi bi-car-front me-2"></i> Mes trajets
             </a>
 
-            <a href="{if isset($user)}/sae-covoiturage/public/messages{else}/sae-covoiturage/public/connexion{/if}" 
-                class="mobile-link"
+            <a href="{if isset($user)}/sae-covoiturage/public/messagerie/liste{else}/sae-covoiturage/public/connexion{/if}" 
+                class="mobile-link d-flex justify-content-between align-items-center"
                 {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
-                <i class="bi bi-chat-dots me-2"></i> Messages
+                <span><i class="bi bi-chat-dots me-2"></i> Messages</span>
+                {if isset($nb_notifs) && $nb_notifs > 0}
+                    <span class="badge bg-danger rounded-pill">{$nb_notifs}</span>
+                {/if}
             </a>
 
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 

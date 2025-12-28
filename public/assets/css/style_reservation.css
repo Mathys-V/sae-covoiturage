@@ -1,0 +1,57 @@
+/* --- STYLE PAGE RÉSERVATION --- */
+
+/* Animation des cartes et boutons */
+.card {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(140, 82, 255, 0.3) !important;
+}
+
+/* Bandeau en-tête (Gradient Violet) */
+.bg-gradient-purple {
+    background: linear-gradient(135deg, #5e3a8f 0%, #3b2875 100%) !important;
+    border-radius: 25px;
+}
+
+/* Fond de la carte principale (Gradient Clair) */
+.bg-gradient-light {
+    background: linear-gradient(135deg, #f0ebf8 0%, #e8e0f5 100%) !important;
+    border-radius: 25px;
+}
+
+/* Bordure gauche violette pour le formulaire */
+.border-purple-start {
+    border-left: 5px solid #8c52ff !important;
+}
+
+/* Avatar utilisateur */
+.avatar-img {
+    width: 70px; 
+    height: 70px; 
+    object-fit: cover; 
+    border: 3px solid #8c52ff;
+}
+
+.avatar-placeholder {
+    width: 70px; 
+    height: 70px; 
+    background: linear-gradient(135deg, #8c52ff, #5e3a8f); 
+    color: white; 
+    font-size: 28px; 
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bouton principal (Gradient) */
+.btn-gradient-primary {
+    background: linear-gradient(135deg, #8c52ff 0%, #6a3fd9 100%);
+    border-radius: 15px; 
+    padding: 15px; 
+    transition: all 0.3s;
+    border: none;
+}

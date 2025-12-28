@@ -1,9 +1,11 @@
 {include file='includes/header.tpl'}
 
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_reservation.css">
+
 <div class="container mt-5 mb-5">
     
     {* Bandeau de recherche avec les critères *}
-    <div class="card border-0 mb-4 text-white shadow-lg" style="background: linear-gradient(135deg, #5e3a8f 0%, #3b2875 100%); border-radius: 25px;">
+    <div class="card border-0 mb-4 text-white shadow-lg bg-gradient-purple">
         <div class="card-body text-center py-4">
             <h2 class="fw-bold mb-4">Résultat de la recherche</h2>
             
@@ -22,7 +24,7 @@
     </div>
 
     {* Carte de réservation *}
-    <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #f0ebf8 0%, #e8e0f5 100%); border-radius: 25px;">
+    <div class="card border-0 shadow-lg bg-gradient-light">
         <div class="card-body p-5">
             <div class="row g-4">
                 
@@ -35,9 +37,9 @@
                     <div class="d-flex align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm">
                         <div class="me-3">
                             {if $trajet.photo_profil && $trajet.photo_profil != ''}
-                                <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil}" alt="Avatar" class="rounded-circle" width="70" height="70" style="object-fit: cover; border: 3px solid #8c52ff;">
+                                <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil}" alt="Avatar" class="rounded-circle avatar-img">
                             {else}
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background: linear-gradient(135deg, #8c52ff, #5e3a8f); color: white; font-size: 28px; font-weight: bold;">
+                                <div class="rounded-circle avatar-placeholder">
                                     {$trajet.prenom|substr:0:1}{$trajet.nom|substr:0:1}
                                 </div>
                             {/if}
@@ -122,7 +124,7 @@
                     </div>
 
                     {* FORMULAIRE DE RÉSERVATION *}
-                    <div class="bg-white rounded-4 p-4 shadow-lg border-0" style="border-left: 5px solid #8c52ff !important;">
+                    <div class="bg-white rounded-4 p-4 shadow-lg border-0 border-purple-start">
                         <h5 class="fw-bold mb-4 text-center" style="color: #3b2875;">
                             <i class="bi bi-bookmark-check-fill me-2"></i>Finaliser ma réservation
                         </h5>
@@ -135,7 +137,7 @@
                             </div>
 
                             <div class="d-grid gap-3">
-                                <button type="submit" class="btn btn-lg text-white fw-bold shadow-lg" style="background: linear-gradient(135deg, #8c52ff 0%, #6a3fd9 100%); border-radius: 15px; padding: 15px; transition: all 0.3s;">
+                                <button type="submit" class="btn btn-lg text-white fw-bold shadow-lg btn-gradient-primary">
                                     <i class="bi bi-check-circle-fill me-2"></i>Réserver ce trajet
                                 </button>
                                 <a href="/sae-covoiturage/public/recherche" class="btn btn-outline-secondary btn-lg fw-semibold" style="border-radius: 15px; border-width: 2px;">
@@ -156,16 +158,5 @@
         </div>
     </div>
 </div>
-
-<style>
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(140, 82, 255, 0.3) !important;
-}
-
-.card {
-    transition: all 0.3s ease;
-}
-</style>
 
 {include file='includes/footer.tpl'}

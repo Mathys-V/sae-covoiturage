@@ -1,46 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* --- STYLE COPIÉ DE LA CARTE (PARFAITEMENT ALIGNÉ) --- */
-    .autocomplete-wrapper { position: relative; }
-
-    .autocomplete-suggestions {
-        position: absolute; top: 100%; left: 0; width: 100%;
-        background: white; border-radius: 0 0 15px 15px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        z-index: 9999; max-height: 280px; overflow-y: auto;
-        border: 1px solid #eee; border-top: none;
-        margin-top: -5px;
-    }
-
-    .autocomplete-suggestion { 
-        padding: 12px 15px; 
-        cursor: pointer; 
-        font-size: 0.95rem; 
-        border-bottom: 1px solid #f0f0f0; 
-        color: #333;
-        display: flex; 
-        align-items: center; /* Centre verticalement */
-        gap: 15px; /* Espace garanti */
-    }
-
-    .autocomplete-suggestion:hover { background-color: #f3efff; color: #8c52ff; }
-    .autocomplete-suggestion:last-child { border-bottom: none; }
-
-    .is-frequent { background-color: #fffbf0; }
-    .is-frequent .sugg-icon { color: #ffc107; } /* Etoile Jaune */
-    .is-api .sugg-icon { color: #6c757d; } /* Pin Gris */
-
-    .sugg-icon {
-        width: 24px; height: 24px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; flex-shrink: 0;
-    }
-
-    .sugg-text { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
-    .sugg-main { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sugg-sub { font-size: 0.8rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_recherche.css">
 
 <div class="container mt-5">
     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: visible;">
@@ -129,78 +89,12 @@
 </div>
 
 <script>
-    // Injection PHP -> JS (Sans Literal)
-    var lieuxFrequents = [];
+    window.lieuxFrequents = [];
     try {
-        lieuxFrequents = JSON.parse('{$lieux_frequents|default:[]|json_encode|escape:"javascript"}');
-    } catch(e) { console.warn("Erreur data", e); }
+        window.lieuxFrequents = JSON.parse('{$lieux_frequents|default:[]|json_encode|escape:"javascript"}');
+    } catch(e) { console.warn("Erreur chargement données lieux", e); }
 </script>
 
-{literal}
-<script>
-    // --- AUTOCOMPLÉTION ---
-    function setupAutocomplete(inputId, resultsId) {
-        const input = document.getElementById(inputId);
-        const results = document.getElementById(resultsId);
-        let timeout = null;
-
-        input.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            results.innerHTML = ''; 
-            if (query.length < 2) return;
-
-            // A. Locale (Lieux Fréquents)
-            const matchesLocal = lieuxFrequents.filter(lieu => 
-                lieu.nom_lieu.toLowerCase().includes(query) || 
-                lieu.ville.toLowerCase().includes(query)
-            );
-
-            if (matchesLocal.length > 0) {
-                matchesLocal.forEach(lieu => {
-                    const div = document.createElement('div');
-                    div.className = 'autocomplete-suggestion is-frequent';
-                    div.innerHTML = `
-                        <div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
-                        <div class="sugg-text">
-                            <span class="sugg-main">${lieu.nom_lieu}</span>
-                            <span class="sugg-sub">${lieu.ville}</span>
-                        </div>`;
-                    div.addEventListener('click', function() { input.value = lieu.nom_lieu; results.innerHTML = ''; });
-                    results.appendChild(div);
-                });
-            }
-
-            // B. API
-            if (query.length > 3) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    fetch('https://api-adresse.data.gouv.fr/search/?q=' + query + '&limit=5')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.features && data.features.length > 0) {
-                                data.features.forEach(feature => {
-                                    const div = document.createElement('div');
-                                    div.className = 'autocomplete-suggestion is-api';
-                                    div.innerHTML = `
-                                        <div class="sugg-icon"><i class="bi bi-geo-alt-fill"></i></div>
-                                        <div class="sugg-text">
-                                            <span class="sugg-main">${feature.properties.name}</span>
-                                            <span class="sugg-sub">${feature.properties.city || ''}</span>
-                                        </div>`;
-                                    div.addEventListener('click', function() { input.value = feature.properties.label; results.innerHTML = ''; });
-                                    results.appendChild(div);
-                                });
-                            }
-                        });
-                }, 300);
-            }
-        });
-        document.addEventListener('click', function(e) { if (e.target !== input && e.target !== results) results.innerHTML = ''; });
-    }
-
-    setupAutocomplete('depart', 'suggestions-depart');
-    setupAutocomplete('arrivee', 'suggestions-arrivee');
-</script>
-{/literal}
+<script src="/sae-covoiturage/public/assets/javascript/js_recherche.js"></script>
 
 {include file='includes/footer.tpl'}

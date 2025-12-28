@@ -1,0 +1,93 @@
+/* --- STYLE RÉSULTATS RECHERCHE --- */
+
+/* 1. Bandeau de recherche (En-tête violet) */
+.card-search-header {
+    background-color: #3b2875;
+    border-radius: 20px;
+}
+
+.search-input-fixed {
+    width: 250px;
+}
+
+.btn-modify {
+    background-color: #8c52ff;
+    border-radius: 20px;
+    width: auto !important;
+    transition: background 0.3s;
+}
+
+.btn-modify:hover {
+    background-color: #703ccf;
+    color: white;
+}
+
+/* 2. Alertes personnalisées */
+.alert-custom-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-custom-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.alert-custom-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+/* 3. Carte de Résultat (Trajet) */
+.card-result {
+    background-color: #f0ebf8;
+    border-radius: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-result:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(69, 43, 133, 0.15) !important;
+}
+
+/* Typographie et Couleurs */
+.text-purple-dark {
+    color: #452b85;
+}
+
+.text-purple-primary {
+    color: #8c52ff;
+}
+
+/* Avatar */
+.avatar-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+/* Zone Commentaire */
+.comment-box {
+    background-color: rgba(140, 82, 255, 0.1);
+}
+
+/* Bouton Réserver */
+.btn-reserve {
+    background-color: #8c52ff;
+    border-radius: 50px;
+    width: auto !important;
+    transition: all 0.3s;
+}
+
+.btn-reserve:hover {
+    background-color: #703ccf;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(140, 82, 255, 0.4);
+}
+
+/* Bouton Signaler */
+.btn-report:hover {
+    background-color: #343a40;
+    color: white;
+}

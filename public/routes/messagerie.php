@@ -15,14 +15,13 @@ Flight::route('GET /messagerie', function(){
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             WHERE t.id_conducteur = :uid 
             OR (r.id_passager = :uid AND r.statut_code = 'V')
-            GROUP BY t.id_trajet
-            ORDER BY t.date_heure_depart DESC";
+            GROUP BY t.id_trajet"; 
 
     $stmt = $db->prepare($sql);
     $stmt->execute([':uid' => $userId]);
     $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Pour chaque conversation, récupérer le dernier message et compter les non-lus
+    // 2. Enrichir les données
     foreach ($conversations as &$conv) {
         $id = $conv['id_trajet'];
         
@@ -32,22 +31,40 @@ Flight::route('GET /messagerie', function(){
         $lastMsg = $stmtMsg->fetch(PDO::FETCH_ASSOC);
         
         $conv['dernier_message'] = $lastMsg ? $lastMsg['contenu'] : null;
-        $conv['date_dernier_msg'] = $lastMsg ? $lastMsg['date_envoi'] : null;
+        
+        // --- LOGIQUE DE TRI ROBUSTE ---
+        // Si dernier message existe, on prend sa date. Sinon date du trajet.
+        // On s'assure d'avoir une chaîne de date valide.
+        $conv['date_tri'] = ($lastMsg && !empty($lastMsg['date_envoi'])) 
+                            ? $lastMsg['date_envoi'] 
+                            : $conv['date_heure_depart'];
 
-        // Calcul des non-lus via Cookie
+        // Calcul des non-lus
         $cookieName = 'last_read_' . $id;
-        $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01';
+        // Date par défaut très ancienne si pas de cookie
+        $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
         
         $stmtCount = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND date_envoi > ? AND id_expediteur != ?");
         $stmtCount->execute([$id, $lastReadDate, $userId]);
         $conv['nb_non_lus'] = $stmtCount->fetchColumn();
     }
 
-    // Trier par date du dernier message (si existe) sinon date trajet
+    // 3. TRI INTELLIGENT (Correction)
     usort($conversations, function($a, $b) {
-        $dateA = $a['date_dernier_msg'] ?? $a['date_heure_depart'];
-        $dateB = $b['date_dernier_msg'] ?? $b['date_heure_depart'];
-        return strtotime($dateB) - strtotime($dateA);
+        // On récupère les timestamps
+        $tA = strtotime($a['date_tri']);
+        $tB = strtotime($b['date_tri']);
+        
+        // ASTUCE : On vérifie si c'est un vrai message ou juste la date du trajet
+        $hasMsgA = !empty($a['dernier_message']);
+        $hasMsgB = !empty($b['dernier_message']);
+
+        // Si l'un a un message et l'autre non, celui avec le message gagne TOUJOURS
+        if ($hasMsgA && !$hasMsgB) return -1; // A passe devant
+        if (!$hasMsgA && $hasMsgB) return 1;  // B passe devant
+
+        // Sinon (les deux ont des messages OU aucun n'en a), on trie par date classique
+        return $tB - $tA;
     });
 
     Flight::render('messagerie/liste.tpl', [
@@ -56,14 +73,14 @@ Flight::route('GET /messagerie', function(){
     ]);
 });
 
-// AFFICHER UNE CONVERSATION (Chat)
+// AFFICHER UNE CONVERSATION
 Flight::route('GET /messagerie/conversation/@id', function($id){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Vérifier accès (Conducteur ou Passager)
+    // Vérifier accès
     $sqlCheck = "SELECT t.* FROM TRAJETS t
                  LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
                  WHERE t.id_trajet = :tid 
@@ -80,12 +97,11 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         return;
     }
 
-    // 2. MISE À JOUR DU COOKIE DE LECTURE
-    // On dit que l'utilisateur a lu les messages jusqu'à "maintenant"
+    // Mise à jour cookie lecture
     $now = date('Y-m-d H:i:s');
-    setcookie('last_read_' . $id, $now, time() + (86400 * 30), "/"); // Valide 30 jours
+    setcookie('last_read_' . $id, $now, time() + (86400 * 30), "/");
 
-    // 3. Récupérer les messages
+    // Messages
     $sqlMsg = "SELECT m.*, u.nom, u.prenom 
                FROM MESSAGES m
                JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur
@@ -96,7 +112,7 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $stmtMsg->execute([':tid' => $id]);
     $messagesBruts = $stmtMsg->fetchAll(PDO::FETCH_ASSOC);
 
-    // 4. Formatage
+    // Formatage
     $messages = [];
     $lastDate = null;
 
@@ -134,12 +150,11 @@ Flight::route('POST /api/messagerie/send', function(){
     $data = json_decode(file_get_contents('php://input'), true);
     
     $idTrajet = $data['trajet_id'];
-    $contenu = htmlspecialchars(trim($data['message'])); // Sécurité XSS basique
+    $contenu = htmlspecialchars(trim($data['message']));
     $userId = $_SESSION['user']['id_utilisateur'];
 
     if(empty($contenu)) { Flight::json(['success' => false]); return; }
 
-    // Insertion directe liée au Trajet
     $stmt = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
     $res = $stmt->execute([
         ':tid' => $idTrajet,
@@ -148,7 +163,7 @@ Flight::route('POST /api/messagerie/send', function(){
     ]);
 
     if ($res) {
-        // On met aussi à jour le cookie de l'expéditeur pour qu'il ne s'auto-notifie pas
+        // Mise à jour cookie expéditeur
         setcookie('last_read_' . $idTrajet, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
         Flight::json(['success' => true]);
     } else {

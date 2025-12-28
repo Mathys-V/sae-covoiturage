@@ -177,7 +177,7 @@
                             <div class="col-6"><input type="text" name="marque" class="form-control-custom" placeholder="Marque" value="{$vehicule.marque|default:''}" required></div>
                             <div class="col-6"><input type="text" name="modele" class="form-control-custom" placeholder="Modèle" value="{$vehicule.modele|default:''}" required></div>
                             <div class="col-6"><input type="text" name="couleur" class="form-control-custom" placeholder="Couleur" value="{$vehicule.couleur|default:''}"></div>
-                            <div class="col-6"><input type="number" name="nb_places" class="form-control-custom" placeholder="Places" value="{$vehicule.nb_places_totales|default:''}" required></div>
+                            <div class="col-6"><input type="number" name="nb_places" class="form-control-custom" placeholder="Places" value="{$vehicule.nb_places_totales|default:''}" min="1" max="8" required></div>
                             <div class="col-12"><input type="text" name="immat" class="form-control-custom" placeholder="Immatriculation" value="{$vehicule.immatriculation|default:''}" required></div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">

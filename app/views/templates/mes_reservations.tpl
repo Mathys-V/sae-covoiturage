@@ -89,6 +89,10 @@
                                 <i class="bi bi-flag-fill me-1"></i> Signaler
                             </button>
 
+                            <a href="/sae-covoiturage/public/messagerie/conversation/{$reservation.id_trajet}" class="btn btn-custom rounded-pill px-4" style="background-color:#8c52ff; color: white;">
+                                <i class="bi bi-chat-text"></i>
+                            </a>
+
                             <form method="POST"
                                   action="/sae-covoiturage/public/reservation/annuler/{$reservation.id_reservation}"
                                   onsubmit="return confirm('Voulez-vous vraiment annuler cette réservation ?');">

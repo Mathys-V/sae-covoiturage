@@ -1,0 +1,91 @@
+:root { 
+    --primary-purple: #422875;
+    --accent-purple: #8C52FF; 
+    --white: #ffffff; 
+    --error-red: #ff4444; 
+}
+
+body { 
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif; 
+    background-color: #f0f0f0; 
+    display: flex; flex-direction: column; min-height: 100vh;
+}
+
+main { 
+    background-color: var(--primary-purple);
+    flex-grow: 1; 
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+    padding: 40px 20px; color: white;
+}
+
+h1 { 
+    font-size: 3rem; margin-bottom: 10px; font-weight: bold; text-align: center;
+}
+
+.subtitle {
+    text-align: center; font-size: 1rem; margin-bottom: 40px; opacity: 0.9; max-width: 600px;
+}
+
+form { 
+    width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 25px; 
+}
+
+.input-group { display: flex; flex-direction: column; position: relative; }
+
+.input-group label { font-size: 1.2rem; margin-bottom: 10px; font-weight: 500; }
+
+.input-wrapper { position: relative; width: 100%; }
+
+.input-wrapper input {
+    width: 100%; padding: 15px 50px 15px 20px;
+    border-radius: 10px; border: none; font-size: 1rem; 
+    box-sizing: border-box; outline: none;
+}
+
+.toggle-password {
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; width: 24px; height: 24px; fill: var(--accent-purple);
+}
+
+/* Messages d'erreur */
+.error-text {
+    color: var(--error-red); font-size: 0.9rem; margin-top: 8px; font-weight: bold;
+    display: none; 
+}
+.show-error-php { display: block !important; }
+
+.btn-confirm {
+    background: var(--accent-purple); color: white; border: none; padding: 15px; 
+    border-radius: 30px; font-size: 1.3rem; font-weight: bold; cursor: pointer; 
+    margin-top: 20px; width: 200px; align-self: center; transition: background 0.3s;
+}
+.btn-confirm:hover { background: #7a42ea; }
+
+/* --- MODALES (CONFIRMATION & SUCCÈS) --- */
+.custom-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.6); display: none; 
+    justify-content: center; align-items: center; z-index: 99999;
+}
+.show-modal { display: flex !important; }
+
+.custom-modal-box { 
+    background: #E6DFF0; padding: 40px; border-radius: 20px; text-align: center; 
+    width: 90%; max-width: 500px; color: black; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+}
+.custom-modal-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
+.custom-modal-box p { font-size: 1.2rem; margin-bottom: 30px; }
+
+/* Boutons de la modale */
+.modal-actions { display: flex; justify-content: center; gap: 15px; }
+
+.modal-btn {
+    background: var(--accent-purple); color: white; border: none; 
+    padding: 10px 30px; border-radius: 20px; font-size: 1rem; cursor: pointer; font-weight: bold;
+}
+.modal-btn-cancel {
+    background: #aaa; color: #333; /* Gris pour annuler */
+}
+.modal-btn:hover { opacity: 0.9; }

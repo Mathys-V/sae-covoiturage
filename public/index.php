@@ -28,12 +28,12 @@ Flight::map('render', function($template, $data){
     if(isset($_SESSION['user'])){
         $data['user'] = $_SESSION['user'];
 
-        // --- AJOUT : CALCUL DES NOTIFICATIONS (COMPATIBLE BDD FIGÉE) ---
+        // --- CALCUL NOTIFICATIONS (CORRIGÉ) ---
         try {
             $db = Flight::get('db');
             $userId = $_SESSION['user']['id_utilisateur'];
             
-            // 1. On récupère TOUS les trajets où l'utilisateur est impliqué (Conducteur OU Passager)
+            // 1. Récupérer les trajets de l'utilisateur
             $sqlIds = "SELECT t.id_trajet 
                        FROM TRAJETS t
                        LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
@@ -48,13 +48,12 @@ Flight::map('render', function($template, $data){
             $countNotifs = 0;
 
             if (!empty($mesTrajets)) {
-                // 2. Pour chaque trajet, on regarde les messages
-                // On crée une chaîne pour le IN (ex: "1, 2, 5")
                 $idsString = implode(',', $mesTrajets);
                 
+                // On récupère les messages des autres
                 $sqlMsgs = "SELECT id_trajet, date_envoi FROM MESSAGES 
                             WHERE id_trajet IN ($idsString) 
-                            AND id_expediteur != :uid"; // On ne compte pas ses propres messages
+                            AND id_expediteur != :uid";
                 
                 $stmtMsgs = $db->prepare($sqlMsgs);
                 $stmtMsgs->execute([':uid' => $userId]);
@@ -62,9 +61,10 @@ Flight::map('render', function($template, $data){
 
                 foreach($allMessages as $msg) {
                     $tid = $msg['id_trajet'];
-                    $cookieName = 'last_read_' . $tid;
+                    // --- FIX : On ajoute l'ID User dans le nom du cookie ---
+                    $cookieName = 'last_read_' . $userId . '_' . $tid;
                     
-                    // Si pas de cookie, on considère tout comme non lu (ou on peut mettre une date par défaut)
+                    // Si pas de cookie, date par défaut très vieille (tout est non lu)
                     $lastRead = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
                     
                     if ($msg['date_envoi'] > $lastRead) {
@@ -80,13 +80,11 @@ Flight::map('render', function($template, $data){
         }
     }
 
-    // Injection Succès (Vert)
+    // Gestion Flash Messages
     if(isset($_SESSION['flash_success'])){
         $data['flash_success'] = $_SESSION['flash_success'];
         unset($_SESSION['flash_success']); 
     }
-
-    // Injection Erreur (Rouge)
     if(isset($_SESSION['flash_error'])){
         $data['flash_error'] = $_SESSION['flash_error'];
         unset($_SESSION['flash_error']); 
@@ -115,3 +113,4 @@ require 'routes/carte.php';        // La carte
 
 Flight::start();
 ?>
+

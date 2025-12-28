@@ -7,7 +7,7 @@ Flight::route('GET /messagerie', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupérer les trajets (Conducteur ou Passager Validé)
+    // 1. Récupérer les trajets
     $sql = "SELECT t.id_trajet, t.ville_depart, t.ville_arrivee, t.date_heure_depart,
                    u.prenom as conducteur_prenom, u.nom as conducteur_nom
             FROM TRAJETS t
@@ -25,23 +25,17 @@ Flight::route('GET /messagerie', function(){
     foreach ($conversations as &$conv) {
         $id = $conv['id_trajet'];
         
-        // Dernier message
         $stmtMsg = $db->prepare("SELECT contenu, date_envoi FROM MESSAGES WHERE id_trajet = ? ORDER BY date_envoi DESC LIMIT 1");
         $stmtMsg->execute([$id]);
         $lastMsg = $stmtMsg->fetch(PDO::FETCH_ASSOC);
         
         $conv['dernier_message'] = $lastMsg ? $lastMsg['contenu'] : null;
-        
-        // --- LOGIQUE DE TRI ROBUSTE ---
-        // Si dernier message existe, on prend sa date. Sinon date du trajet.
-        // On s'assure d'avoir une chaîne de date valide.
         $conv['date_tri'] = ($lastMsg && !empty($lastMsg['date_envoi'])) 
                             ? $lastMsg['date_envoi'] 
                             : $conv['date_heure_depart'];
 
-        // Calcul des non-lus
-        $cookieName = 'last_read_' . $id;
-        // Date par défaut très ancienne si pas de cookie
+        // --- FIX COOKIE NOMMÉ AVEC ID USER ---
+        $cookieName = 'last_read_' . $userId . '_' . $id;
         $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
         
         $stmtCount = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND date_envoi > ? AND id_expediteur != ?");
@@ -49,22 +43,14 @@ Flight::route('GET /messagerie', function(){
         $conv['nb_non_lus'] = $stmtCount->fetchColumn();
     }
 
-    // 3. TRI INTELLIGENT (Correction)
+    // 3. Tri
     usort($conversations, function($a, $b) {
-        // On récupère les timestamps
-        $tA = strtotime($a['date_tri']);
-        $tB = strtotime($b['date_tri']);
-        
-        // ASTUCE : On vérifie si c'est un vrai message ou juste la date du trajet
         $hasMsgA = !empty($a['dernier_message']);
         $hasMsgB = !empty($b['dernier_message']);
-
-        // Si l'un a un message et l'autre non, celui avec le message gagne TOUJOURS
-        if ($hasMsgA && !$hasMsgB) return -1; // A passe devant
-        if (!$hasMsgA && $hasMsgB) return 1;  // B passe devant
-
-        // Sinon (les deux ont des messages OU aucun n'en a), on trie par date classique
-        return $tB - $tA;
+        if ($hasMsgA && !$hasMsgB) return -1; 
+        if (!$hasMsgA && $hasMsgB) return 1;  
+        
+        return strtotime($b['date_tri']) - strtotime($a['date_tri']);
     });
 
     Flight::render('messagerie/liste.tpl', [
@@ -92,14 +78,15 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $trajet = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
     if (!$trajet) {
-        $_SESSION['flash_error'] = "Vous ne faites pas partie de ce trajet.";
+        $_SESSION['flash_error'] = "Accès refusé.";
         Flight::redirect('/messagerie'); 
         return;
     }
 
-    // Mise à jour cookie lecture
+    // --- FIX COOKIE NOMMÉ AVEC ID USER ---
+    // On met à jour la date de lecture pour CET utilisateur spécifiquement
     $now = date('Y-m-d H:i:s');
-    setcookie('last_read_' . $id, $now, time() + (86400 * 30), "/");
+    setcookie('last_read_' . $userId . '_' . $id, $now, time() + (86400 * 30), "/");
 
     // Messages
     $sqlMsg = "SELECT m.*, u.nom, u.prenom 
@@ -112,7 +99,6 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $stmtMsg->execute([':tid' => $id]);
     $messagesBruts = $stmtMsg->fetchAll(PDO::FETCH_ASSOC);
 
-    // Formatage
     $messages = [];
     $lastDate = null;
 
@@ -163,8 +149,9 @@ Flight::route('POST /api/messagerie/send', function(){
     ]);
 
     if ($res) {
-        // Mise à jour cookie expéditeur
-        setcookie('last_read_' . $idTrajet, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
+        // --- FIX COOKIE NOMMÉ AVEC ID USER ---
+        // On met à jour le cookie de L'EXPÉDITEUR uniquement
+        setcookie('last_read_' . $userId . '_' . $idTrajet, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
         Flight::json(['success' => true]);
     } else {
         Flight::json(['success' => false]);

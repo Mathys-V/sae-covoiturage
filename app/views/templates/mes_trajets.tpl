@@ -83,9 +83,10 @@
                         </div>
 
                         <div class="d-flex flex-column gap-2 mt-4">
-                            <button class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm">
-                                Discussion de groupe
-                            </button>
+                            <a href="/sae-covoiturage/public/messagerie/conversation/{$trajet.id_trajet}" 
+   class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm text-decoration-none text-center">
+    Discussion de groupe
+</a>
                             
                             <div class="d-flex gap-2">
                                 <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm">

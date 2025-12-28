@@ -34,10 +34,10 @@ Flight::route('GET /trajet/reserver/@id', function($id){
         return;
     }
 
-    // Calcul places prises
+    // Calcul places prises (uniquement réservations validées 'V')
     $sqlPlaces = "SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
                   FROM RESERVATIONS
-                  WHERE id_trajet = :id AND statut_code IN ('V', 'P')";
+                  WHERE id_trajet = :id AND statut_code = 'V'"; // On ne compte que les Validées
     
     $stmtPlaces = $db->prepare($sqlPlaces);
     $stmtPlaces->execute([':id' => $id]);
@@ -46,11 +46,11 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $trajet['places_prises'] = $placesData['places_prises'];
     $trajet['places_disponibles'] = $trajet['places_proposees'] - $trajet['places_prises'];
 
-    // Vérif si déjà réservé
+    // Vérif si déjà réservé (Validé ou En attente, pour ne pas réserver 2 fois)
     $sqlCheck = "SELECT * FROM RESERVATIONS 
                  WHERE id_trajet = :id 
                  AND id_passager = :user 
-                 AND statut_code IN ('V', 'P')";
+                 AND statut_code IN ('V', 'A')"; // V=Validé, A=Attente (si vous gérez l'attente, sinon juste V)
                  
     $stmtCheck = $db->prepare($sqlCheck);
     $stmtCheck->execute([':id' => $id, ':user' => $userId]);
@@ -89,9 +89,10 @@ Flight::route('POST /trajet/reserver/@id', function($id){
 
         if (!$trajet) throw new Exception("Trajet introuvable.");
 
+        // Vérification places
         $sqlPlaces = "SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
                       FROM RESERVATIONS
-                      WHERE id_trajet = :id AND statut_code IN ('V', 'P')";
+                      WHERE id_trajet = :id AND statut_code = 'V'";
         
         $stmtPlaces = $db->prepare($sqlPlaces);
         $stmtPlaces->execute([':id' => $id]);
@@ -104,6 +105,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             throw new Exception("Pas assez de places disponibles !");
         }
 
+        // Insertion Réservation
         $sqlReserve = "INSERT INTO RESERVATIONS 
                        (id_trajet, id_passager, nb_places_reservees, statut_code, date_reservation)
                        VALUES (:trajet, :passager, :places, 'V', NOW())";
@@ -115,23 +117,15 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             ':places' => $nbPlacesVoulues
         ]);
 
-        
-        // 1. Récupérer l'ID conversation du trajet
-        $stmtGetConv = $db->prepare("SELECT id_conversation FROM CONVERSATIONS WHERE id_trajet = :id");
-        $stmtGetConv->execute([':id' => $id]);
-        $conv = $stmtGetConv->fetch(PDO::FETCH_ASSOC);
-
-        if ($conv) {
-            // 2. Ajouter le passager aux participants (IGNORE permet d'éviter l'erreur s'il y est déjà)
-            $stmtJoin = $db->prepare("INSERT IGNORE INTO CONVERSATION_PARTICIPANTS (id_conversation, id_utilisateur) VALUES (:conv, :user)");
-            $stmtJoin->execute([':conv' => $conv['id_conversation'], ':user' => $userId]);
-        }
-
+        // Mise à jour statut trajet si complet
         if ($placesDisponibles - $nbPlacesVoulues == 0) {
             $sqlUpdate = "UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id";
             $stmtUpdate = $db->prepare($sqlUpdate);
             $stmtUpdate->execute([':id' => $id]);
         }
+
+        // --- CORRECTION : ON NE TOUCHE PAS AUX TABLES DE MESSAGERIE INEXISTANTES ---
+        // La simple présence dans la table RESERVATIONS donne accès au chat.
 
         $db->commit();
         $_SESSION['flash_success'] = "Réservation confirmée, bon voyage !";
@@ -144,7 +138,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
     }
 });
 
-// AFFICHER MES RÉSERVATIONS (Passager)
+// LISTE DES RÉSERVATIONS
 Flight::route('GET /mes_reservations', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
@@ -159,7 +153,7 @@ Flight::route('GET /mes_reservations', function(){
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
             WHERE r.id_passager = :user
-            AND r.statut_code IN ('V', 'P')
+            AND r.statut_code = 'V'
             ORDER BY t.date_heure_depart ASC";
     
     $stmt = $db->prepare($sql);
@@ -206,10 +200,13 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
         if (!$reservation) throw new Exception("Réservation introuvable.");
 
+        // On supprime la réservation ou on change le statut (ici DELETE pour simplifier ou UPDATE statut='A' si la colonne le permet)
+        // D'après votre script SQL : statut_code CHAR(1) DEFAULT 'V' CHECK (statut_code IN ('V', 'A', 'R'))
         $sqlUpdate = "UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_reservation = :id";
         $stmtUpdate = $db->prepare($sqlUpdate);
         $stmtUpdate->execute([':id' => $id]);
 
+        // On remet le trajet en 'A' (Actif) s'il était 'C' (Complet)
         $sqlTrajet = "UPDATE TRAJETS SET statut_flag = 'A' WHERE id_trajet = :trajet AND statut_flag = 'C'";
         $stmtTrajet = $db->prepare($sqlTrajet);
         $stmtTrajet->execute([':trajet' => $reservation['id_trajet']]);

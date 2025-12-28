@@ -1,6 +1,6 @@
 <?php
 
-// AFFICHER LE FORMULAIRE DE PROPOSITION
+// AFFICHER LE FORMULAIRE
 Flight::route('GET /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) {
         $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet.";
@@ -20,7 +20,6 @@ Flight::route('GET /trajet/nouveau', function(){
         return;
     }
 
-    // Récupérer les Lieux Fréquents
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
@@ -30,7 +29,7 @@ Flight::route('GET /trajet/nouveau', function(){
     ]);
 });
 
-// TRAITEMENT DU FORMULAIRE DE PROPOSITION
+// TRAITEMENT (POST)
 Flight::route('POST /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -38,7 +37,7 @@ Flight::route('POST /trajet/nouveau', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Véhicule
+    // Récupérer le véhicule
     $stmtVehicule = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = :id LIMIT 1");
     $stmtVehicule->execute([':id' => $userId]);
     $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
@@ -87,18 +86,8 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':desc'       => $data->description
             ]);
 
-            // --- NOUVEAU : CRÉATION DE LA CONVERSATION ---
-            $idTrajet = $db->lastInsertId();
-
-            // 1. Créer la conversation liée au trajet
-            $stmtConv = $db->prepare("INSERT INTO CONVERSATIONS (id_trajet) VALUES (:id)");
-            $stmtConv->execute([':id' => $idTrajet]);
-            $idConv = $db->lastInsertId();
-
-            // 2. Ajouter le conducteur comme participant
-            $stmtPart = $db->prepare("INSERT INTO CONVERSATION_PARTICIPANTS (id_conversation, id_utilisateur) VALUES (:conv, :user)");
-            $stmtPart->execute([':conv' => $idConv, ':user' => $userId]);
-           
+            // --- CORRECTION : AUCUNE CRÉATION DE CONVERSATION ICI ---
+            // La conversation est implicite au trajet.
 
             $compteur++;
 
@@ -128,14 +117,13 @@ Flight::route('POST /trajet/nouveau', function(){
     }
 });
 
-// AFFICHER MES TRAJETS (Conducteur)
+// MES TRAJETS (Conducteur)
 Flight::route('/mes_trajets', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
 
-    // Récupérer les trajets où je suis conducteur
     $sql = "SELECT t.*, v.marque, v.modele, v.immatriculation, v.nb_places_totales 
             FROM TRAJETS t
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
@@ -147,7 +135,7 @@ Flight::route('/mes_trajets', function(){
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($trajets as &$trajet) {
-        // Récupérer les passagers
+        // Passagers
         $sqlPass = "SELECT u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
                     FROM RESERVATIONS r
                     JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur

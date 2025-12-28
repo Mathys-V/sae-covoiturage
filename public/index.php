@@ -11,8 +11,11 @@ use Smarty\Smarty;
 
 // 1. On enregistre Smarty
 Flight::register('view', 'Smarty\Smarty', [], function($smarty) {
-    $smarty->setTemplateDir('../app/views/templates');
-    $smarty->setCompileDir('../tmp/templates_c');
+    // Utilisation de __DIR__ pour cibler le dossier sans erreur possible
+    // __DIR__ = le dossier "public", donc on remonte d'un cran (..) pour aller dans "app"
+    $path = __DIR__ . '/../app/views/templates';
+    $smarty->setTemplateDir($path);
+    $smarty->setCompileDir(__DIR__ . '/../tmp/templates_c');
 });
 
 // 2. MOTEUR DE RENDU (Mise à jour pour gérer les ERREURS)
@@ -170,7 +173,7 @@ Flight::route('POST /inscription', function(){
             
             $stmtCar->execute([
                 ':marque' => $data->marque,
-                ':modele' => $data->model,
+                ':modele' => $data->modele,
                 ':places' => (int)$data->nb_places,
                 ':couleur' => $data->couleur,
                 ':immat' => $immat
@@ -607,7 +610,7 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
         return;
     }
 
-    // Hashage et sauvegarde [cite: 904]
+    // Hashage et sauvegarde
     $hash = password_hash($mdp, PASSWORD_BCRYPT);
     $db = Flight::get('db');
 
@@ -754,16 +757,163 @@ Flight::route('POST /trajet/nouveau', function(){
     }
 });
 
-// PAGE PROFIL
+// -----------------------------------------------------------
+// GESTION DU PROFIL
+// -----------------------------------------------------------
+
+// 1. AFFICHER LE PROFIL
 Flight::route('GET /profil', function(){
-    // On vérifie si l'utilisateur est connecté, sinon on le vire vers la connexion
     if(!isset($_SESSION['user'])) {
         Flight::redirect('/connexion');
         return;
     }
 
-    Flight::render('profil.tpl', ['titre' => 'Mon Profil']);
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Récupérer l'utilisateur
+    $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE id_utilisateur = ?");
+    $stmt->execute([$idUser]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Mettre à jour la session
+    if ($user) {
+        unset($user['mot_de_passe']);
+        $_SESSION['user'] = $user;
+    }
+
+    // 2. Récupérer le véhicule de l'utilisateur (via la table POSSESSIONS)
+    $stmtVehicule = $db->prepare("
+        SELECT v.* FROM VEHICULES v
+        JOIN POSSESSIONS p ON v.id_vehicule = p.id_vehicule
+        WHERE p.id_utilisateur = ?
+        LIMIT 1
+    ");
+    $stmtVehicule->execute([$idUser]);
+    $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
+
+    // --- CORRECTION DU BUG 500 ICI ---
+    // Si l'utilisateur n'a pas de voiture, fetch() renvoie false.
+    // On convertit false en NULL pour que le {if isset($vehicule)} du template fonctionne correctement.
+    if ($vehicule === false) {
+        $vehicule = null;
+    }
+
+    Flight::render('profil.tpl', [
+        'titre' => 'Mon Profil',
+        'vehicule' => $vehicule // On envoie le véhicule à la vue
+    ]);
 });
+
+// 2. MODIFIER LA DESCRIPTION
+Flight::route('POST /profil/update-description', function(){
+    if(!isset($_SESSION['user'])) return;
+    
+    $desc = Flight::request()->data->description;
+    $db = Flight::get('db');
+    
+    $stmt = $db->prepare("UPDATE UTILISATEURS SET description = ? WHERE id_utilisateur = ?");
+    $stmt->execute([$desc, $_SESSION['user']['id_utilisateur']]);
+
+    $_SESSION['flash_success'] = "Description mise à jour !";
+    Flight::redirect('/profil');
+});
+
+// 3. MODIFIER / AJOUTER VÉHICULE
+Flight::route('POST /profil/update-vehicule', function(){
+    // 1. Sécurité : Utilisateur connecté ?
+    if(!isset($_SESSION['user'])) {
+        Flight::redirect('/connexion');
+        return;
+    }
+
+    // 2. Récupération des données du formulaire
+    $data = Flight::request()->data;
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    $db = Flight::get('db');
+
+    // 3. Nettoyage des données
+    $marque = trim($data->marque);
+    $modele = trim($data->modele);
+    $couleur = trim($data->couleur);
+    $nb_places = (int) $data->nb_places;
+    // On met la plaque en majuscules et on enlève les espaces superflus
+    $immat = strtoupper(trim(str_replace(' ', '', $data->immat))); 
+
+    try {
+        // 4. Vérifier si l'utilisateur possède DÉJÀ un véhicule
+        // On regarde dans la table de liaison POSSESSIONS
+        $stmtCheck = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = ? LIMIT 1");
+        $stmtCheck->execute([$idUser]);
+        $possede = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if ($possede) {
+            // --- CAS A : MISE À JOUR (UPDATE) ---
+            // L'utilisateur a déjà une voiture, on met à jour ses infos
+            $idVehicule = $possede['id_vehicule'];
+            
+            $stmtUpdate = $db->prepare("
+                UPDATE VEHICULES SET 
+                    marque = :marque, 
+                    modele = :modele, 
+                    couleur = :couleur, 
+                    nb_places_totales = :places, 
+                    immatriculation = :immat
+                WHERE id_vehicule = :id
+            ");
+            
+            $stmtUpdate->execute([
+                ':marque' => $marque,
+                ':modele' => $modele,
+                ':couleur' => $couleur,
+                ':places' => $nb_places,
+                ':immat' => $immat,
+                ':id' => $idVehicule
+            ]);
+            
+            $_SESSION['flash_success'] = "Véhicule modifié avec succès !";
+
+        } else {
+            // --- CAS B : CRÉATION (INSERT) ---
+            // L'utilisateur n'a pas de voiture, on en crée une nouvelle
+            $db->beginTransaction(); // On sécurise l'opération
+
+            // 1. Création du véhicule
+            $stmtInsert = $db->prepare("
+                INSERT INTO VEHICULES (marque, modele, couleur, nb_places_totales, immatriculation, type_vehicule) 
+                VALUES (:marque, :modele, :couleur, :places, :immat, 'voiture')
+            ");
+            
+            $stmtInsert->execute([
+                ':marque' => $marque,
+                ':modele' => $modele,
+                ':couleur' => $couleur,
+                ':places' => $nb_places,
+                ':immat' => $immat
+            ]);
+            
+            // On récupère l'ID de la voiture qu'on vient de créer
+            $idNewCar = $db->lastInsertId();
+
+            // 2. Création du lien avec l'utilisateur (POSSESSIONS)
+            $stmtLink = $db->prepare("INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule) VALUES (?, ?)");
+            $stmtLink->execute([$idUser, $idNewCar]);
+
+            $db->commit(); // On valide tout
+            $_SESSION['flash_success'] = "Nouveau véhicule ajouté !";
+        }
+
+    } catch (Exception $e) {
+        // En cas d'erreur (ex: Plaque déjà prise par quelqu'un d'autre)
+        if($db->inTransaction()) $db->rollBack();
+        $_SESSION['flash_error'] = "Erreur : Vérifiez que cette plaque n'est pas déjà enregistrée.";
+    }
+
+    // Retour au profil
+    Flight::redirect('/profil');
+});
+
+
 Flight::route('GET /api/check-email', function(){
     $email = Flight::request()->query->email;
     $db = Flight::get('db');
@@ -1268,4 +1418,3 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
 Flight::start();
 ?>
-

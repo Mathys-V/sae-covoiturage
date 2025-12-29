@@ -1,5 +1,36 @@
 {include file='includes/header.tpl'}
 
+<style>
+    /* Zone de texte plus claire et "cliquable" */
+    .custom-textarea {
+        background-color: #f8f9fa;       /* Fond gris très léger */
+        border: 2px solid #e9ecef;       /* Bordure visible mais douce */
+        border-radius: 12px;             /* Coins arrondis */
+        padding: 15px;                   /* Espace interne confortable */
+        font-size: 0.95rem;
+        color: #333;
+        resize: none;                    /* Empêche de déformer la modale */
+        transition: all 0.3s ease;       /* Animation fluide au clic */
+        width: 100%;
+    }
+
+    /* Quand on clique dedans */
+    .custom-textarea:focus {
+        background-color: #ffffff;       /* Devient blanc */
+        border-color: #8c52ff;           /* Bordure violette */
+        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet */
+        outline: none;
+    }
+
+    /* Label au-dessus */
+    .form-label-bold {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+</style>
+
 <div class="container my-5 flex-grow-1">
 
     <h1 class="fw-bold text-center mb-5" style="color:#3b2875;">
@@ -84,10 +115,14 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-3 mt-4"> {* Boutton signaler *}
-                            <button class="btn btn-outline-secondary rounded-pill px-4">
+                        <div class="d-flex justify-content-end gap-3 mt-4"> {* Boutons action *}
+                        <button class="btn btn-outline-danger btn-report rounded-pill px-4"
+                        data-trajet="{$reservation.id_trajet}">                
                                 <i class="bi bi-flag-fill me-1"></i> Signaler
                             </button>
+                    
+                
+                    
 
                             <a href="/sae-covoiturage/public/messagerie/conversation/{$reservation.id_trajet}" class="btn btn-custom rounded-pill px-4" style="background-color:#8c52ff; color: white;">
                                 <i class="bi bi-chat-text"></i>
@@ -124,5 +159,109 @@
     {/if}
 
 </div>
+<div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <p class="text-muted small mb-4">Merci de nous indiquer la raison de ce signalement. Un modérateur examinera la situation rapidement.</p>
+
+        <form id="formSignalement">
+        
+            <input type="hidden" id="trajetSignalement">
+
+            <div class="mb-3">
+                <label class="form-label-bold">Qui concerne ce signalement ?</label>
+                <select class="form-select bg-light border-0 py-2" id="userSignalement" required>
+                    <option value="" selected disabled>Choisir un utilisateur...</option>
+                    {foreach $participants[$reservation.id_trajet] as $p}
+                        <option value="{$p.id}">{$p.nom} ({$p.role})</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-bold">Motif</label>
+                <select class="form-select bg-light border-0 py-2" id="motifSignalement" required>
+                    <option value="" selected disabled>Choisir un motif...</option>
+                    <option value="Comportement dangereux">Comportement dangereux</option>
+                    <option value="Absence au rendez-vous">Absence au rendez-vous</option>
+                    <option value="Véhicule non conforme">Véhicule non conforme</option>
+                    <option value="Propos inappropriés">Propos inappropriés</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-bold">Détails supplémentaires</label>
+                <textarea class="custom-textarea" id="detailsSignalement" rows="4" placeholder="Décrivez la situation ici..."></textarea>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">Envoyer le signalement</button>
+                <button type="button" class="btn btn-light rounded-pill text-muted" data-bs-dismiss="modal">Annuler</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnSignalerList = document.querySelectorAll('.btn-report');
+    const modalEl = document.getElementById('modalSignalement');
+    const modal = new bootstrap.Modal(modalEl);
+    const formSignalement = document.getElementById('formSignalement');
+
+    btnSignalerList.forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('trajetSignalement').value = btn.dataset.trajet;
+            modal.show();
+        });
+    });
+
+    formSignalement.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const trajetId = document.getElementById('trajetSignalement').value;
+        const userId = document.getElementById('userSignalement').value;
+        const motif = document.getElementById('motifSignalement').value;
+        const details = document.getElementById('detailsSignalement').value;
+
+        if(!userId || !motif) {
+            alert("Veuillez remplir tous les champs obligatoires.");
+            return;
+        }
+
+        fetch('/sae-covoiturage/public/api/signalement/nouveau', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_trajet: trajetId,
+                id_signale: userId,
+                motif: motif,
+                description: details
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            modal.hide();
+            if(data.success) {
+                alert("Signalement envoyé. Merci !");
+                formSignalement.reset();
+            } else {
+                alert("Erreur : " + (data.msg || "Impossible d'envoyer"));
+            }
+        });
+    });
+});
+</script>
 
 {include file='includes/footer.tpl'}

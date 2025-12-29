@@ -163,28 +163,87 @@ Flight::route('GET /mes_reservations', function(){
     $stmt->execute([':user' => $userId]);
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    foreach ($reservations as &$reservation) {
-        $dateObj = new DateTime($reservation['date_heure_depart']);
-        $reservation['date_fmt'] = $dateObj->format('d/m/Y');
-        $reservation['heure_fmt'] = $dateObj->format('H\hi');
-        
-        if (isset($reservation['duree_estimee'])) {
-            $dureeObj = new DateTime($reservation['duree_estimee']);
-            $heures = (int)$dureeObj->format('G');
-            $minutes = (int)$dureeObj->format('i');
-            
-            if ($heures > 0 && $minutes > 0) $reservation['duree_fmt'] = $heures . "h" . $minutes;
-            elseif ($heures > 0) $reservation['duree_fmt'] = $heures . " heure" . ($heures > 1 ? "s" : "");
-            else $reservation['duree_fmt'] = $minutes . " minutes";
-        } else {
-            $reservation['duree_fmt'] = "10 minutes";
+    // Participants par trajet
+    $participants = [];
+
+    foreach ($reservations as &$r) {
+
+        // Format date/heure
+        $d = new DateTime($r['date_heure_depart']);
+        $r['date_fmt'] = $d->format('d/m/Y');
+        $r['heure_fmt'] = $d->format('H\hi');
+
+        // Conducteur
+        $participants[$r['id_trajet']][] = [
+            'id'=>$r['id_conducteur'],
+            'nom'=>$r['conducteur_prenom'].' '.$r['conducteur_nom'],
+            'role'=>'Conducteur'
+        ];
+
+        // Passagers
+        $ps = $db->prepare("
+            SELECT u.id_utilisateur, u.prenom, u.nom 
+            FROM RESERVATIONS r
+            JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
+            WHERE r.id_trajet = :t AND r.statut_code='V' AND u.id_utilisateur != :me
+        ");
+        $ps->execute([':t'=>$r['id_trajet'], ':me'=>$userId]);
+
+        foreach($ps->fetchAll(PDO::FETCH_ASSOC) as $p){
+            $participants[$r['id_trajet']][] = [
+                'id'=>$p['id_utilisateur'],
+                'nom'=>$p['prenom'].' '.$p['nom'],
+                'role'=>'Passager'
+            ];
         }
     }
 
     Flight::render('mes_reservations.tpl', [
-        'titre' => 'Mes réservations',
-        'reservations' => $reservations
+        'titre'=>'Mes réservations',
+        'reservations'=>$reservations,
+        'participants'=>$participants
     ]);
+});
+
+// SIGNALEMENT
+Flight::route('POST /api/signalement/nouveau', function() {
+
+    if(!isset($_SESSION['user'])) Flight::json(['success'=>false, 'msg'=>'Non connecté']);
+
+    $db = Flight::get('db');
+    $me = $_SESSION['user']['id_utilisateur'];
+
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    if(empty($data['id_trajet']) || empty($data['id_signale']) || empty($data['motif'])){
+        Flight::json(['success'=>false,'msg'=>'Champs manquants']);
+    }
+
+    // Sécurité : les deux utilisateurs doivent appartenir au trajet
+    $check = $db->prepare("
+        SELECT 1 FROM TRAJETS WHERE id_trajet = :t AND id_conducteur = :u
+        UNION
+        SELECT 1 FROM RESERVATIONS WHERE id_trajet = :t AND id_passager = :u AND statut_code='V'
+    ");
+    $check->execute([':t'=>$data['id_trajet'], ':u'=>$data['id_signale']]);
+
+    if(!$check->fetch()){
+        Flight::json(['success'=>false,'msg'=>'Utilisateur non lié au trajet']);
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO SIGNALEMENTS (id_signaleur, id_signale, id_trajet, motif, description)
+        VALUES (:me,:sig,:t,:motif,:desc)
+    ");
+    $stmt->execute([
+        ':me'=>$me,
+        ':sig'=>$data['id_signale'],
+        ':t'=>$data['id_trajet'],
+        ':motif'=>$data['motif'],
+        ':desc'=>$data['description'] ?? null
+    ]);
+
+    Flight::json(['success'=>true]);
 });
 
 // ANNULER UNE RÉSERVATION

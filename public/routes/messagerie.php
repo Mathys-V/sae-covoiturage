@@ -96,7 +96,7 @@ Flight::route('GET /messagerie', function(){
     ]);
 });
 
-// AFFICHER UNE CONVERSATION (Chat)
+// AFFICHER UNE CONVERSATION
 Flight::route('GET /messagerie/conversation/@id', function($id){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
@@ -104,8 +104,11 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $userId = $_SESSION['user']['id_utilisateur'];
 
     // 1. Vérifier accès + Infos Trajet
-    $sqlCheck = "SELECT t.* FROM TRAJETS t
+    $sqlCheck = "SELECT t.*, 
+                 u.prenom as cond_prenom, u.nom as cond_nom, u.id_utilisateur as cond_id
+                 FROM TRAJETS t
                  LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
+                 JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
                  WHERE t.id_trajet = :tid 
                  AND (t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V'))
                  LIMIT 1";
@@ -115,88 +118,85 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $trajet = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
     if (!$trajet) {
-        $_SESSION['flash_error'] = "Vous ne faites pas partie de ce trajet.";
+        $_SESSION['flash_error'] = "Accès refusé.";
         Flight::redirect('/messagerie'); 
         return;
     }
 
-    // --- CALCUL STATUT TRAJET (Hybride BDD + Temps) ---
+    // --- NOUVEAU : RÉCUPÉRER LES PARTICIPANTS POUR LE SIGNALEMENT ---
+    $participants = [];
+    
+    // Ajouter le conducteur (si ce n'est pas moi)
+    if ($trajet['cond_id'] != $userId) {
+        $participants[] = [
+            'id' => $trajet['cond_id'],
+            'nom' => $trajet['cond_prenom'] . ' ' . $trajet['cond_nom'],
+            'role' => 'Conducteur'
+        ];
+    }
+
+    // Ajouter les passagers (si ce n'est pas moi)
+    $sqlPass = "SELECT u.id_utilisateur, u.prenom, u.nom 
+                FROM RESERVATIONS r
+                JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
+                WHERE r.id_trajet = :tid AND r.statut_code = 'V'";
+    $stmtPass = $db->prepare($sqlPass);
+    $stmtPass->execute([':tid' => $id]);
+    $passagers = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach($passagers as $p) {
+        if ($p['id_utilisateur'] != $userId) {
+            $participants[] = [
+                'id' => $p['id_utilisateur'],
+                'nom' => $p['prenom'] . ' ' . $p['nom'],
+                'role' => 'Passager'
+            ];
+        }
+    }
+    // ----------------------------------------------------------------
+
+    // 2. Calcul Statut (Code existant inchangé...)
     $now = new DateTime();
     $depart = new DateTime($trajet['date_heure_depart']);
-    
-    // Calcul de l'arrivée
     $dureeParts = explode(':', $trajet['duree_estimee']);
     $arrivee = clone $depart;
     $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
 
-    // 1. Si le trajet est marqué "Terminé" en BDD OU que la date est passée
     if ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
-        $trajet['statut_visuel'] = 'termine';
-        $trajet['statut_libelle'] = 'Terminé';
-        $trajet['statut_couleur'] = 'secondary'; // Gris
-    } 
-    // 2. Si on est pile dans le créneau horaire
-    elseif ($now >= $depart && $now <= $arrivee) {
-        $trajet['statut_visuel'] = 'encours';
-        $trajet['statut_libelle'] = 'Trajet en cours';
-        $trajet['statut_couleur'] = 'success'; // Vert
-    } 
-    // 3. Si c'est dans le futur
-    else {
-        // C'est ici que votre colonne BDD est utile !
+        $trajet['statut_visuel'] = 'termine'; $trajet['statut_libelle'] = 'Terminé'; $trajet['statut_couleur'] = 'secondary';
+    } elseif ($now >= $depart && $now <= $arrivee) {
+        $trajet['statut_visuel'] = 'encours'; $trajet['statut_libelle'] = 'En cours'; $trajet['statut_couleur'] = 'success';
+    } else {
         if ($trajet['statut_flag'] == 'C') {
-            $trajet['statut_visuel'] = 'complet';
-            $trajet['statut_libelle'] = 'Complet';
-            $trajet['statut_couleur'] = 'warning'; // Jaune/Orange
+            $trajet['statut_visuel'] = 'complet'; $trajet['statut_libelle'] = 'Complet'; $trajet['statut_couleur'] = 'warning';
         } else {
-            $trajet['statut_visuel'] = 'avenir';
-            $trajet['statut_libelle'] = 'Départ à venir';
-            $trajet['statut_couleur'] = 'primary'; // Bleu/Violet
+            $trajet['statut_visuel'] = 'avenir'; $trajet['statut_libelle'] = 'À venir'; $trajet['statut_couleur'] = 'primary';
         }
     }
-    
 
+    // 3. Update Cookie & Messages (Code existant inchangé...)
+    setcookie('last_read_' . $userId . '_' . $id, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
 
-    // 2. Mise à jour cookie lecture
-    $nowStr = date('Y-m-d H:i:s');
-    setcookie('last_read_' . $userId . '_' . $id, $nowStr, time() + (86400 * 30), "/");
-
-    // 3. Récupérer les messages
-    $sqlMsg = "SELECT m.*, u.nom, u.prenom 
-               FROM MESSAGES m
-               JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur
-               WHERE m.id_trajet = :tid
-               ORDER BY m.date_envoi ASC";
-               
+    $sqlMsg = "SELECT m.*, u.nom, u.prenom FROM MESSAGES m JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur WHERE m.id_trajet = :tid ORDER BY m.date_envoi ASC";
     $stmtMsg = $db->prepare($sqlMsg);
     $stmtMsg->execute([':tid' => $id]);
     $messagesBruts = $stmtMsg->fetchAll(PDO::FETCH_ASSOC);
 
-    // 4. Formatage
     $messages = [];
     $lastDate = null;
-
     foreach($messagesBruts as $msg) {
         $dateObj = new DateTime($msg['date_envoi']);
         $dateJour = $dateObj->format('d/m/Y');
+        if ($dateJour !== $lastDate) { $messages[] = ['type' => 'separator', 'date' => $dateJour]; $lastDate = $dateJour; }
         
-        if ($dateJour !== $lastDate) {
-            $messages[] = ['type' => 'separator', 'date' => $dateJour];
-            $lastDate = $dateJour;
-        }
-
-        // --- GESTION MESSAGES SYSTEMES ---
-        if ($msg['contenu'] === '::sys_join::') {
+        if (strpos($msg['contenu'], '::sys_') === 0) {
             $msg['type'] = 'system';
-            $msg['text_affiche'] = $msg['prenom'] . ' ' . $msg['nom'] . ' a rejoint le trajet.';
-        } elseif ($msg['contenu'] === '::sys_leave::') {
-            $msg['type'] = 'system';
-            $msg['text_affiche'] = $msg['prenom'] . ' ' . $msg['nom'] . ' a quitté le trajet.';
+            if ($msg['contenu'] == '::sys_join::') $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet.';
+            if ($msg['contenu'] == '::sys_leave::') $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.';
         } else {
             $msg['type'] = ($msg['id_expediteur'] == $userId) ? 'self' : 'other';
             $msg['nom_affiche'] = ($msg['type'] == 'self') ? 'Moi' : $msg['prenom'] . ' ' . substr($msg['nom'], 0, 1) . '.';
         }
-        
         $msg['heure_fmt'] = $dateObj->format('H:i');
         $messages[] = $msg;
     }
@@ -207,7 +207,8 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     Flight::render('messagerie/conversation.tpl', [
         'titre' => 'Conversation',
         'trajet' => $trajet,
-        'messages' => $messages
+        'messages' => $messages,
+        'participants' => $participants 
     ]);
 });
 

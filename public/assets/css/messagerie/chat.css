@@ -188,3 +188,20 @@ body {
   background: #703ccf;
   transform: scale(1.1);
 }
+/* --- MESSAGE SYSTEME --- */
+.system-msg {
+  text-align: center;
+  margin: 10px 0;
+  opacity: 0.8;
+}
+
+.system-msg span {
+  background-color: #e9ecef;
+  color: #6c757d;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-style: italic;
+  display: inline-block;
+  border: 1px solid #dee2e6;
+}

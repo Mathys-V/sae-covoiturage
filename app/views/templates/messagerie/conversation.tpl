@@ -5,14 +5,25 @@
 <div class="chat-wrapper">
     
     <div class="chat-header">
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center" style="max-width: 70%;">
             <a href="/sae-covoiturage/public/messagerie" class="btn-back">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <div>
-                <h2 class="chat-header-title">{$trajet.ville_depart} → {$trajet.ville_arrivee}</h2>
-                <div class="chat-header-date">
-                    <i class="bi bi-calendar-event me-1"></i> {$trajet.date_fmt}
+            <div class="text-truncate">
+                <h2 class="chat-header-title text-truncate">{$trajet.ville_depart} → {$trajet.ville_arrivee}</h2>
+                <div class="chat-header-date d-flex align-items-center gap-2">
+                    <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-2">
+                        {if $trajet.statut_visuel == 'avenir'}
+                            <i class="bi bi-clock"></i>
+                        {elseif $trajet.statut_visuel == 'complet'}
+                            <i class="bi bi-people-fill"></i> {elseif $trajet.statut_visuel == 'encours'}
+                            <i class="bi bi-car-front-fill"></i>
+                        {else}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {/if}
+                        {$trajet.statut_libelle}
+                    </span>
+                    <span>{$trajet.date_fmt}</span>
                 </div>
             </div>
         </div>
@@ -36,9 +47,17 @@
                     <div class="date-divider">
                         <span>{$msg.date}</span>
                     </div>
+                
+                {elseif $msg.type == 'system'}
+                    <div class="system-msg">
+                        <span>{$msg.text_affiche}</span>
+                    </div>
+
                 {else}
                     <div class="msg-row {if $msg.type == 'self'}self{else}other{/if}">
-                        <div class="msg-name">{$msg.nom_affiche}</div>
+                        {if $msg.type != 'self'}
+                            <div class="msg-name">{$msg.nom_affiche}</div>
+                        {/if}
                         <div class="msg-bubble">
                             {$msg.contenu|escape:'html'|nl2br}
                             <span class="msg-time">{$msg.heure_fmt}</span>
@@ -75,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
     }
-    // Scroll immédiat au chargement
     scrollToBottom();
 
     chatForm.addEventListener('submit', function(e) {

@@ -34,10 +34,10 @@ Flight::route('GET /trajet/reserver/@id', function($id){
         return;
     }
 
-    // Calcul places prises (uniquement réservations validées 'V')
+    // Calcul places prises
     $sqlPlaces = "SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
                   FROM RESERVATIONS
-                  WHERE id_trajet = :id AND statut_code = 'V'"; // On ne compte que les Validées
+                  WHERE id_trajet = :id AND statut_code = 'V'";
     
     $stmtPlaces = $db->prepare($sqlPlaces);
     $stmtPlaces->execute([':id' => $id]);
@@ -46,11 +46,11 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $trajet['places_prises'] = $placesData['places_prises'];
     $trajet['places_disponibles'] = $trajet['places_proposees'] - $trajet['places_prises'];
 
-    // Vérif si déjà réservé (Validé ou En attente, pour ne pas réserver 2 fois)
+    // Vérif si déjà réservé
     $sqlCheck = "SELECT * FROM RESERVATIONS 
                  WHERE id_trajet = :id 
                  AND id_passager = :user 
-                 AND statut_code IN ('V', 'A')"; // V=Validé, A=Attente (si vous gérez l'attente, sinon juste V)
+                 AND statut_code IN ('V', 'A')";
                  
     $stmtCheck = $db->prepare($sqlCheck);
     $stmtCheck->execute([':id' => $id, ':user' => $userId]);
@@ -117,15 +117,18 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             ':places' => $nbPlacesVoulues
         ]);
 
-        // Mise à jour statut trajet si complet
         if ($placesDisponibles - $nbPlacesVoulues == 0) {
             $sqlUpdate = "UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id";
             $stmtUpdate = $db->prepare($sqlUpdate);
             $stmtUpdate->execute([':id' => $id]);
         }
 
-        // --- CORRECTION : ON NE TOUCHE PAS AUX TABLES DE MESSAGERIE INEXISTANTES ---
-        // La simple présence dans la table RESERVATIONS donne accès au chat.
+        // --- AJOUT SYSTEM : Message automatique "A rejoint" ---
+        $msgContent = "::sys_join::";
+        $sqlMsg = "INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :content, NOW())";
+        $stmtMsg = $db->prepare($sqlMsg);
+        $stmtMsg->execute([':tid' => $id, ':uid' => $userId, ':content' => $msgContent]);
+        // -----------------------------------------------------
 
         $db->commit();
         $_SESSION['flash_success'] = "Réservation confirmée, bon voyage !";
@@ -200,16 +203,20 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
         if (!$reservation) throw new Exception("Réservation introuvable.");
 
-        // On supprime la réservation ou on change le statut (ici DELETE pour simplifier ou UPDATE statut='A' si la colonne le permet)
-        // D'après votre script SQL : statut_code CHAR(1) DEFAULT 'V' CHECK (statut_code IN ('V', 'A', 'R'))
         $sqlUpdate = "UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_reservation = :id";
         $stmtUpdate = $db->prepare($sqlUpdate);
         $stmtUpdate->execute([':id' => $id]);
 
-        // On remet le trajet en 'A' (Actif) s'il était 'C' (Complet)
         $sqlTrajet = "UPDATE TRAJETS SET statut_flag = 'A' WHERE id_trajet = :trajet AND statut_flag = 'C'";
         $stmtTrajet = $db->prepare($sqlTrajet);
         $stmtTrajet->execute([':trajet' => $reservation['id_trajet']]);
+
+        // --- AJOUT SYSTEM : Message automatique "A quitté" ---
+        $msgContent = "::sys_leave::";
+        $sqlMsg = "INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :content, NOW())";
+        $stmtMsg = $db->prepare($sqlMsg);
+        $stmtMsg->execute([':tid' => $reservation['id_trajet'], ':uid' => $userId, ':content' => $msgContent]);
+        // -----------------------------------------------------
 
         $db->commit();
         $_SESSION['flash_success'] = "Réservation annulée avec succès.";
@@ -221,4 +228,6 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
     Flight::redirect('/mes_reservations');
 });
+
+
 ?>

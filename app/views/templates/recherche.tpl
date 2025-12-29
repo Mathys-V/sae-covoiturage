@@ -76,10 +76,16 @@
                         {/foreach}
                     </div>
                 {else}
-                    <div class="border rounded-4 p-3 border-white border-opacity-25">
+                    <div class="border rounded-4 p-3 border-white border-opacity-25" id="history-message-box">
                         <div class="text-white text-center py-3">
                             <i class="bi bi-clock-history fs-1 mb-2 d-block opacity-50"></i>
-                            Aucune recherche récente
+                            <span id="history-text">Aucune recherche récente</span>
+                            
+                            <p id="cookie-warning" class="small text-white-50 mt-2 d-none">
+                                <i class="bi bi-info-circle me-1"></i>
+                                L'historique est désactivé car vous avez refusé les cookies de performance.
+                                <a href="/sae-covoiturage/public/cookies" class="text-white text-decoration-underline ms-1">Modifier mes choix</a>
+                            </p>
                         </div>
                     </div>
                 {/if}
@@ -93,6 +99,43 @@
     try {
         window.lieuxFrequents = JSON.parse('{$lieux_frequents|default:[]|json_encode|escape:"javascript"}');
     } catch(e) { console.warn("Erreur chargement données lieux", e); }
+
+    // --- SCRIPT DE DÉTECTION DES COOKIES ---
+    document.addEventListener('DOMContentLoaded', function() {
+        function getCookie(name) {
+            let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        const cookieConsent = getCookie('cookie_consent');
+        const warningText = document.getElementById('cookie-warning');
+        
+        if (warningText) {
+            let showWarning = true;
+
+            if (cookieConsent) {
+                try {
+                    const consentData = JSON.parse(cookieConsent);
+                    // Si performance = 1, alors l'historique marche, donc pas besoin du message d'erreur
+                    if (consentData.performance == 1) {
+                        showWarning = false;
+                    }
+                } catch (e) {
+                    console.error("Erreur lecture cookie", e);
+                }
+            } else {
+                // Si pas de cookie du tout, on suppose que c'est le premier passage ou tout refusé
+                // On peut laisser le warning ou l'afficher différemment. 
+                // Ici, on part du principe que si pas de consentement explicite, pas d'historique.
+            }
+
+            if (showWarning) {
+                warningText.classList.remove('d-none');
+            }
+        }
+    });
 </script>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_recherche.js"></script>

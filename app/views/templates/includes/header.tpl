@@ -113,6 +113,13 @@
       
       <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3 mt-3 mt-lg-0">
         
+        {if isset($user) && $user.admin_flag == 'Y'}
+            <a href="/sae-covoiturage/public/moderation" class="btn btn-danger fw-bold">
+                <i class="bi bi-shield-lock-fill"></i> Modération
+            </a>
+            <div class="vr mx-2 d-none d-lg-block"></div>
+        {/if}
+
         <a href="{if isset($user)}/sae-covoiturage/public/trajet/nouveau{else}/sae-covoiturage/public/connexion{/if}" 
            class="btn btn-purple w-100"
            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour proposer un trajet.\n\nCliquez sur OK pour vous connecter.');"{/if}>
@@ -161,6 +168,15 @@
                 
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="min-width: 200px;">
                     
+                    {if isset($user) && $user.admin_flag == 'Y'}
+                        <li>
+                            <a class="dropdown-item py-2 text-danger fw-bold" href="/sae-covoiturage/public/moderation">
+                                <i class="bi bi-shield-exclamation me-2"></i> Espace Admin
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                    {/if}
+
                     <li>
                         <a class="dropdown-item py-2" href="{if isset($user)}/sae-covoiturage/public/mes_trajets{else}/sae-covoiturage/public/connexion{/if}"
                         {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
@@ -187,11 +203,6 @@
 
                     <li><hr class="dropdown-divider"></li>
 
-                    {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="/sae-covoiturage/public/moderation"><i class="bi bi-shield-exclamation me-2"></i> Modération</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                    {/if}
-
                     <li>
                         {if isset($user)}
                             <a class="dropdown-item py-2" href="/sae-covoiturage/public/deconnexion"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
@@ -206,13 +217,19 @@
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
+            {if isset($user) && $user.admin_flag == 'Y'}
+                <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger fw-bold">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Administration
+                </a>
+            {/if}
+
             <a href="{if isset($user)}/sae-covoiturage/public/mes-trajets{else}/sae-covoiturage/public/connexion{/if}" 
             class="mobile-link"
             {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos trajets.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <i class="bi bi-car-front me-2"></i> Mes trajets
             </a>
 
-            <a href="{if isset($user)}/sae-covoiturage/public/messagerie/liste{else}/sae-covoiturage/public/connexion{/if}" 
+            <a href="{if isset($user)}/sae-covoiturage/public/messagerie{else}/sae-covoiturage/public/connexion{/if}" 
                 class="mobile-link d-flex justify-content-between align-items-center"
                 {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos messages.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <span><i class="bi bi-chat-dots me-2"></i> Messages</span>
@@ -226,10 +243,6 @@
                 {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}>
                 <i class="bi bi-person-circle me-2"></i> Mon Profil
             </a>
-
-            {if isset($user) && isset($user.role) && $user.role == 'admin'}
-                <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger"><i class="bi bi-shield-exclamation me-2"></i> Modération</a>
-            {/if}
 
             {if isset($user)}
                 <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
@@ -248,22 +261,15 @@
         <div class="alert alert-success alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #198754; background-color: #d1e7dd; color: #0f5132;">
             <div class="d-flex align-items-center">
                 <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
-                <div>
-                    <strong>Succès !</strong> {$flash_success}
-                </div>
+                <div><strong>Succès !</strong> {$flash_success}</div>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
-    
     <script>
         setTimeout(function() {
             let alert = document.querySelector('.alert');
-            if(alert) {
-                // On utilise l'API Bootstrap pour fermer proprement avec l'effet fade
-                let bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }
+            if(alert) { let bsAlert = new bootstrap.Alert(alert); bsAlert.close(); }
         }, 4000);
     </script>
 {/if}
@@ -272,21 +278,15 @@
         <div class="alert alert-danger alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #dc3545; background-color: #f8d7da; color: #842029;">
             <div class="d-flex align-items-center">
                 <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
-                <div>
-                    <strong>Attention !</strong> {$flash_error}
-                </div>
+                <div><strong>Attention !</strong> {$flash_error}</div>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
-    
     <script>
         setTimeout(function() {
             let alert = document.querySelector('.alert-danger');
-            if(alert) {
-                let bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }
-        }, 10000); // On laisse l'erreur affichée 10 secondes
+            if(alert) { let bsAlert = new bootstrap.Alert(alert); bsAlert.close(); }
+        }, 10000);
     </script>
 {/if}

@@ -11,31 +11,60 @@ Flight::route('GET /connexion', function(){
     Flight::render('connexion.tpl', ['titre' => 'Se connecter']);
 });
 
-//Connexion (Traitement) - LE CŒUR DU SYSTÈME
+
+// TRAITEMENT DU FORMULAIRE DE CONNEXION
 Flight::route('POST /connexion', function(){
+    $db = Flight::get('db');
     $email = Flight::request()->data->email;
     $password = Flight::request()->data->password;
-    
-    $db = Flight::get('db');
 
+    // 1. Récupérer l'utilisateur
     $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE email = :email");
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // 2. Vérifications Mot de Passe
     if ($user && password_verify($password, $user['mot_de_passe'])) {
-        unset($user['mot_de_passe']); 
+        
+        // --- VÉRIFICATION BANNISSEMENT (LOGIQUE COMPLÈTE) ---
+        if ($user['active_flag'] === 'N') {
+            
+            // Cas 1 : Bannissement Temporaire (il y a une date dans le token)
+            if (!empty($user['date_expiration_token'])) {
+                $finBan = new DateTime($user['date_expiration_token']);
+                $now = new DateTime();
+
+                if ($now > $finBan) {
+                    // LE BAN EST FINI : On réactive le compte
+                    $db->prepare("UPDATE UTILISATEURS SET active_flag = 'Y', date_expiration_token = NULL WHERE id_utilisateur = :id")
+                       ->execute([':id' => $user['id_utilisateur']]);
+                    
+                    // IMPORTANT : On met à jour la variable locale pour que la connexion continue juste après
+                    $user['active_flag'] = 'Y'; 
+                } else {
+                    // BAN EN COURS (Date non dépassée)
+                    $_SESSION['flash_error'] = "Compte suspendu temporairement jusqu'au " . $finBan->format('d/m/Y à H:i');
+                    Flight::redirect('/connexion');
+                    return; // On arrête tout ici
+                }
+            } 
+            // Cas 2 : Bannissement Définitif (pas de date)
+            else {
+                $_SESSION['flash_error'] = "Votre compte a été suspendu définitivement par l'administration.";
+                Flight::redirect('/connexion');
+                return; // On arrête tout ici
+            }
+        }
+        // -----------------------------------------------------
+
+        // Si on arrive ici, c'est que l'utilisateur est Actif (Y) ou vient d'être débanni
         $_SESSION['user'] = $user;
-        
-        // --- CRÉATION DU MESSAGE FLASH ---
-        // On personnalise le message avec le prénom
-        $_SESSION['flash_success'] = "Connexion réussie ! Ravi de vous revoir, " . $user['prenom'] . ".";
-        
-        Flight::redirect('/');
+        Flight::redirect('/'); 
+
     } else {
-        Flight::render('connexion.tpl', [
-            'titre' => 'Se connecter',
-            'error' => 'Adresse email ou mot de passe incorrect.'
-        ]);
+        // Mauvais mot de passe ou email inconnu
+        $_SESSION['flash_error'] = "Email ou mot de passe incorrect.";
+        Flight::redirect('/connexion');
     }
 });
 

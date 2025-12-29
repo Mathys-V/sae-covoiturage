@@ -169,6 +169,78 @@ Flight::route('GET /api/check-email', function(){
     Flight::json(['exists' => ($count > 0)]);
 });
 
+// -----------------------------------------------------------
+// PAGE MES AVIS 
+// -----------------------------------------------------------
+Flight::route('GET /profil/avis', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    // CORRECTION SQL : On passe par la table RESERVATIONS pour atteindre le TRAJET
+    $sql = "SELECT 
+                a.*, 
+                u.prenom, 
+                u.nom, 
+                u.photo_profil, 
+                t.id_conducteur,
+                a.role_destinataire -- Votre table contient déjà le rôle ('C' ou 'P'), on peut l'utiliser !
+            FROM AVIS a
+            JOIN RESERVATIONS r ON a.id_reservation = r.id_reservation
+            JOIN TRAJETS t ON r.id_trajet = t.id_trajet
+            JOIN UTILISATEURS u ON a.id_auteur = u.id_utilisateur
+            WHERE a.id_destinataire = :id
+            ORDER BY a.date_avis DESC";
+            
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':id' => $idUser]);
+    $allAvis = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Initialisation des tableaux
+    $avisConducteur = [];
+    $avisPassager = [];
+    
+    $totalCond = 0; $countCond = 0;
+    $totalPass = 0; $countPass = 0;
+
+    foreach($allAvis as $avis) {
+        // Option 1 : On utilise la colonne role_destinataire de votre BDD (plus fiable)
+        // 'C' = Conducteur, 'P' = Passager
+        if ($avis['role_destinataire'] === 'C') {
+            $avisConducteur[] = $avis;
+            $totalCond += $avis['note'];
+            $countCond++;
+        } 
+        // Option 2 (Secours) : Si role_destinataire est vide, on vérifie via l'ID conducteur du trajet
+        elseif ($avis['id_conducteur'] == $idUser) {
+            $avisConducteur[] = $avis;
+            $totalCond += $avis['note'];
+            $countCond++;
+        } 
+        else {
+            $avisPassager[] = $avis;
+            $totalPass += $avis['note'];
+            $countPass++;
+        }
+    }
+
+    // Calcul des moyennes
+    $moyenneCond = ($countCond > 0) ? round($totalCond / $countCond, 1) : 0;
+    $moyennePass = ($countPass > 0) ? round($totalPass / $countPass, 1) : 0;
+
+    // Envoi à la vue
+    Flight::render('avis/avis.tpl', [
+        'titre' => 'Mes Avis',
+        'avis_cond' => $avisConducteur,
+        'nb_cond' => $countCond,
+        'moy_cond' => $moyenneCond,
+        'avis_pass' => $avisPassager,
+        'nb_pass' => $countPass,
+        'moy_pass' => $moyennePass
+    ]);
+});
+
 
 // -----------------------------------------------------------
 // GESTION PROFIL : MODIFICATION ADRESSE

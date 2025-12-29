@@ -1,0 +1,44 @@
+/* ============================================================
+   STYLE DES AVIS (style_avis.css)
+   ============================================================ */
+
+/* La barre violette des onglets */
+.custom-tabs {
+  background-color: #5a369e;
+  border-radius: 15px 15px 0 0;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Les boutons des onglets */
+.tab-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+  color: #ffffff;
+  border-bottom: 3px solid #ffffff;
+}
+
+.tab-btn:hover {
+  color: #ffffff;
+}
+
+/* La boîte blanche qui contient les avis */
+.content-box {
+  background: #fff;
+  border-radius: 0 0 15px 15px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  min-height: 300px;
+}

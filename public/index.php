@@ -106,6 +106,7 @@ require 'routes/trajets.php';    // Proposer, Mes Trajets
 require 'routes/recherche.php';  // Recherche, Résultats
 require 'routes/reservation.php'; // Réserver, Mes Réservations, Annuler
 require 'routes/carte.php';        // La carte
+require 'routes/avis.php';        // Avis
 require 'routes/signalements.php'; // Signaler un utilisateur
 require 'routes/admin.php'; // Admin - Modération
 

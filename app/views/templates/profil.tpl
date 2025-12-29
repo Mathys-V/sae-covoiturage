@@ -188,6 +188,7 @@
                 <a href="#" class="settings-item"><span>Avis</span><i class="bi bi-chevron-right"></i></a>
                 <a href="/sae-covoiturage/public/profil/gestion_mdp" class="settings-item"><span>Mot de passe</span><i class="bi bi-chevron-right"></i></a>
                 <a href="/sae-covoiturage/public/profil/modifier_adresse" class="settings-item"><span>Adresse postale</span><i class="bi bi-chevron-right"></i></a>
+                <a href="/sae-covoiturage/public/profil/mes_signalements" class="settings-item"><span>Mes signalements</span><i class="bi bi-chevron-right"></i></a>
                 <a href="/sae-covoiturage/public/profil/preferences" class="settings-item"><span>Préférences de communication</span><i class="bi bi-chevron-right"></i></a>
                 <a href="#" class="settings-item"><span>Politique de confidentialité</span><i class="bi bi-chevron-right"></i></a>
                 <a href="/sae-covoiturage/public/deconnexion" class="settings-item"><span>Déconnexion</span><i class="bi bi-chevron-right"></i></a>

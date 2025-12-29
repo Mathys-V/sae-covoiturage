@@ -413,7 +413,34 @@ Flight::route('POST /profil/preferences/telephone/save', function(){
 
 
 
+// PAGE MES SIGNALEMENTS
+Flight::route('GET /profil/mes_signalements', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // Récupérer les signalements faits par l'utilisateur
+    // On joint avec UTILISATEURS pour avoir le nom de la personne signalée
+    // Et avec TRAJETS pour le contexte (facultatif mais mieux)
+    $sql = "SELECT s.*, 
+                   u.nom as nom_signale, u.prenom as prenom_signale,
+                   t.ville_depart, t.ville_arrivee
+            FROM SIGNALEMENTS s
+            JOIN UTILISATEURS u ON s.id_signale = u.id_utilisateur
+            LEFT JOIN TRAJETS t ON s.id_trajet = t.id_trajet
+            WHERE s.id_signaleur = :uid
+            ORDER BY s.date_signalement DESC";
+            
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':uid' => $userId]);
+    $signalements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    Flight::render('profil/mes_signalements.tpl', [
+        'titre' => 'Mes signalements',
+        'signalements' => $signalements
+    ]);
+});
 
 
 

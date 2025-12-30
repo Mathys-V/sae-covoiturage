@@ -89,6 +89,21 @@
                                 <i class="bi bi-clock-fill me-2"></i>
                                 Départ : {$reservation.heure_fmt}
                             </p>
+
+                            <p class="mt-2">
+                                <span class="badge bg-{$reservation.statut_couleur} bg-opacity-10 text-{$reservation.statut_couleur} border border-{$reservation.statut_couleur} rounded-pill px-2 py-1 fw-bold">
+                                    {if $reservation.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
+                                    {elseif $reservation.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
+                                    {else}<i class="bi bi-check-circle-fill me-1"></i>{/if}
+                                    {$reservation.statut_libelle}
+                                </span>
+
+                                {if $reservation.statut_visuel == 'encours' && isset($reservation.temps_restant)}
+                                    <span class="ms-2 text-success fw-semibold">
+                                        <i class="bi bi-hourglass-split"></i> Arrivée dans {$reservation.temps_restant}
+                                    </span>
+                                {/if}
+                            </p>
                         </div>
                     </div>
 

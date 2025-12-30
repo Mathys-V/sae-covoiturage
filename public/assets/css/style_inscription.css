@@ -1,25 +1,25 @@
 /* --- STYLE GLOBAL --- */
-body { 
+body {
     background-color: #452b85 !important; /* Force le fond violet */
 }
 
 /* --- TITRES & TEXTES --- */
-.titre-inscription { 
-    color: #8c52ff; 
-    font-family: 'Garet', sans-serif; 
-    font-weight: bold; 
+.titre-inscription {
+    color: #8c52ff;
+    font-family: "Garet", sans-serif;
+    font-weight: bold;
 }
-.form-label { 
-    color: #8c52ff; 
-    font-size: 1.2rem; 
+.form-label {
+    color: #8c52ff;
+    font-size: 1.2rem;
 }
-.asterisque { 
-    color: #ED3F27; 
-    margin-left: 5px; 
+.asterisque {
+    color: #ed3f27;
+    margin-left: 5px;
 }
-.texte-champ { 
-    color: #ED3F27; 
-    font-style: italic; 
+.texte-champ {
+    color: #ed3f27;
+    font-style: italic;
 }
 
 /* --- CHAMPS DE FORMULAIRE --- */
@@ -55,15 +55,18 @@ body {
     transform: scale(1.02);
 }
 
-.btn-petit { 
+.btn-petit {
     width: 100px !important;
     padding: 10px 0 !important;
-    margin-left: 40px; 
+    margin-left: 40px;
     margin-right: 40px;
 }
 
 @media (min-width: 768px) {
-    .btn-inscription { width: 40%; padding: 12px 40px; }
+    .btn-inscription {
+        width: 40%;
+        padding: 12px 40px;
+    }
 }
 
 /* --- SCROLLBAR PERSONNALISÉE --- */
@@ -72,10 +75,21 @@ body {
     scroll-behavior: smooth;
 }
 
-.card-scrollable::-webkit-scrollbar { width: 8px; }
-.card-scrollable::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; margin: 10px 0; }
-.card-scrollable::-webkit-scrollbar-thumb { background: #8c52ff; border-radius: 10px; }
-.card-scrollable::-webkit-scrollbar-thumb:hover { background: #452b85; }
+.card-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+.card-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+.card-scrollable::-webkit-scrollbar-thumb {
+    background: #8c52ff;
+    border-radius: 10px;
+}
+.card-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #452b85;
+}
 
 /* --- INPUT NOMBRE (PLACES) --- */
 .number-input-container {
@@ -83,8 +97,8 @@ body {
     width: 120px; /* Largeur totale du bloc */
     height: 50px; /* Hauteur du bloc */
     border: 2px solid #8c52ff; /* Bordure violette autour de tout */
-    border-radius: 8px; 
-    overflow: hidden; 
+    border-radius: 8px;
+    overflow: hidden;
     background-color: white;
     margin: 0 auto; /* Centrage */
 }
@@ -97,7 +111,6 @@ body {
     color: #000;
     width: 100%;
     background: transparent;
-    -moz-appearance: textfield;
 }
 .number-field:focus {
     box-shadow: none; /* Pas de halo bleu */
@@ -138,7 +151,7 @@ body {
 
 /* Petite ligne entre les deux boutons flèches */
 .spinner-btn:first-child {
-    border-bottom: 1px solid rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* --- GROUPE INPUT + ICONE (MDP) --- */
@@ -162,9 +175,9 @@ body {
 
 /* Gestion de l'état invalide (Rouge) */
 .form-control.is-invalid + .input-group-text {
-    border-color: #dc3545; 
+    border-color: #dc3545;
 }
 
 .form-control.is-invalid + .input-group-text i {
-    color: #dc3545 !important; 
+    color: #dc3545 !important;
 }

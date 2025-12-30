@@ -244,6 +244,34 @@ Flight::route('POST /profil/update-photo', function(){
     Flight::redirect('/profil');
 });
 
+
+
+// ============================================================
+// SUPPRESSION DU COMPTE (Soft Delete)
+// ============================================================
+Flight::route('POST /profil/delete-account', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    try {
+        // 1. On ne supprime pas, on désactive (active_flag = 'N')
+        $stmt = $db->prepare("UPDATE UTILISATEURS SET active_flag = 'N' WHERE id_utilisateur = ?");
+        $stmt->execute([$idUser]);
+
+        // 2. On détruit la session (déconnexion forcée)
+        session_destroy();
+        
+        // 3. On redirige vers l'accueil avec un message (optionnel via URL ou cookie)
+        Flight::redirect('/?msg=account_closed');
+
+    } catch (Exception $e) {
+        $_SESSION['flash_error'] = "Erreur lors de la fermeture du compte.";
+        Flight::redirect('/profil');
+    }
+});
+
 // -----------------------------------------------------------
 // PAGE MES AVIS 
 // -----------------------------------------------------------

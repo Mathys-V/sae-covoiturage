@@ -163,11 +163,37 @@ Flight::route('GET /mes_reservations', function(){
 
     $participants = [];
 
+    $now = new DateTime();
+
     foreach ($reservations as &$r) {
         $participants[$r['id_trajet']] = [];
-        $d = new DateTime($r['date_heure_depart']);
-        $r['date_fmt'] = $d->format('d/m/Y');
-        $r['heure_fmt'] = $d->format('H\hi');
+
+        $dateObj = new DateTime($r['date_heure_depart']);
+        $r['date_fmt'] = $dateObj->format('d/m/Y');
+        $r['heure_fmt'] = $dateObj->format('H\hi');
+
+        // --- Statut du trajet ---
+        // Assure que duree_estimee est numérique
+        $duree = isset($r['duree_estimee']) && is_numeric($r['duree_estimee']) ? (int)$r['duree_estimee'] : 0;
+        $end = (clone $dateObj)->add(new DateInterval('PT'.$duree.'M'));
+
+        if ($dateObj > $now) {
+            $r['statut_visuel'] = 'avenir';
+            $r['statut_libelle'] = 'À venir';
+            $r['statut_couleur'] = 'primary';
+        } elseif ($now >= $dateObj && $now <= $end) {
+            $r['statut_visuel'] = 'encours';
+            $r['statut_libelle'] = 'En cours';
+            $r['statut_couleur'] = 'success';
+
+            $interval = $now->diff($end);
+            $r['temps_restant'] = $interval->format('%Hh %Im');
+        } else {
+            $r['statut_visuel'] = 'termine';
+            $r['statut_libelle'] = 'Terminé';
+            $r['statut_couleur'] = 'secondary';
+        }
+        // --- /Statut du trajet ---
 
         $participants[$r['id_trajet']][] = [
             'id'=>$r['id_conducteur'],
@@ -198,6 +224,7 @@ Flight::route('GET /mes_reservations', function(){
         'participants'=>$participants
     ]);
 });
+
 
 // SIGNALEMENT
 Flight::route('POST /api/signalement/nouveau', function() {

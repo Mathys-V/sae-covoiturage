@@ -34,21 +34,24 @@
                         <i class="bi bi-person-circle me-2"></i>Informations du conducteur
                     </h4>
                     
-                    <div class="d-flex align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm">
-                        <div class="me-3">
-                            {if $trajet.photo_profil && $trajet.photo_profil != ''}
-                                <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil}" alt="Avatar" class="rounded-circle avatar-img">
-                            {else}
-                                <div class="rounded-circle avatar-placeholder">
-                                    {$trajet.prenom|substr:0:1}{$trajet.nom|substr:0:1}
-                                </div>
-                            {/if}
+                    <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark">
+                        <div class="d-flex align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm hover-effect transition">
+                            <div class="me-3">
+                                {if $trajet.photo_profil && $trajet.photo_profil != ''}
+                                    <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil}" alt="Avatar" class="rounded-circle avatar-img">
+                                {else}
+                                    <div class="rounded-circle avatar-placeholder">
+                                        {$trajet.prenom|substr:0:1}{$trajet.nom|substr:0:1}
+                                    </div>
+                                {/if}
+                            </div>
+                            <div>
+                                <div class="fw-bold fs-5" style="color: #3b2875;">{$trajet.prenom} {$trajet.nom|upper}</div>
+                                <small class="text-muted d-block"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
+                                <small class="text-warning fst-italic"><i class="bi bi-eye-fill me-1"></i> Voir le profil</small>
+                            </div>
                         </div>
-                        <div>
-                            <div class="fw-bold fs-5" style="color: #3b2875;">{$trajet.prenom} {$trajet.nom|upper}</div>
-                            <small class="text-muted"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
-                        </div>
-                    </div>
+                    </a>
 
                     {* Trajet prévu *}
                     <div class="bg-white rounded-4 p-4 shadow-sm">

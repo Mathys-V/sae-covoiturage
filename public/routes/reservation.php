@@ -50,7 +50,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $sqlCheck = "SELECT * FROM RESERVATIONS 
                  WHERE id_trajet = :id 
                  AND id_passager = :user 
-                 AND statut_code IN ('V', 'A')";
+                 AND statut_code = 'V'";
                  
     $stmtCheck = $db->prepare($sqlCheck);
     $stmtCheck->execute([':id' => $id, ':user' => $userId]);
@@ -163,24 +163,20 @@ Flight::route('GET /mes_reservations', function(){
     $stmt->execute([':user' => $userId]);
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Participants par trajet
     $participants = [];
 
     foreach ($reservations as &$r) {
-
-        // Format date/heure
+        $participants[$r['id_trajet']] = [];
         $d = new DateTime($r['date_heure_depart']);
         $r['date_fmt'] = $d->format('d/m/Y');
         $r['heure_fmt'] = $d->format('H\hi');
 
-        // Conducteur
         $participants[$r['id_trajet']][] = [
             'id'=>$r['id_conducteur'],
             'nom'=>$r['conducteur_prenom'].' '.$r['conducteur_nom'],
             'role'=>'Conducteur'
         ];
 
-        // Passagers
         $ps = $db->prepare("
             SELECT u.id_utilisateur, u.prenom, u.nom 
             FROM RESERVATIONS r
@@ -207,7 +203,6 @@ Flight::route('GET /mes_reservations', function(){
 
 // SIGNALEMENT
 Flight::route('POST /api/signalement/nouveau', function() {
-
     if(!isset($_SESSION['user'])) Flight::json(['success'=>false, 'msg'=>'Non connecté']);
 
     $db = Flight::get('db');
@@ -219,7 +214,6 @@ Flight::route('POST /api/signalement/nouveau', function() {
         Flight::json(['success'=>false,'msg'=>'Champs manquants']);
     }
 
-    // Sécurité : les deux utilisateurs doivent appartenir au trajet
     $check = $db->prepare("
         SELECT 1 FROM TRAJETS WHERE id_trajet = :t AND id_conducteur = :u
         UNION
@@ -262,24 +256,25 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
         if (!$reservation) throw new Exception("Réservation introuvable.");
 
+        // Mettre le statut à A pour annulé
         $sqlUpdate = "UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_reservation = :id";
         $stmtUpdate = $db->prepare($sqlUpdate);
         $stmtUpdate->execute([':id' => $id]);
 
+        // Si le trajet était complet, le réouvrir
         $sqlTrajet = "UPDATE TRAJETS SET statut_flag = 'A' WHERE id_trajet = :trajet AND statut_flag = 'C'";
         $stmtTrajet = $db->prepare($sqlTrajet);
         $stmtTrajet->execute([':trajet' => $reservation['id_trajet']]);
 
-        // --- AJOUT SYSTEM : Message automatique "A quitté" ---
+        // Message système "A quitté"
         $msgContent = "::sys_leave::";
         $sqlMsg = "INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :content, NOW())";
         $stmtMsg = $db->prepare($sqlMsg);
         $stmtMsg->execute([':tid' => $reservation['id_trajet'], ':uid' => $userId, ':content' => $msgContent]);
-        // -----------------------------------------------------
 
         $db->commit();
         $_SESSION['flash_success'] = "Réservation annulée avec succès.";
-        
+
     } catch (Exception $e) {
         $db->rollBack();
         $_SESSION['flash_error'] = $e->getMessage();
@@ -287,6 +282,4 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
     Flight::redirect('/mes_reservations');
 });
-
-
 ?>

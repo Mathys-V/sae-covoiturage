@@ -51,9 +51,10 @@
     
     <div class="chat-header p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center" style="max-width: 80%;">
-            <a href="/sae-covoiturage/public/messagerie" class="btn btn-light rounded-circle me-3">
-                <i class="bi bi-arrow-left"></i>
-            </a>
+            <a href="/sae-covoiturage/public/messagerie#{if $trajet.statut_visuel == 'complet'}avenir{else}{$trajet.statut_visuel}{/if}" 
+   class="btn btn-light rounded-circle shadow-sm me-3">
+   <i class="bi bi-arrow-left text-dark"></i>
+</a>
             <div class="text-truncate">
                 <h5 class="mb-0 text-truncate fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$trajet.ville_arrivee}</h5>
                 <div class="d-flex align-items-center gap-2 small mt-1">
@@ -103,8 +104,9 @@
                                 <div class="text-center">
                                     <h4 class="fw-bold text-purple mb-2"><i class="bi bi-flag-fill"></i> Trajet terminé !</h4>
                                     <p class="text-muted mb-3">Nous espérons que vous avez fait bon voyage. C'est le moment de laisser un avis.</p>
-                                    <a href="/sae-covoiturage/public/avis/choix/{$trajet.id_trajet}" class="btn btn-purple rounded-pill px-4 fw-bold shadow-sm">
-                                        <i class="bi bi-star-fill me-2"></i> Noter les participants
+                                    <a href="/sae-covoiturage/public/avis/choix/{$trajet.id_trajet}" 
+                                       class="btn btn-purple rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center text-nowrap"
+                                       style="min-width: 200px;"> <i class="bi bi-star-fill me-2"></i> Noter les participants
                                     </a>
                                 </div>
                             </div>

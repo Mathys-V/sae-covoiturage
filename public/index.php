@@ -51,9 +51,10 @@ Flight::map('render', function($template, $data){
                 $idsString = implode(',', $mesTrajets);
                 
                 // On récupère les messages des autres
-                $sqlMsgs = "SELECT id_trajet, date_envoi FROM MESSAGES 
+                // CORRECTION : On compte aussi les messages système (::sys_) même s'ils viennent de nous
+                $sqlMsgs = "SELECT id_trajet, date_envoi, id_expediteur, contenu FROM MESSAGES 
                             WHERE id_trajet IN ($idsString) 
-                            AND id_expediteur != :uid";
+                            AND (id_expediteur != :uid OR contenu LIKE '::sys_%')";
                 
                 $stmtMsgs = $db->prepare($sqlMsgs);
                 $stmtMsgs->execute([':uid' => $userId]);

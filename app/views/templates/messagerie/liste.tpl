@@ -1,34 +1,94 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/messagerie/liste.css">
+<div class="container my-4" style="max-width: 800px;">
+    <h2 class="fw-bold text-center text-purple mb-4">Mes Discussions</h2>
 
-<div class="container mt-5 mb-5 flex-grow-1">
-    
-    <div class="messagerie-container">
-        <h1 class="page-title">Mes Discussions</h1>
+    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded-pill shadow-sm" id="msgTabs" role="tablist">
+        
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill active fw-bold position-relative" id="encours-tab" data-bs-toggle="pill" data-bs-target="#encours" type="button">
+                En cours
+                {if $notifs.encours > 0}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {$notifs.encours}
+                    </span>
+                {/if}
+            </button>
+        </li>
 
-        {if empty($conversations)}
-            <div class="empty-state-box">
-                <i class="bi bi-chat-square-dots text-muted display-1 mb-3"></i>
-                <h4 class="text-dark">Aucune conversation</h4>
-                <p class="text-muted mb-4">Rejoignez un trajet pour commencer à discuter !</p>
-                <a href="/sae-covoiturage/public/recherche" class="btn btn-purple rounded-pill px-4">Rechercher un trajet</a>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-bold position-relative" id="avenir-tab" data-bs-toggle="pill" data-bs-target="#avenir" type="button">
+                À venir
+                {if $notifs.avenir > 0}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {$notifs.avenir}
+                    </span>
+                {/if}
+            </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-bold position-relative" id="termine-tab" data-bs-toggle="pill" data-bs-target="#termine" type="button">
+                Terminé
+                {if $notifs.termine > 0}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {$notifs.termine}
+                    </span>
+                {/if}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="msgTabsContent">
+        
+        <div class="tab-pane fade show active" id="encours" role="tabpanel">
+            {call name=displayList list=$groupes.encours emptyMsg="Aucun trajet en cours."}
+        </div>
+
+        <div class="tab-pane fade" id="avenir" role="tabpanel">
+            {call name=displayList list=$groupes.avenir emptyMsg="Aucun trajet à venir."}
+        </div>
+
+        <div class="tab-pane fade" id="termine" role="tabpanel">
+            {call name=displayList list=$groupes.termine emptyMsg="Historique vide."}
+        </div>
+
+    </div>
+</div>
+
+{* --- FONCTION SMARTY POUR AFFICHER UNE LISTE --- *}
+{function name=displayList}
+    <div class="d-flex flex-column gap-3">
+        {if empty($list)}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-chat-square-dots display-1 d-block mb-3 opacity-25"></i>
+                <p class="fs-5">{$emptyMsg}</p>
+                <a href="/sae-covoiturage/public/recherche" class="btn btn-sm btn-outline-purple rounded-pill mt-2">Rechercher un trajet</a>
             </div>
         {else}
-            {foreach $conversations as $conv}
-                <a href="/sae-covoiturage/public/messagerie/conversation/{$conv.id_trajet}" 
-                   class="conversation-card {if $conv.nb_non_lus > 0}unread{/if}">
-                    
-                    <div class="conv-icon-box">
-                        <i class="bi bi-car-front-fill"></i>
-                    </div>
-                    
-                    <div class="conv-content">
-                        <div class="conv-trajet-title">
-                            {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
-                        </div>
+            {foreach $list as $conv}
+            <a href="/sae-covoiturage/public/messagerie/conversation/{$conv.id_trajet}" class="text-decoration-none text-dark">
+                <div class="card border-0 shadow-sm hover-shadow transition-all">
+                    <div class="card-body d-flex align-items-center p-3">
                         
-                        <div class="mb-1">
+                        <div class="rounded-circle p-3 me-3 d-flex align-items-center justify-content-center flex-shrink-0" 
+                             style="width: 50px; height: 50px; background-color: #f3f0ff;">
+                            <i class="bi bi-car-front-fill text-purple fs-4"></i>
+                        </div>
+
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="fw-bold mb-1 text-truncate pe-2">
+                                    {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
+                                </h6>
+                                {if $conv.nb_non_lus > 0}
+                                    <span class="badge bg-danger rounded-pill">{$conv.nb_non_lus}</span>
+                                {else}
+                                    <i class="bi bi-chevron-right text-muted small"></i>
+                                {/if}
+                            </div>
+
+                            <div class="mb-1 d-flex align-items-center">
                                 <span class="badge bg-{$conv.statut_couleur} bg-opacity-10 text-{$conv.statut_couleur} border border-{$conv.statut_couleur} rounded-pill px-2 py-0 small">
                                     {if $conv.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
                                     {elseif $conv.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
@@ -43,45 +103,72 @@
                                 {/if}
                             </div>
 
-                        <div class="conv-info">
-                            <i class="bi bi-person"></i> {$conv.conducteur_prenom} {$conv.conducteur_nom} • 
-                            {$conv.date_heure_depart|date_format:"%d/%m à %Hh%M"}
-                        </div>
-
-                        <div class="conv-last-msg {if $conv.nb_non_lus > 0}new{/if}">
-                            {if $conv.dernier_message}
-                                {if $conv.nb_non_lus > 0}<span class="text-danger me-1">●</span>{/if}
+                            <div class="small text-muted text-truncate">
                                 
-                                {if $conv.dernier_message == '::sys_join::'}
-                                    <em class="text-muted"><i class="bi bi-person-plus"></i> Un utilisateur a rejoint le trajet</em>
-                                
-                                {elseif $conv.dernier_message == '::sys_leave::'}
-                                    <em class="text-muted"><i class="bi bi-person-dash"></i> Un utilisateur a quitté le trajet</em>
-                                
-                                {elseif $conv.dernier_message == '::sys_end::'}
-                                    <strong class="text-purple"><i class="bi bi-flag-fill"></i> Trajet terminé</strong>
-                                
+                                {if $conv.dernier_message}
+                                    {* LOGIQUE D'AFFICHAGE NEUTRE POUR LES MESSAGES SYSTÈME *}
+                                    {if $conv.dernier_message == '::sys_join::'}
+                                        <em class="fst-italic"><i class="bi bi-person-plus"></i> Un utilisateur a rejoint le trajet</em>
+                                    {elseif $conv.dernier_message == '::sys_leave::'}
+                                        <em class="fst-italic"><i class="bi bi-person-dash"></i> Un utilisateur a quitté le trajet</em>
+                                    {elseif $conv.dernier_message == '::sys_end::'}
+                                        <strong class="text-purple"><i class="bi bi-flag-fill"></i> Trajet terminé</strong>
+                                    
+                                    {* MESSAGES CLASSIQUES *}
+                                    {else}
+                                        {if $conv.conducteur_prenom}
+                                            <span class="fw-semibold">{$conv.conducteur_prenom}</span> : 
+                                        {/if}
+                                        {$conv.dernier_message|truncate:50:"..."}
+                                    {/if}
+                                    
+                                    <span class="text-muted ms-1 small">• {$conv.date_tri|date_format:"%d/%m %H:%M"}</span>
                                 {else}
-                                    {$conv.dernier_message|truncate:60:"..."}
+                                    <em class="text-muted fst-italic">Nouvelle discussion</em>
                                 {/if}
-
-                            {else}
-                                <em>Nouvelle conversation créée</em>
-                            {/if}
+                                
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="d-flex flex-column align-items-end justify-content-center">
-                        {if $conv.nb_non_lus > 0}
-                            <span class="badge-unread mb-2">{$conv.nb_non_lus}</span>
-                        {/if}
-                        <i class="bi bi-chevron-right chevron"></i>
                     </div>
-
-                </a>
+                </div>
+            </a>
             {/foreach}
         {/if}
     </div>
-</div>
+{/function}
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+.nav-pills .nav-link {
+    color: #6c757d;
+    transition: all 0.3s;
+}
+.nav-pills .nav-link.active {
+    background-color: #8c52ff;
+    color: white;
+}
+</style>
+
+{* --- SCRIPT POUR ACTIVER LE BON ONGLET AU RETOUR --- *}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Si l'URL contient une ancre (ex: #avenir)
+    if(window.location.hash) {
+        // On cherche le bouton qui cible cet ID (ex: data-bs-target="#avenir")
+        var trigger = document.querySelector('button[data-bs-target="' + window.location.hash + '"]');
+        // Si on le trouve, on simule un clic dessus pour changer l'onglet
+        if(trigger) {
+            trigger.click();
+        }
+    }
+});
+</script>
 
 {include file='includes/footer.tpl'}

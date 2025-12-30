@@ -127,6 +127,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
         ");
         $stmtMsg->execute([':tid' => $id, ':uid' => $userId]);
 
+
         $db->commit();
         $_SESSION['flash_success'] = "Réservation confirmée, bon voyage !";
         Flight::redirect('/mes_reservations');

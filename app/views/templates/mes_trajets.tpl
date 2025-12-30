@@ -17,6 +17,24 @@
     {else}
         {foreach $trajets as $trajet}
             <div class="card border-0 rounded-5 mb-4 card-trajet p-4">
+                
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-3 py-2">
+                            {if $trajet.statut_visuel == 'avenir'}<i class="bi bi-calendar-event me-2"></i>
+                            {elseif $trajet.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-2"></i>
+                            {else}<i class="bi bi-check-circle-fill me-2"></i>{/if}
+                            {$trajet.statut_libelle}
+                        </span>
+                        
+                        {if $trajet.statut_visuel == 'encours' && isset($trajet.temps_restant)}
+                            <span class="text-success fw-bold small">
+                                <i class="bi bi-hourglass-split"></i> Arrivée dans {$trajet.temps_restant}
+                            </span>
+                        {/if}
+                    </div>
+                </div>
+
                 <div class="row g-0">
                     
                     <div class="col-md-6 pe-md-4 d-flex flex-column border-end-md border-secondary-subtle">
@@ -46,11 +64,12 @@
 
                         <div class="mt-auto pt-3">
                             {if $trajet.passagers|count > 0}
+                                <div class="mb-2 fw-bold text-dark">Passagers :</div>
                                 {foreach $trajet.passagers as $passager}
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; overflow: hidden;">
-                                                 <img src="/sae-covoiturage/public/assets/uploads/{$passager.photo_profil|default:'default.png'}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                                                 <img src="/sae-covoiturage/public/uploads/{$passager.photo_profil|default:'default.png'}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
                                             </div>
                                             <span class="fw-bold fs-5 text-dark">{$passager.prenom} {$passager.nom|substr:0:1}.</span>
                                         </div>
@@ -68,7 +87,7 @@
                     <div class="col-md-6 ps-md-4 d-flex flex-column justify-content-between mt-4 mt-md-0">
                         
                         <div>
-                            <h3 class="fw-bold mb-3 text-dark">Informations vehicule</h3>
+                            <h3 class="fw-bold mb-3 text-dark">Informations véhicule</h3>
                             <p class="fs-5 mb-1 text-dark">
                                 <strong>{$trajet.places_restantes}</strong> places disponibles
                             </p>
@@ -84,15 +103,15 @@
 
                         <div class="d-flex flex-column gap-2 mt-4">
                             <a href="/sae-covoiturage/public/messagerie/conversation/{$trajet.id_trajet}" 
-   class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm text-decoration-none text-center">
-    Discussion de groupe
-</a>
+                               class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm text-decoration-none text-center">
+                                Discussion de groupe
+                            </a>
                             
                             <div class="d-flex gap-2">
-                                <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm">
+                                <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm" {if $trajet.statut_visuel == 'termine'}disabled style="opacity:0.5; cursor:not-allowed;"{/if}>
                                     Modifier
                                 </button>
-                                <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm">
+                                <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm" {if $trajet.statut_visuel == 'termine'}disabled style="opacity:0.5; cursor:not-allowed;"{/if}>
                                     Supprimer
                                 </button>
                             </div>

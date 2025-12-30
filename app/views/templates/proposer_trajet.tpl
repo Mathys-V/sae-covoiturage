@@ -18,6 +18,8 @@
             </div>
 
             <form id="trajetForm" action="/sae-covoiturage/public/trajet/nouveau" method="POST" autocomplete="off">
+                <input type="hidden" name="duree_calc" id="duree_calc" value="01:00:00">
+                <input type="hidden" name="distance_calc" id="distance_calc" value="0">
                 
                 <div class="mb-4">
                     <label class="custom-label">Lieu de départ ?<span class="required-star">*</span></label>

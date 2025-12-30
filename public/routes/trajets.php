@@ -71,7 +71,7 @@ Flight::route('POST /trajet/nouveau', function(){
                         :conducteur, :vehicule, 
                         :depart, '00000', '', 
                         :arrivee, '00000', '', 
-                        :dateheure, '01:00:00', 
+                        :dateheure, :duree,  -- ICI : :duree au lieu de '01:00:00'
                         :places, :desc, 'A'
                     )";
             
@@ -82,6 +82,7 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':depart'     => $data->depart,
                 ':arrivee'    => $data->arrivee,
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
+                ':duree'      => $data->duree_calc, // ICI : Récupération de la valeur calculée
                 ':places'     => (int)$data->places,
                 ':desc'       => $data->description
             ]);
@@ -124,16 +125,19 @@ Flight::route('/mes_trajets', function(){
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
 
+    // 1. Récupération des données brutes
     $sql = "SELECT t.*, v.marque, v.modele, v.immatriculation, v.nb_places_totales 
             FROM TRAJETS t
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
-            WHERE t.id_conducteur = :id
-            ORDER BY t.date_heure_depart ASC";
+            WHERE t.id_conducteur = :id";
             
     $stmt = $db->prepare($sql);
     $stmt->execute([':id' => $idUser]);
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    $now = new DateTime();
+
+    // 2. Calculs et Enrichissement
     foreach ($trajets as &$trajet) {
         // Passagers
         $sqlPass = "SELECT u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
@@ -141,29 +145,63 @@ Flight::route('/mes_trajets', function(){
                     JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
                     WHERE r.id_trajet = :id_trajet 
                     AND r.statut_code = 'V'";
-        
         $stmtPass = $db->prepare($sqlPass);
         $stmtPass->execute([':id_trajet' => $trajet['id_trajet']]);
         $trajet['passagers'] = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
 
+        // Calcul places
         $nb_occupes = 0;
-        foreach($trajet['passagers'] as $p) {
-            $nb_occupes += $p['nb_places_reservees'];
-        }
-
+        foreach($trajet['passagers'] as $p) { $nb_occupes += $p['nb_places_reservees']; }
         $trajet['places_prises'] = $nb_occupes;
         $trajet['places_restantes'] = $trajet['places_proposees'] - $nb_occupes;
         
-        $dateObj = new DateTime($trajet['date_heure_depart']);
-        $trajet['date_fmt'] = $dateObj->format('d / m / Y');
-        $trajet['heure_fmt'] = $dateObj->format('H\hi');
+        // Dates
+        $depart = new DateTime($trajet['date_heure_depart']);
+        $trajet['date_fmt'] = $depart->format('d / m / Y');
+        $trajet['heure_fmt'] = $depart->format('H\hi');
         
-        $dureeObj = new DateTime($trajet['duree_estimee']);
-        $heures = $dureeObj->format('G');
-        $minutes = $dureeObj->format('i');
-        if($minutes == '00') $trajet['duree_fmt'] = $heures . " heures";
-        else $trajet['duree_fmt'] = $heures . "h" . $minutes;
+        // Durée
+        $dureeParts = explode(':', $trajet['duree_estimee']);
+        $trajet['duree_fmt'] = (int)$dureeParts[0] . 'h' . $dureeParts[1];
+
+        // --- STATUT ---
+        $arrivee = clone $depart;
+        $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
+
+        if ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
+            $trajet['statut_visuel'] = 'termine';
+            $trajet['statut_libelle'] = 'Terminé';
+            $trajet['statut_couleur'] = 'secondary';
+            $trajet['tri_poids'] = 3; // Priorité faible
+        } elseif ($now >= $depart && $now <= $arrivee) {
+            $trajet['statut_visuel'] = 'encours';
+            $trajet['statut_libelle'] = 'En cours';
+            $trajet['statut_couleur'] = 'success';
+            $trajet['tri_poids'] = 1; // Priorité MAXIMALE (En haut)
+            
+            // Temps restant
+            $diff = $now->diff($arrivee);
+            if ($diff->h > 0) $trajet['temps_restant'] = $diff->format('%hh %Im');
+            else $trajet['temps_restant'] = $diff->format('%I min');
+
+        } else {
+            $trajet['statut_visuel'] = 'avenir';
+            $trajet['statut_libelle'] = 'À venir';
+            $trajet['statut_couleur'] = 'primary';
+            $trajet['tri_poids'] = 2; // Priorité moyenne
+        }
     }
+
+    // 3. TRI PERSONNALISÉ (PHP)
+    usort($trajets, function($a, $b) {
+        // Critère 1 : Le statut (En cours < À venir < Terminé)
+        if ($a['tri_poids'] !== $b['tri_poids']) {
+            return $a['tri_poids'] - $b['tri_poids'];
+        }
+
+        // Critère 2 : La date (Du plus récent au plus ancien)
+        return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
+    });
 
     Flight::render('mes_trajets.tpl', [
         'titre' => 'Mes trajets',

@@ -34,13 +34,6 @@
                             onchange="document.getElementById('form-photo').submit();">
                     </form>
 
-                    <form id="form-photo" action="/sae-covoiturage/public/profil/update-photo" method="POST"
-                        enctype="multipart/form-data" style="display:none;">
-                        <input type="file" name="photo_profil" id="input-photo"
-                            accept="image/png, image/jpeg, image/jpg, image/webp"
-                            onchange="document.getElementById('form-photo').submit();">
-                    </form>
-
                     <div class="avatar-circle" onclick="document.getElementById('input-photo').click();">
 
                         {if !empty($user.photo_profil)}
@@ -74,13 +67,10 @@
                                     {* Boucle de 1 à 5 pour afficher les étoiles *}
                                     {for $i=1 to 5}
                                         {if $noteC >= $i}
-                                            {* Note supérieure ou égale à l'étape actuelle : Etoile pleine *}
                                             <i class="bi bi-star-fill"></i>
                                         {elseif $noteC > ($i - 1)}
-                                            {* Note entre l'étape précédente et l'actuelle (ex: 3.5 est entre 3 et 4) : Demi-étoile *}
                                             <i class="bi bi-star-half"></i>
                                         {else}
-                                            {* Sinon : Etoile vide *}
                                             <i class="bi bi-star"></i>
                                         {/if}
                                     {/for}
@@ -165,20 +155,57 @@
                                         onclick="toggleEdit('vehicule')">Ajouter</button></div>
                             {/if}
                         </div>
+                        
                         <div class="edit-content edit-mode">
                             <div class="row g-3">
-                                <div class="col-6"><input type="text" name="marque" class="form-control-custom"
-                                        placeholder="Marque" value="{$vehicule.marque|default:''}" required></div>
-                                <div class="col-6"><input type="text" name="modele" class="form-control-custom"
-                                        placeholder="Modèle" value="{$vehicule.modele|default:''}" required></div>
-                                <div class="col-6"><input type="text" name="couleur" class="form-control-custom"
-                                        placeholder="Couleur" value="{$vehicule.couleur|default:''}"></div>
-                                <div class="col-6"><input type="number" name="nb_places" class="form-control-custom"
-                                        placeholder="Places" value="{$vehicule.nb_places_totales|default:''}" min="1"
-                                        max="8" required></div>
-                                <div class="col-12"><input type="text" name="immat" class="form-control-custom"
-                                        placeholder="Immatriculation" value="{$vehicule.immatriculation|default:''}"
-                                        required></div>
+                                
+                                <div class="col-6">
+                                    <label class="small text-muted ms-1">Marque</label>
+                                    <select name="marque" class="form-control-custom" required>
+                                        <option value="" disabled {if !isset($vehicule.marque)}selected{/if}>Choisir...</option>
+                                        {if isset($marques)}
+                                            {foreach from=$marques item=m}
+                                                <option value="{$m}" {if isset($vehicule.marque) && $vehicule.marque == $m}selected{/if}>{$m}</option>
+                                            {/foreach}
+                                        {else}
+                                            <option value="Autre">Autre</option>
+                                        {/if}
+                                    </select>
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="small text-muted ms-1">Modèle</label>
+                                    <input type="text" name="modele" class="form-control-custom"
+                                        placeholder="Ex: Clio 5" value="{$vehicule.modele|default:''}" required maxlength="30">
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="small text-muted ms-1">Couleur</label>
+                                    <select name="couleur" class="form-control-custom" required>
+                                        <option value="" disabled {if !isset($vehicule.couleur)}selected{/if}>Choisir...</option>
+                                        {if isset($couleurs)}
+                                            {foreach from=$couleurs item=c}
+                                                <option value="{$c}" {if isset($vehicule.couleur) && $vehicule.couleur == $c}selected{/if}>{$c}</option>
+                                            {/foreach}
+                                        {else}
+                                            <option value="Autre">Autre</option>
+                                        {/if}
+                                    </select>
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="small text-muted ms-1">Places</label>
+                                    <input type="number" name="nb_places" class="form-control-custom"
+                                        placeholder="Ex: 5" value="{$vehicule.nb_places_totales|default:''}" min="1"
+                                        max="9" required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="small text-muted ms-1">Immatriculation</label>
+                                    <input type="text" name="immat" class="form-control-custom"
+                                        placeholder="AA-123-BB" value="{$vehicule.immatriculation|default:''}"
+                                        required maxlength="15">
+                                </div>
                             </div>
                             <div class="d-flex justify-content-end mt-3">
                                 <button type="button" class="btn-cancel"
@@ -380,9 +407,11 @@
 
                 // Réinitialiser le pop-up à l'étape 1 quand on le ferme (pour la prochaine fois)
                 var myModalEl = document.getElementById('modalSuppression')
-                myModalEl.addEventListener('hidden.bs.modal', function(event) {
-                    showStep1();
-                })
+                if (myModalEl) {
+                    myModalEl.addEventListener('hidden.bs.modal', function(event) {
+                        showStep1();
+                    })
+                }
             </script>
 
         </main>

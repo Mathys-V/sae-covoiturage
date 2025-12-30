@@ -13,7 +13,7 @@
 
         <div class="card-scrollable px-4 px-md-5 py-3 flex-grow-1 bg-white">
             
-            <form action="" method="POST">
+            <form action="/sae-covoiturage/public/inscription" method="POST">
                 
                 <div class="bloc-etape" id="step-1">        
                     <div class="mb-5">
@@ -147,6 +147,8 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-6">
+                    <input type="hidden" id="voitureInput" name="voiture" value="">
+                    
                     <div class="mb-5 text-center">
                         <h3 style="color: #8c52ff;">Avez-vous une voiture ?</h3>
                     </div>
@@ -156,19 +158,31 @@
                     </div>
                 </div>
 
-
                 <div class="d-none bloc-etape" id="step-7">
                     <div class="mb-5 text-center">
                         <h3 style="color: #8c52ff;">Parlez-nous de votre voiture</h3>
                     </div>
+                    
                     <div class="mb-4">
                         <label for="marqueInput" class="form-label marque-texte fw-bold mb-3">La marque ? <span class="asterisque">*</span></label>
-                        <input type="text" id="marqueInput" name="marque" class="form-control" placeholder="Ford" required>
+                        <select name="marque" id="marqueInput" class="form-control" required>
+                            <option value="" selected disabled>Sélectionner...</option>
+                            {if isset($marques)}
+                                {foreach from=$marques item=m}
+                                    <option value="{$m}">{$m}</option>
+                                {/foreach}
+                            {else}
+                                <option value="Peugeot">Peugeot</option>
+                                <option value="Renault">Renault</option>
+                            {/if}
+                        </select>
                     </div>
+
                     <div class="mb-4">
                         <label for="modelInput" class="form-label model-texte fw-bold mb-3">Le modèle ? <span class="asterisque">*</span></label>
-                        <input type="text" id="modelInput" name="model" class="form-control" placeholder="Fiesta 5" required>
+                        <input type="text" id="modelInput" name="model" class="form-control" placeholder="Fiesta 5" maxlength="30" required>
                     </div>
+
                     <div class="mb-4">
                         <label for="immatInput" class="form-label immat-texte fw-bold mb-3">
                             Sa plaque d'immatriculation ? <span class="asterisque">*</span>
@@ -187,9 +201,20 @@
                             Format invalide. Exemples : AA-123-AA (nouveau) ou 1234-ABC-12 (ancien)
                         </div>
                     </div>
+
                     <div class="mb-4">
                         <label for="couleurInput" class="form-label couleur-texte fw-bold mb-3">La couleur ?</label>
-                        <input type="text" id="couleurInput" name="couleur" class="form-control" placeholder="Violet">
+                        <select name="couleur" id="couleurInput" class="form-control" required>
+                            <option value="" selected disabled>Sélectionner...</option>
+                            {if isset($couleurs)}
+                                {foreach from=$couleurs item=c}
+                                    <option value="{$c}">{$c}</option>
+                                {/foreach}
+                            {else}
+                                <option value="Blanc">Blanc</option>
+                                <option value="Noir">Noir</option>
+                            {/if}
+                        </select>
                     </div>
 
                     <div class="mb-4">
@@ -238,6 +263,37 @@
 
     </div>
 </section>
+
+<script>
+    // Fonction pour gérer le choix "Oui" (étape 6 -> 7)
+    function choisirVoiture() {
+        document.getElementById('voitureInput').value = 'oui';
+        // Logique pour passer à l'étape suivante (gérée par js_inscription.js normalement)
+        // Si besoin, ajoute ici la logique pour masquer step-6 et afficher step-7
+        document.getElementById('step-6').classList.add('d-none');
+        document.getElementById('step-7').classList.remove('d-none');
+    }
+
+    // Fonction pour gérer le choix "Non" (soumission directe)
+    function soumettreSansVoiture() {
+        document.getElementById('voitureInput').value = 'non';
+        // Soumettre le formulaire
+        document.querySelector('form').submit();
+    }
+
+    // Fonction pour soumettre le formulaire AVEC voiture (étape 7)
+    function soumettreAvecVoiture() {
+        // Validation simple (tous les champs requis remplis ?)
+        const marque = document.getElementById('marqueInput').value;
+        const immat = document.getElementById('immatInput').value;
+        
+        if(marque && immat) {
+            document.querySelector('form').submit();
+        } else {
+            alert("Veuillez remplir tous les champs obligatoires.");
+        }
+    }
+</script>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_inscription.js"></script>
 

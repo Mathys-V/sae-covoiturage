@@ -1,15 +1,14 @@
 <?php
 
-
-// LISTE DES CONVERSATIONS
+// 1. LISTE DES CONVERSATIONS
 Flight::route('GET /messagerie', function(){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupérer les trajets (AJOUT DE duree_estimee et statut_flag)
-    $sql = "SELECT t.id_trajet, t.ville_depart, t.ville_arrivee, t.date_heure_depart, 
+    // Récupérer les trajets (AJOUT DE t.id_conducteur dans le SELECT pour l'insertion auto)
+    $sql = "SELECT t.id_trajet, t.id_conducteur, t.ville_depart, t.ville_arrivee, t.date_heure_depart, 
                    t.duree_estimee, t.statut_flag,
                    u.prenom as conducteur_prenom, u.nom as conducteur_nom
             FROM TRAJETS t
@@ -23,23 +22,38 @@ Flight::route('GET /messagerie', function(){
     $stmt->execute([':uid' => $userId]);
     $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Enrichir les données
+    // Enrichissement des données
     foreach ($conversations as &$conv) {
         $id = $conv['id_trajet'];
         
-        // --- CALCUL STATUT TRAJET (Même logique que le détail) ---
+        // --- CALCUL STATUT & TEMPS RESTANT ---
         $now = new DateTime();
         $depart = new DateTime($conv['date_heure_depart']);
         
-        // Calcul arrivée
         if(isset($conv['duree_estimee'])) {
             $dureeParts = explode(':', $conv['duree_estimee']);
             $arrivee = clone $depart;
             $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
         } else {
             $arrivee = clone $depart; 
-            $arrivee->modify('+1 hour'); // Valeur par défaut si erreur
+            $arrivee->modify('+1 hour');
         }
+
+        // --- AUTOMATISATION DANS LA LISTE (NOUVEAU) ---
+        // Si l'heure d'arrivée est passée, on force la clôture et le message
+        if ($conv['statut_flag'] != 'T' && $now > $arrivee) {
+            // 1. Vérifier si message existe
+            $stmtCheckEnd = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu = '::sys_end::'");
+            $stmtCheckEnd->execute([$id]);
+            
+            if ($stmtCheckEnd->fetchColumn() == 0) {
+                // 2. Insérer le message de fin MAINTENANT
+                $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())")
+                   ->execute([$id, $conv['id_conducteur']]);
+            }
+            // (Optionnel : On pourrait aussi mettre à jour le statut_flag à 'T' dans la table TRAJETS ici)
+        }
+        // -----------------------------------------------
 
         if ($conv['statut_flag'] == 'T' || $now > $arrivee) {
             $conv['statut_visuel'] = 'termine';
@@ -50,10 +64,7 @@ Flight::route('GET /messagerie', function(){
             $conv['statut_libelle'] = 'En cours';
             $conv['statut_couleur'] = 'success';
 
-            // --- AJOUT : CALCUL DU TEMPS RESTANT ---
             $diff = $now->diff($arrivee);
-            
-            // Formatage propre (ex: "1h 30min" ou "45 min")
             if ($diff->h > 0) {
                 $conv['temps_restant'] = $diff->format('%hh %Im');
             } else {
@@ -71,9 +82,8 @@ Flight::route('GET /messagerie', function(){
                 $conv['statut_couleur'] = 'primary';
             }
         }
-        // -------------------------------------------------------
 
-        // Dernier message
+        // --- DERNIER MESSAGE ---
         $stmtMsg = $db->prepare("SELECT contenu, date_envoi FROM MESSAGES WHERE id_trajet = ? ORDER BY date_envoi DESC LIMIT 1");
         $stmtMsg->execute([$id]);
         $lastMsg = $stmtMsg->fetch(PDO::FETCH_ASSOC);
@@ -83,7 +93,7 @@ Flight::route('GET /messagerie', function(){
                             ? $lastMsg['date_envoi'] 
                             : $conv['date_heure_depart'];
 
-        // Cookie Non Lu
+        // --- COMPTEUR NON LUS ---
         $cookieName = 'last_read_' . $userId . '_' . $id;
         $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
         
@@ -92,20 +102,21 @@ Flight::route('GET /messagerie', function(){
         $conv['nb_non_lus'] = $stmtCount->fetchColumn();
     }
 
-// 3. Tri ROBUSTE : Messages récents en premier, trajets vides en bas
+    // 3. TRI INTÉLLIGENT
     usort($conversations, function($a, $b) {
-        // Si la conversation a un message, on prend sa date, sinon 0 (pour la mettre à la fin)
-        $timestampA = !empty($a['dernier_message']) ? strtotime($a['date_tri']) : 0;
-        $timestampB = !empty($b['dernier_message']) ? strtotime($b['date_tri']) : 0;
+        // Priorité absolue : En cours
+        $isEnCoursA = ($a['statut_visuel'] === 'encours');
+        $isEnCoursB = ($b['statut_visuel'] === 'encours');
 
-        // Si les deux ont des messages (ou les deux n'en ont pas)
-        if ($timestampA == $timestampB) {
-            // Départ le plus proche en premier pour les trajets vides
-            return strtotime($a['date_heure_depart']) - strtotime($b['date_heure_depart']);
-        }
+        if ($isEnCoursA && !$isEnCoursB) return -1;
+        if (!$isEnCoursA && $isEnCoursB) return 1;
 
-        // Sinon, celui avec la date la plus grande (le message le plus récent) passe devant
-        return $timestampB - $timestampA;
+        // Sinon tri par date d'activité (message récent)
+        $dateA = strtotime($a['date_tri']);
+        $dateB = strtotime($b['date_tri']);
+
+        if ($dateA == $dateB) return 0;
+        return ($dateA > $dateB) ? -1 : 1; 
     });
 
     Flight::render('messagerie/liste.tpl', [
@@ -114,15 +125,14 @@ Flight::route('GET /messagerie', function(){
     ]);
 });
 
-
-// AFFICHER UNE CONVERSATION
+// 2. AFFICHER UNE CONVERSATION (Chat) - Code inchangé, sert de sécurité
 Flight::route('GET /messagerie/conversation/@id', function($id){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Vérifier accès + Infos Trajet
+    // Infos Trajet + Participants
     $sqlCheck = "SELECT t.*, 
                  u.prenom as cond_prenom, u.nom as cond_nom, u.id_utilisateur as cond_id
                  FROM TRAJETS t
@@ -142,39 +152,20 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         return;
     }
 
-    // --- NOUVEAU : RÉCUPÉRER LES PARTICIPANTS POUR LE SIGNALEMENT ---
+    // Participants
     $participants = [];
-    
-    // Ajouter le conducteur (si ce n'est pas moi)
     if ($trajet['cond_id'] != $userId) {
-        $participants[] = [
-            'id' => $trajet['cond_id'],
-            'nom' => $trajet['cond_prenom'] . ' ' . $trajet['cond_nom'],
-            'role' => 'Conducteur'
-        ];
+        $participants[] = ['id' => $trajet['cond_id'], 'nom' => $trajet['cond_prenom'] . ' ' . $trajet['cond_nom'], 'role' => 'Conducteur'];
     }
-
-    // Ajouter les passagers (si ce n'est pas moi)
-    $sqlPass = "SELECT u.id_utilisateur, u.prenom, u.nom 
-                FROM RESERVATIONS r
-                JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
-                WHERE r.id_trajet = :tid AND r.statut_code = 'V'";
-    $stmtPass = $db->prepare($sqlPass);
-    $stmtPass->execute([':tid' => $id]);
-    $passagers = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach($passagers as $p) {
+    $passagers = $db->prepare("SELECT u.id_utilisateur, u.prenom, u.nom FROM RESERVATIONS r JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur WHERE r.id_trajet = ? AND r.statut_code = 'V'");
+    $passagers->execute([$id]);
+    foreach($passagers->fetchAll(PDO::FETCH_ASSOC) as $p) {
         if ($p['id_utilisateur'] != $userId) {
-            $participants[] = [
-                'id' => $p['id_utilisateur'],
-                'nom' => $p['prenom'] . ' ' . $p['nom'],
-                'role' => 'Passager'
-            ];
+            $participants[] = ['id' => $p['id_utilisateur'], 'nom' => $p['prenom'] . ' ' . $p['nom'], 'role' => 'Passager'];
         }
     }
-    // ----------------------------------------------------------------
 
-    // 2. Calcul Statut (Code existant inchangé...)
+    // Calcul Statut
     $now = new DateTime();
     $depart = new DateTime($trajet['date_heure_depart']);
     $dureeParts = explode(':', $trajet['duree_estimee']);
@@ -185,14 +176,11 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         $trajet['statut_visuel'] = 'termine'; $trajet['statut_libelle'] = 'Terminé'; $trajet['statut_couleur'] = 'secondary';
     } elseif ($now >= $depart && $now <= $arrivee) {
         $trajet['statut_visuel'] = 'encours'; $trajet['statut_libelle'] = 'En cours'; $trajet['statut_couleur'] = 'success';
-        // --- AJOUT : CALCUL DU TEMPS RESTANT ---
-        $diff = $now->diff($arrivee);
-        if ($diff->h > 0) {
-            $trajet['temps_restant'] = $diff->format('%hh %Im');
-        } else {
-            $trajet['temps_restant'] = $diff->format('%I min');
-        }
         
+        $diff = $now->diff($arrivee);
+        if ($diff->h > 0) $trajet['temps_restant'] = $diff->format('%hh %Im');
+        else $trajet['temps_restant'] = $diff->format('%I min');
+
     } else {
         if ($trajet['statut_flag'] == 'C') {
             $trajet['statut_visuel'] = 'complet'; $trajet['statut_libelle'] = 'Complet'; $trajet['statut_couleur'] = 'warning';
@@ -201,29 +189,23 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         }
     }
 
-    // --- AUTOMATISATION : Message de fin de trajet ---
-    // Si le trajet est terminé (visuellement)
+    // Sécurité : on laisse la vérif ici aussi au cas où l'user arrive par un lien direct
     if ($trajet['statut_visuel'] == 'termine') {
-        // Vérifier si le message de fin existe déjà
         $stmtCheckEnd = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu = '::sys_end::'");
         $stmtCheckEnd->execute([$id]);
-        $hasEndMsg = $stmtCheckEnd->fetchColumn();
-
-        if ($hasEndMsg == 0) {
-            // Insérer le message système de fin
-            $stmtInsert = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())");
-            // On met l'admin ou le conducteur comme expéditeur (ici le conducteur pour simplifier les FK)
-            $stmtInsert->execute([$id, $trajet['id_conducteur']]);
+        if ($stmtCheckEnd->fetchColumn() == 0) {
+            $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())")
+               ->execute([$id, $trajet['id_conducteur']]);
         }
     }
 
-    // 3. Update Cookie & Messages (Code existant inchangé...)
+    // Cookie Lecture
     setcookie('last_read_' . $userId . '_' . $id, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
 
-    $sqlMsg = "SELECT m.*, u.nom, u.prenom FROM MESSAGES m JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur WHERE m.id_trajet = :tid ORDER BY m.date_envoi ASC";
-    $stmtMsg = $db->prepare($sqlMsg);
-    $stmtMsg->execute([':tid' => $id]);
-    $messagesBruts = $stmtMsg->fetchAll(PDO::FETCH_ASSOC);
+    // Messages
+    $messagesBruts = $db->prepare("SELECT m.*, u.nom, u.prenom FROM MESSAGES m JOIN UTILISATEURS u ON m.id_expediteur = u.id_utilisateur WHERE m.id_trajet = ? ORDER BY m.date_envoi ASC");
+    $messagesBruts->execute([$id]);
+    $messagesBruts = $messagesBruts->fetchAll(PDO::FETCH_ASSOC);
 
     $messages = [];
     $lastDate = null;
@@ -235,7 +217,7 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         if (strpos($msg['contenu'], '::sys_') === 0) {
             $msg['type'] = 'system';
             if ($msg['contenu'] == '::sys_join::') $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet.';
-            if ($msg['contenu'] == '::sys_leave::') $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.';
+            elseif ($msg['contenu'] == '::sys_leave::') $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.';
         } else {
             $msg['type'] = ($msg['id_expediteur'] == $userId) ? 'self' : 'other';
             $msg['nom_affiche'] = ($msg['type'] == 'self') ? 'Moi' : $msg['prenom'] . ' ' . substr($msg['nom'], 0, 1) . '.';
@@ -251,40 +233,42 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         'titre' => 'Conversation',
         'trajet' => $trajet,
         'messages' => $messages,
-        'participants' => $participants 
+        'participants' => $participants
     ]);
 });
 
-// API ENVOYER MESSAGE
+// 3. API : ENVOYER UN MESSAGE
 Flight::route('POST /api/messagerie/send', function(){
     if(!isset($_SESSION['user'])) Flight::json(['success' => false], 401);
 
-    $db = Flight::get('db');
     $data = json_decode(file_get_contents('php://input'), true);
-    
-    $idTrajet = $data['trajet_id'];
-    $contenu = htmlspecialchars(trim($data['message']));
+    $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    if(empty($contenu)) { Flight::json(['success' => false]); return; }
+    $trajetId = $data['trajet_id'];
+    $contenu = htmlspecialchars(trim($data['message']));
 
-    $stmt = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
-    $res = $stmt->execute([
-        ':tid' => $idTrajet,
-        ':uid' => $userId,
-        ':msg' => $contenu
-    ]);
-
-    if ($res) {
-        // --- FIX COOKIE NOMMÉ AVEC ID USER ---
-        // On met à jour le cookie de L'EXPÉDITEUR uniquement
-        setcookie('last_read_' . $userId . '_' . $idTrajet, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
-        Flight::json(['success' => true]);
+    if(!empty($contenu)) {
+        try {
+            $stmt = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
+            $res = $stmt->execute([
+                ':tid' => $trajetId,
+                ':uid' => $userId,
+                ':msg' => $contenu
+            ]);
+            
+            if($res) {
+                setcookie('last_read_' . $userId . '_' . $trajetId, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
+                Flight::json(['success' => true]);
+            } else {
+                Flight::json(['success' => false, 'msg' => 'Echec insertion']);
+            }
+        } catch(Exception $e) {
+            Flight::json(['success' => false, 'msg' => 'Erreur SQL']);
+        }
     } else {
-        Flight::json(['success' => false]);
+        Flight::json(['success' => false, 'msg' => 'Message vide']);
     }
 });
-
-
 
 ?>

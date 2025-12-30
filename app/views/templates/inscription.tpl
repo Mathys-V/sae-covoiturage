@@ -134,6 +134,9 @@
                     <div class="mb-4">
                         <label for="postInput" class="form-label post-texte fw-bold mb-3">Le code postal ? <span class="asterisque">*</span></label>
                         <input type="number" id="postInput" name="post" class="form-control" maxlength="5" pattern="[0-9]{5}"  placeholder="80000" required>
+                        <div id="error-post" class="text-danger mt-2 small d-none">
+                            Le code postal doit contenir exactement 5 chiffres (ex: 80000).
+                        </div>
                     </div>
                     <div class="text-center mt-4 mb-1">
                         <button type="button" class="btn btn-inscription fw-bold" onclick="validerEtape5()">Continuer</button>

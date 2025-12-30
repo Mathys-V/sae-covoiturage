@@ -152,37 +152,29 @@ function validerEtape4() {
     const dateInput = document.getElementById("dateInput");
     const tel = document.getElementById("telInput").value;
 
-    // Convertir la date saisie en objet Date
     const dateSaisie = new Date(dateInput.value);
 
-    // Calculer la date d'il y a 13 ans jour pour jour
     const dateLimite13ans = new Date();
     dateLimite13ans.setFullYear(dateLimite13ans.getFullYear() - 13);
-    // On met les heures à 0 pour éviter les bugs de fuseau horaire
     dateLimite13ans.setHours(0, 0, 0, 0);
 
     const dateMin = new Date("1900-01-01");
 
-    // 1. Vérifier si vide
     if (!dateInput.value) {
         alert("Veuillez entrer une date.");
         return;
     }
 
-    // 2. Vérification de l'âge (Moins de 13 ans ?)
-    // Si la date de naissance est APRÈS la date limite, l'utilisateur est trop jeune
     if (dateSaisie > dateLimite13ans) {
         alert("Vous devez avoir au moins 13 ans pour vous inscrire.");
         return;
     }
 
-    // 3. Vérifier si l'année est cohérente (> 1900)
     if (dateSaisie < dateMin) {
         alert("Veuillez entrer une année de naissance valide.");
         return;
     }
 
-    // 4. Vérifier le téléphone
     if (tel.length === 10) {
         changerEtape(5);
     } else {
@@ -191,13 +183,34 @@ function validerEtape4() {
 }
 
 function validerEtape5() {
-    const rue = document.getElementById("rueInput").value.trim();
-    const ville = document.getElementById("villeInput").value.trim();
-    const post = document.getElementById("postInput").value.trim();
+    const rueInput = document.getElementById("rueInput");
+    const villeInput = document.getElementById("villeInput");
+    const postInput = document.getElementById("postInput");
+    const errorPost = document.getElementById("error-post");
 
-    if (rue && ville && post.length === 5) {
-        changerEtape(6);
+    const rue = rueInput.value.trim();
+    const ville = villeInput.value.trim();
+    const post = postInput.value.trim();
+
+    errorPost.classList.add("d-none");
+    postInput.classList.remove("is-invalid");
+
+    if (!rue || !ville || !post) {
+        alert(
+            "Veuillez remplir tous les champs obligatoires (Rue, Ville, Code Postal)."
+        );
+        return;
     }
+
+    const regexCP = /^[0-9]{5}$/;
+
+    if (!regexCP.test(post)) {
+        errorPost.classList.remove("d-none");
+        postInput.classList.add("is-invalid");
+        return;
+    }
+
+    changerEtape(6);
 }
 
 function choisirVoiture() {

@@ -14,8 +14,15 @@ Flight::route('GET /profil', function(){
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupérer l'utilisateur
-    $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE id_utilisateur = ?");
+// 1. Récupérer l'utilisateur AVEC LES MOYENNES DES AVIS
+    // On utilise des sous-requêtes pour calculer la moyenne conducteur (C) et passager (P)
+    $sql = "SELECT U.*, 
+            (SELECT AVG(note) FROM AVIS WHERE id_destinataire = U.id_utilisateur AND role_destinataire = 'C') as note_conducteur,
+            (SELECT AVG(note) FROM AVIS WHERE id_destinataire = U.id_utilisateur AND role_destinataire = 'P') as note_passager
+            FROM UTILISATEURS U
+            WHERE U.id_utilisateur = ?";
+            
+    $stmt = $db->prepare($sql);
     $stmt->execute([$idUser]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

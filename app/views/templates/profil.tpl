@@ -45,26 +45,49 @@
 
                             <div class="d-flex flex-column gap-1">
 
-                                <div class="d-flex align-items-center">
-                                    <span class="fs-5 me-2 text-white">Conducteur :</span>
-                                    <div class="text-warning fs-5">
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-half"></i>
-                                    </div>
+                                <div class="text-warning fs-5 d-flex align-items-center">
+                                    {* On initialise la note. Si c'est NULL (pas d'avis), on met 0 *}
+                                    {$noteC = $user.note_conducteur|default:0}
+
+                                    {* Boucle de 1 à 5 pour afficher les étoiles *}
+                                    {for $i=1 to 5}
+                                        {if $noteC >= $i}
+                                            {* Note supérieure ou égale à l'étape actuelle : Etoile pleine *}
+                                            <i class="bi bi-star-fill"></i>
+                                        {elseif $noteC > ($i - 1)}
+                                            {* Note entre l'étape précédente et l'actuelle (ex: 3.5 est entre 3 et 4) : Demi-étoile *}
+                                            <i class="bi bi-star-half"></i>
+                                        {else}
+                                            {* Sinon : Etoile vide *}
+                                            <i class="bi bi-star"></i>
+                                        {/if}
+                                    {/for}
+
+                                    {* BONUS : Affiche la note exacte en chiffres s'il y a des avis *}
+                                    {if $noteC > 0}
+                                        <span class="text-white-50 fs-6 ms-2">({$noteC|number_format:1})</span>
+                                    {/if}
                                 </div>
 
-                                <div class="d-flex align-items-center">
-                                    <span class="fs-5 me-2 text-white">Passager :</span>
-                                    <div class="text-warning fs-5 ms-3">
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star"></i>
-                                    </div>
+                                <div class="text-warning fs-5 d-flex align-items-center">
+                                    {* On initialise la note Passager *}
+                                    {$noteP = $user.note_passager|default:0}
+
+                                    {* Boucle pour les étoiles *}
+                                    {for $i=1 to 5}
+                                        {if $noteP >= $i}
+                                            <i class="bi bi-star-fill"></i>
+                                        {elseif $noteP > ($i - 1)}
+                                            <i class="bi bi-star-half"></i>
+                                        {else}
+                                            <i class="bi bi-star"></i>
+                                        {/if}
+                                    {/for}
+
+                                    {* Affichage de la note chiffrée *}
+                                    {if $noteP > 0}
+                                        <span class="text-white-50 fs-6 ms-2">({$noteP|number_format:1})</span>
+                                    {/if}
                                 </div>
                             </div>
 

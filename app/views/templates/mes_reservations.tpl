@@ -38,7 +38,6 @@
     </h1>
 
     {if isset($reservations) && $reservations|@count > 0}
-
         {foreach from=$reservations item=reservation}
         <div class="card border-0 shadow-sm mb-3" style="background-color: #f0ebf8; border-radius: 20px; transition: transform 0.2s;">
             <div class="card-body p-4">
@@ -142,10 +141,70 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <p class="text-muted small mb-4">Merci de nous indiquer la raison de ce signalement. Un
+                            modérateur examinera la situation rapidement.</p>
+
+                        <form id="formSignalement">
+
+                            <input type="hidden" id="trajetSignalement">
+
+                            <div class="mb-3">
+                                <label class="form-label-bold">Qui concerne ce signalement ?</label>
+                                <select class="form-select bg-light border-0 py-2" id="userSignalement" required>
+                                    <option value="" selected disabled>Choisir un utilisateur...</option>
+                                    {if isset($participants[$reservation.id_trajet])}
+                                        {foreach $participants[$reservation.id_trajet] as $p}
+                                            <option value="{$p.id}">{$p.nom} ({$p.role})</option>
+                                        {/foreach}
+                                    {/if}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-bold">Motif</label>
+                                <select class="form-select bg-light border-0 py-2" id="motifSignalement" required>
+                                    <option value="" selected disabled>Choisir un motif...</option>
+                                    <option value="Comportement dangereux">Comportement dangereux</option>
+                                    <option value="Absence au rendez-vous">Absence au rendez-vous</option>
+                                    <option value="Véhicule non conforme">Véhicule non conforme</option>
+                                    <option value="Propos inappropriés">Propos inappropriés</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-bold">Détails supplémentaires</label>
+                                <textarea class="custom-textarea" id="detailsSignalement" rows="4"
+                                    placeholder="Décrivez la situation ici..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">Envoyer le
+                                    signalement</button>
+                                <button type="button" class="btn btn-light rounded-pill text-muted"
+                                    data-bs-dismiss="modal">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         {/foreach}
 
     {else}
-
         <div class="alert alert-info text-center rounded-4 py-5">
             <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
             <h4 class="fw-bold">Aucune réservation</h4>
@@ -155,64 +214,7 @@
                 <i class="bi bi-search me-2"></i>Rechercher un trajet
             </a>
         </div>
-
     {/if}
-
-</div>
-<div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow-lg">
-
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-danger">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body p-4">
-        <p class="text-muted small mb-4">Merci de nous indiquer la raison de ce signalement. Un modérateur examinera la situation rapidement.</p>
-
-        <form id="formSignalement">
-        
-            <input type="hidden" id="trajetSignalement">
-
-            <div class="mb-3">
-                <label class="form-label-bold">Qui concerne ce signalement ?</label>
-                <select class="form-select bg-light border-0 py-2" id="userSignalement" required>
-                    <option value="" selected disabled>Choisir un utilisateur...</option>
-                    {foreach $participants[$reservation.id_trajet] as $p}
-                        <option value="{$p.id}">{$p.nom} ({$p.role})</option>
-                    {/foreach}
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label-bold">Motif</label>
-                <select class="form-select bg-light border-0 py-2" id="motifSignalement" required>
-                    <option value="" selected disabled>Choisir un motif...</option>
-                    <option value="Comportement dangereux">Comportement dangereux</option>
-                    <option value="Absence au rendez-vous">Absence au rendez-vous</option>
-                    <option value="Véhicule non conforme">Véhicule non conforme</option>
-                    <option value="Propos inappropriés">Propos inappropriés</option>
-                    <option value="Autre">Autre</option>
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label-bold">Détails supplémentaires</label>
-                <textarea class="custom-textarea" id="detailsSignalement" rows="4" placeholder="Décrivez la situation ici..."></textarea>
-            </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">Envoyer le signalement</button>
-                <button type="button" class="btn btn-light rounded-pill text-muted" data-bs-dismiss="modal">Annuler</button>
-            </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -264,4 +266,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+</div>
 {include file='includes/footer.tpl'}

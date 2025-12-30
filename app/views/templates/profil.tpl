@@ -212,7 +212,8 @@
                                         </div>
                                         <button class="btn-mini-purple ms-3">Noter</button>
 
-<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$trajet.id_conducteur}" class="btn-mini-purple ms-3 text-decoration-none">Noter</a>
+                                        <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$trajet.id_conducteur}"
+                                            class="btn-mini-purple ms-3 text-decoration-none">Noter</a>
                                     </div>
 
                                     <h5 class="fw-bold mb-3">Trajet effectué</h5>
@@ -233,9 +234,11 @@
                                                     <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
                                                     <span class="fw-bold me-2">{$passager.prenom}</span>
                                                     <button class="btn-mini-dark me-2">Signaler</button>
-                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
+                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
+                                                        class="btn-mini-purple text-decoration-none">Noter</a>
 
-<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
+                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
+                                                        class="btn-mini-purple text-decoration-none">Noter</a>
                                                 </div>
                                             {/foreach}
                                         {else}
@@ -245,7 +248,8 @@
                                                 <button class="btn-mini-dark me-2">Signaler</button>
                                                 <button class="btn-mini-purple">Noter</button>
 
-<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
+                                                <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
+                                                    class="btn-mini-purple text-decoration-none">Noter</a>
                                             </div>
                                             <div class="passenger-item">
                                                 <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
@@ -253,7 +257,8 @@
                                                 <button class="btn-mini-dark me-2">Signaler</button>
                                                 <button class="btn-mini-purple">Noter</button>
 
-<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
+                                                <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
+                                                    class="btn-mini-purple text-decoration-none">Noter</a>
                                             </div>
                                         {/if}
                                     </div>
@@ -305,9 +310,80 @@
                             class="bi bi-chevron-right"></i></a>
                     <a href="/sae-covoiturage/public/deconnexion" class="settings-item"><span>Déconnexion</span><i
                             class="bi bi-chevron-right"></i></a>
-                    <a href="#" class="settings-item text-danger-custom"><span>Fermer le compte</span></a>
+                    <a href="#" class="settings-item text-danger-custom" data-bs-toggle="modal"
+                        data-bs-target="#modalSuppression">
+                        <span>Fermer le compte</span>
+                        <i class="bi bi-x-circle"></i>
+                    </a>
                 </div>
             </div>
+
+            <div class="modal fade" id="modalSuppression" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content p-4 text-center">
+
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
+                            data-bs-dismiss="modal" aria-label="Close"></button>
+
+                        <div id="step-1-content">
+                            <div class="mb-3">
+                                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <h3 class="fw-bold text-black mb-3">
+                                <p>Êtes-vous sûr ?
+                            </h3>
+                            <p class="text-muted mb-4">
+                                Vous êtes sur le point de désactiver votre compte.<br>
+                                Vous ne pourrez plus vous connecter.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-secondary px-4"
+                                    data-bs-dismiss="modal">Annuler</button>
+                                <button type="button" class="btn btn-danger px-4" onclick="showStep2()">Oui,
+                                    continuer</button>
+                            </div>
+                        </div>
+
+                        <div id="step-2-content" class="d-none">
+                            <div class="mb-3">
+                                <i class="bi bi-emoji-frown-fill text-danger" style="font-size: 3rem;"></i>
+                            </div>
+                            <h3 class="fw-bold text-danger mb-3">Vraiment sûr ?</h3>
+                            <p class="text-muted mb-4">
+                                C'est la dernière étape. Confirmez-vous vouloir nous quitter définitivement ?
+                            </p>
+
+                            <form action="/sae-covoiturage/public/profil/delete-account" method="POST">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        onclick="showStep1()">Retour</button>
+                                    <button type="submit" class="btn btn-danger fw-bold px-4">Supprimer mon
+                                        compte</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function showStep2() {
+                    document.getElementById('step-1-content').classList.add('d-none'); // Cache étape 1
+                    document.getElementById('step-2-content').classList.remove('d-none'); // Affiche étape 2
+                }
+
+                function showStep1() {
+                    document.getElementById('step-2-content').classList.add('d-none'); // Cache étape 2
+                    document.getElementById('step-1-content').classList.remove('d-none'); // Affiche étape 1
+                }
+
+                // Réinitialiser le pop-up à l'étape 1 quand on le ferme (pour la prochaine fois)
+                var myModalEl = document.getElementById('modalSuppression')
+                myModalEl.addEventListener('hidden.bs.modal', function(event) {
+                    showStep1();
+                })
+            </script>
 
         </main>
 

@@ -28,18 +28,20 @@
                             {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
                         </div>
                         
-                        <div class="mb-2">
-                            <span class="badge bg-{$conv.statut_couleur} bg-opacity-10 text-{$conv.statut_couleur} border border-{$conv.statut_couleur} rounded-pill" style="font-size: 0.7rem; padding: 3px 8px;">
-                                {if $conv.statut_visuel == 'avenir'}
-                                    <i class="bi bi-clock me-1"></i>
-                                {elseif $conv.statut_visuel == 'encours'}
-                                    <i class="bi bi-geo-alt-fill me-1"></i>
-                                {elseif $conv.statut_visuel == 'termine'}
-                                    <i class="bi bi-check-circle-fill me-1"></i>
+                        <div class="mb-1">
+                                <span class="badge bg-{$conv.statut_couleur} bg-opacity-10 text-{$conv.statut_couleur} border border-{$conv.statut_couleur} rounded-pill px-2 py-0 small">
+                                    {if $conv.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
+                                    {elseif $conv.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
+                                    {else}<i class="bi bi-check-circle-fill me-1"></i>{/if}
+                                    {$conv.statut_libelle}
+                                </span>
+
+                                {if $conv.statut_visuel == 'encours' && isset($conv.temps_restant)}
+                                    <span class="ms-2 text-success small fw-bold">
+                                        <i class="bi bi-hourglass-split"></i> Arrivée dans {$conv.temps_restant}
+                                    </span>
                                 {/if}
-                                {$conv.statut_libelle}
-                            </span>
-                        </div>
+                            </div>
 
                         <div class="conv-info">
                             <i class="bi bi-person"></i> {$conv.conducteur_prenom} {$conv.conducteur_nom} • 

@@ -49,6 +49,17 @@ Flight::route('GET /messagerie', function(){
             $conv['statut_visuel'] = 'encours';
             $conv['statut_libelle'] = 'En cours';
             $conv['statut_couleur'] = 'success';
+
+            // --- AJOUT : CALCUL DU TEMPS RESTANT ---
+            $diff = $now->diff($arrivee);
+            
+            // Formatage propre (ex: "1h 30min" ou "45 min")
+            if ($diff->h > 0) {
+                $conv['temps_restant'] = $diff->format('%hh %Im');
+            } else {
+                $conv['temps_restant'] = $diff->format('%I min');
+            }
+
         } else {
             if ($conv['statut_flag'] == 'C') {
                 $conv['statut_visuel'] = 'complet';
@@ -174,6 +185,14 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         $trajet['statut_visuel'] = 'termine'; $trajet['statut_libelle'] = 'Terminé'; $trajet['statut_couleur'] = 'secondary';
     } elseif ($now >= $depart && $now <= $arrivee) {
         $trajet['statut_visuel'] = 'encours'; $trajet['statut_libelle'] = 'En cours'; $trajet['statut_couleur'] = 'success';
+        // --- AJOUT : CALCUL DU TEMPS RESTANT ---
+        $diff = $now->diff($arrivee);
+        if ($diff->h > 0) {
+            $trajet['temps_restant'] = $diff->format('%hh %Im');
+        } else {
+            $trajet['temps_restant'] = $diff->format('%I min');
+        }
+        
     } else {
         if ($trajet['statut_flag'] == 'C') {
             $trajet['statut_visuel'] = 'complet'; $trajet['statut_libelle'] = 'Complet'; $trajet['statut_couleur'] = 'warning';

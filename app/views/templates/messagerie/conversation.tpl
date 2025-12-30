@@ -63,6 +63,14 @@
                         {else}<i class="bi bi-check-circle-fill me-1"></i>{/if}
                         {$trajet.statut_libelle}
                     </span>
+
+                    {if $trajet.statut_visuel == 'encours' && isset($trajet.temps_restant)}
+                        <span class="text-success fw-bold">
+                            <i class="bi bi-hourglass-split"></i> Arrivée dans {$trajet.temps_restant}
+                        </span>
+                        <span class="text-muted mx-1">•</span>
+                    {/if}
+
                     <span class="text-muted">{$trajet.date_fmt}</span>
                 </div>
             </div>

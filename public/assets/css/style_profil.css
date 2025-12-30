@@ -91,6 +91,89 @@ body {
   font-size: 1.5rem;
   cursor: pointer;
 }
+/* --- LE CONTENEUR ROND (Fixe la taille pour éviter les déformations) --- */
+.avatar-circle {
+  width: 150px; /* Largeur fixe obligatoire */
+  height: 150px; /* Hauteur fixe obligatoire */
+  border-radius: 50%; /* Rond parfait */
+  position: relative; /* Nécessaire pour l'overlay */
+  overflow: hidden; /* Coupe tout ce qui dépasse */
+  margin: 0 auto; /* Centre le cercle si besoin */
+  border: 4px solid white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background-color: #f0f0f0; /* Fond gris si pas d'image */
+}
+
+/* --- L'IMAGE OU L'ICÔNE PAR DÉFAUT --- */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Remplit le cercle sans déformer l'image */
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Style de l'icône par défaut (le bonhomme) */
+.default-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem; /* Taille du bonhomme par défaut */
+  color: #ccc; /* Gris clair */
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* --- L'OVERLAY (Texte + Icone) --- */
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* Centrage parfait */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background-color: rgba(0, 0, 0, 0.3); /* Légère couche noire transparente */
+  opacity: 0; /* INVISIBLE PAR DÉFAUT */
+  z-index: 10; /* Au-dessus de l'image */
+  transition: opacity 0.3s ease;
+}
+
+/* Style de l'icône appareil photo dans l'overlay */
+.photo-overlay i {
+  font-size: 1.5rem; /* Taille raisonnable */
+  color: white;
+  margin-bottom: 5px;
+}
+
+/* Style du texte "MODIFIER" */
+.photo-overlay span {
+  font-size: 0.8rem; /* Petit texte */
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- ACTION AU SURVOL (HOVER) --- */
+
+/* 1. L'overlay devient visible */
+.avatar-circle:hover .photo-overlay {
+  opacity: 1;
+}
+
+/* 2. L'image (ou l'icône défaut) devient floue et zoome */
+.avatar-circle:hover .avatar-img,
+.avatar-circle:hover .default-avatar {
+  filter: blur(4px); /* Flou */
+  transform: scale(1.1); /* Zoom léger */
+}
 
 /* --- CARTES INFO --- */
 .info-card {

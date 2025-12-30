@@ -176,6 +176,80 @@ Flight::route('GET /api/check-email', function(){
     Flight::json(['exists' => ($count > 0)]);
 });
 
+// ============================================================
+// GESTION PHOTO DE PROFIL
+// ============================================================
+
+Flight::route('POST /profil/update-photo', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Vérifier si un fichier a été envoyé
+    if (isset($_FILES['photo_profil']) && $_FILES['photo_profil']['error'] === 0) {
+        
+        $file = $_FILES['photo_profil'];
+        
+        // 2. Vérifications de sécurité
+        $allowed = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
+        $filename = $file['name'];
+        $filetype = $file['type'];
+        $filesize = $file['size'];
+
+        // Vérif extension
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if (!array_key_exists($ext, $allowed)) {
+            $_SESSION['flash_error'] = "Format invalide. Utilisez JPG, PNG ou WEBP.";
+            Flight::redirect('/profil');
+            return;
+        }
+
+        // Vérif taille (ex: max 5Mo)
+        if ($filesize > 5 * 1024 * 1024) {
+            $_SESSION['flash_error'] = "L'image est trop lourde (max 5Mo).";
+            Flight::redirect('/profil');
+            return;
+        }
+
+        // 3. Traitement du fichier
+        // On génère un nom unique pour éviter les conflits et forcer le rafraichissement du cache navigateur
+        $newFilename = "user_" . $idUser . "_" . uniqid() . "." . $ext;
+        
+        // Chemin absolu vers le dossier public/uploads
+        // A ADAPTER selon l'arborescence de votre serveur si besoin
+        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/sae-covoiturage/public/uploads/';
+        
+        // Création du dossier s'il n'existe pas
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // 4. Déplacement du fichier
+        if (move_uploaded_file($file['tmp_name'], $uploadDir . $newFilename)) {
+            
+            // (Optionnel) Supprimer l'ancienne photo si ce n'est pas celle par défaut
+            $oldPhoto = $_SESSION['user']['photo_profil'];
+            if ($oldPhoto && $oldPhoto !== 'default.png' && file_exists($uploadDir . $oldPhoto)) {
+                unlink($uploadDir . $oldPhoto);
+            }
+
+            // 5. Mise à jour BDD
+            $stmt = $db->prepare("UPDATE UTILISATEURS SET photo_profil = ? WHERE id_utilisateur = ?");
+            $stmt->execute([$newFilename, $idUser]);
+
+            // Mise à jour Session
+            $_SESSION['user']['photo_profil'] = $newFilename;
+            $_SESSION['flash_success'] = "Photo de profil modifiée !";
+        } else {
+            $_SESSION['flash_error'] = "Erreur lors de l'enregistrement de l'image.";
+        }
+    }
+
+    Flight::redirect('/profil');
+});
+
+
 // -----------------------------------------------------------
 // PAGE MES AVIS 
 // -----------------------------------------------------------

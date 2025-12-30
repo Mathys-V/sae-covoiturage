@@ -1,4 +1,21 @@
+# Dépendances et Cache
 /vendor/
 /tmp/
+
+# Système (Mac & Windows)
 .DS_Store
+Thumbs.db
+
+# Configuration sensible (Sécurité)
 app/config/db.php
+.env
+
+# Uploads Utilisateurs (On garde juste les defaults)
+public/uploads/*
+!public/uploads/default.png
+!public/uploads/default_admin.png
+!public/uploads/.gitkeep
+
+# Editeurs de code (Optionnel, pour ne pas partager tes configs locales)
+.idea/
+.vscode/

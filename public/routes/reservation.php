@@ -155,7 +155,7 @@ Flight::route('GET /mes_reservations', function(){
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
             WHERE r.id_passager = :user
             AND r.statut_code = 'V'
-            ORDER BY t.date_heure_depart DESC";
+            ORDER BY t.date_heure_depart ASC";
     
     $stmt = $db->prepare($sql);
     $stmt->execute([':user' => $userId]);

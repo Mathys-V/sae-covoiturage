@@ -94,12 +94,36 @@ Flight::route('POST /inscription', function(){
         return;
     }
 
+    $dateNaiss = new DateTime($data->date);
+    $dateMin1900 = new DateTime('1900-01-01');
+    $dateLimite13ans = new DateTime('-13 years');
+
+    if ($dateNaiss > $dateLimite13ans) {
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => 'Vous devez avoir au moins 13 ans pour vous inscrire.',
+            'formData' => $data
+        ]);
+        return;
+    }
+
+    if ($dateNaiss < $dateMin1900) {
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => 'Date de naissance invalide.',
+            'formData' => $data
+        ]);
+        return;
+    }
+
     try {
         $db->beginTransaction();
 
         // 2. Insertion Adresse
         $stmtAddr = $db->prepare("INSERT INTO ADRESSES (voie, code_postal, ville, pays) VALUES (:voie, :cp, :ville, 'France')");
-        $voie_complete = $data->rue . ($data->complement ? ' ' . $data->complement : '');
+        // Gestion du complément d'adresse s'il est vide
+        $complement = isset($data->complement) ? $data->complement : '';
+        $voie_complete = $data->rue . ($complement ? ' ' . $complement : '');
         
         $stmtAddr->execute([
             ':voie' => $voie_complete,
@@ -108,7 +132,7 @@ Flight::route('POST /inscription', function(){
         ]);
         $id_adresse = $db->lastInsertId();
 
-        // 3. Insertion Utilisateur (BCRYPT)
+        // 3. Insertion Utilisateur
         $hash = password_hash($data->mdp, PASSWORD_BCRYPT);
         
         $stmtUser = $db->prepare("
@@ -128,19 +152,19 @@ Flight::route('POST /inscription', function(){
         $id_utilisateur = $db->lastInsertId();
 
         // 4. Insertion Véhicule (Si voiture = oui)
-        if ($data->voiture === 'oui') {
+        // On vérifie que la variable existe ET qu'elle vaut 'oui'
+        if (isset($data->voiture) && $data->voiture === 'oui') {
             
-            $immat = strtoupper(trim($data->immat)); // Mise en majuscule et nettoyage
+            $immat = strtoupper(trim($data->immat));
 
-            // MODIFICATION DEMANDÉE : Vérification format Plaque (Nouveau AA-123-AA ou Ancien 123 AAA 00)
-            // Regex : 2 lettres - 3 chiffres - 2 lettres OU 1 à 4 chiffres - 2/3 lettres - 2 chiffres
+            // Regex de validation (Identique à celle du JS pour cohérence)
             $regexImmat = '~^(([A-Z]{2}[- ]?\d{3}[- ]?[A-Z]{2})|(\d{1,4}[- ]?[A-Z]{2,3}[- ]?\d{2}))$~';
 
             if (!preg_match($regexImmat, $immat)) {
-                $db->rollBack(); // On annule tout
+                $db->rollBack();
                 Flight::render('inscription.tpl', [
                     'titre' => 'S\'inscrire',
-                    'error' => 'Format de plaque d\'immatriculation invalide (ex: AA-123-AA).',
+                    'error' => 'Format de plaque invalide. Ex: AA-123-AA',
                     'formData' => $data
                 ]);
                 return;
@@ -151,11 +175,12 @@ Flight::route('POST /inscription', function(){
                 VALUES (:marque, :modele, :places, :couleur, :immat, 'voiture', ' ')
             ");
             
+            // CORRECTION ICI : On utilise $data->model (nom du champ HTML) et pas $data->modele
             $stmtCar->execute([
                 ':marque' => $data->marque,
-                ':modele' => $data->modele,
+                ':modele' => $data->model, // <--- C'était l'erreur (model vs modele)
                 ':places' => (int)$data->nb_places,
-                ':couleur' => $data->couleur,
+                ':couleur' => isset($data->couleur) ? $data->couleur : '', // Gestion si couleur vide
                 ':immat' => $immat
             ]);
             $id_vehicule = $db->lastInsertId();
@@ -166,16 +191,26 @@ Flight::route('POST /inscription', function(){
 
         $db->commit();
 
-        $_SESSION['flash_success'] = "Compte créé avec succès ! Connectez-vous.";
+        // Succès : On peut rediriger vers la connexion ou connecter l'utilisateur directement
         Flight::redirect('/connexion');
 
     } catch (PDOException $e) {
         $db->rollBack();
-        $errorMsg = "Erreur technique.";
+        
+        // Debug : Décommentez la ligne suivante si l'erreur persiste pour voir le message exact
+        // die($e->getMessage()); 
+
+        $errorMsg = "Une erreur est survenue lors de l'inscription.";
+        
         if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-            $errorMsg = "Cet email est déjà utilisé.";
+            $errorMsg = "Cette adresse email ou ce numéro de téléphone existe déjà.";
         }
-        Flight::render('inscription.tpl', ['error' => $errorMsg, 'formData' => $data]);
+        
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => $errorMsg, // Le message s'affichera dans le TPL
+            'formData' => $data
+        ]);
     }
 });
 

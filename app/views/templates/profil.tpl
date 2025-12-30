@@ -27,16 +27,38 @@
             <div id="section-compte">
 
                 <div class="profile-header">
-                    <div class="avatar-circle">
-                        {if !empty($user.photo_profil)}<img src="/sae-covoiturage/public/uploads/{$user.photo_profil}"
-                            class="avatar-img">{else}<i class="bi bi-person-fill"></i>
+                    <form id="form-photo" action="/sae-covoiturage/public/profil/update-photo" method="POST"
+                        enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="photo_profil" id="input-photo"
+                            accept="image/png, image/jpeg, image/jpg, image/webp"
+                            onchange="document.getElementById('form-photo').submit();">
+                    </form>
+
+                    <form id="form-photo" action="/sae-covoiturage/public/profil/update-photo" method="POST"
+                        enctype="multipart/form-data" style="display:none;">
+                        <input type="file" name="photo_profil" id="input-photo"
+                            accept="image/png, image/jpeg, image/jpg, image/webp"
+                            onchange="document.getElementById('form-photo').submit();">
+                    </form>
+
+                    <div class="avatar-circle" onclick="document.getElementById('input-photo').click();">
+
+                        {if !empty($user.photo_profil)}
+                            <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}"
+                                class="avatar-img">
+                        {else}
+                            <div class="default-avatar">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
                         {/if}
                     </div>
                     <div>
                         <div class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start">
                             <h1 class="fw-bold mb-0">{$user.prenom} {$user.nom}</h1>
+
                             <i class="bi bi-pencil-fill fs-5 text-secondary" style="cursor:pointer;"
-                                title="Modifier"></i>
+                                title="Modifier la photo" onclick="document.getElementById('input-photo').click();">
+                            </i>
                         </div>
                         <div class="text-white-50 fs-5">{$user.email}</div>
                         <div class="text-success fw-bold fs-5 mt-1">Profil vérifié <i

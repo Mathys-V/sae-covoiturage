@@ -137,9 +137,15 @@
                             </div>
 
                             <div class="d-grid gap-3">
-                                <button type="submit" class="btn btn-lg text-white fw-bold shadow-lg btn-gradient-primary">
-                                    <i class="bi bi-check-circle-fill me-2"></i>Réserver ce trajet
-                                </button>
+                                {if $trajet.places_disponibles > 0}
+                                    <button type="submit" class="btn btn-lg text-white fw-bold shadow-lg btn-gradient-primary">
+                                        <i class="bi bi-check-circle-fill me-2"></i>Réserver ce trajet
+                                    </button>
+                                {else}
+                                    <button type="button" class="btn btn-lg btn-secondary" disabled>
+                                        Plus de places disponibles
+                                    </button>
+                                {/if}
                                 <a href="/sae-covoiturage/public/recherche" class="btn btn-outline-secondary btn-lg fw-semibold" style="border-radius: 15px; border-width: 2px;">
                                     <i class="bi bi-arrow-left me-2"></i>Retour à la recherche
                                 </a>

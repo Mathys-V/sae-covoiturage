@@ -76,7 +76,6 @@ Flight::route('GET /trajet/reserver/@id', function($id){
 Flight::route('POST /trajet/reserver/@id', function($id){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
-    $data = Flight::request()->data;
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
@@ -89,46 +88,44 @@ Flight::route('POST /trajet/reserver/@id', function($id){
 
         if (!$trajet) throw new Exception("Trajet introuvable.");
 
-        // Vérification places
-        $sqlPlaces = "SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
-                      FROM RESERVATIONS
-                      WHERE id_trajet = :id AND statut_code = 'V'";
-        
-        $stmtPlaces = $db->prepare($sqlPlaces);
+        // Calcul des places disponibles
+        $stmtPlaces = $db->prepare("
+            SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
+            FROM RESERVATIONS
+            WHERE id_trajet = :id AND statut_code = 'V'
+        ");
         $stmtPlaces->execute([':id' => $id]);
         $placesData = $stmtPlaces->fetch(PDO::FETCH_ASSOC);
-        
-        $placesDisponibles = $trajet['places_proposees'] - $placesData['places_prises'];
-        $nbPlacesVoulues = (int)$data->nb_places;
 
-        if ($nbPlacesVoulues > $placesDisponibles) {
-            throw new Exception("Pas assez de places disponibles !");
+        $placesDisponibles = $trajet['places_proposees'] - $placesData['places_prises'];
+
+        if ($placesDisponibles <= 0) {
+            throw new Exception("Plus de places disponibles !");
         }
 
-        // Insertion Réservation
-        $sqlReserve = "INSERT INTO RESERVATIONS 
-                       (id_trajet, id_passager, nb_places_reservees, statut_code, date_reservation)
-                       VALUES (:trajet, :passager, :places, 'V', NOW())";
-        
-        $stmtReserve = $db->prepare($sqlReserve);
+        // Réservation automatique 1 place
+        $stmtReserve = $db->prepare("
+            INSERT INTO RESERVATIONS 
+            (id_trajet, id_passager, nb_places_reservees, statut_code, date_reservation)
+            VALUES (:trajet, :passager, 1, 'V', NOW())
+        ");
         $stmtReserve->execute([
             ':trajet' => $id,
-            ':passager' => $userId,
-            ':places' => $nbPlacesVoulues
+            ':passager' => $userId
         ]);
 
-        if ($placesDisponibles - $nbPlacesVoulues == 0) {
-            $sqlUpdate = "UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id";
-            $stmtUpdate = $db->prepare($sqlUpdate);
+        // Si le trajet est maintenant complet, changer statut
+        if ($placesDisponibles - 1 == 0) {
+            $stmtUpdate = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id");
             $stmtUpdate->execute([':id' => $id]);
         }
 
-        // --- AJOUT SYSTEM : Message automatique "A rejoint" ---
-        $msgContent = "::sys_join::";
-        $sqlMsg = "INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :content, NOW())";
-        $stmtMsg = $db->prepare($sqlMsg);
-        $stmtMsg->execute([':tid' => $id, ':uid' => $userId, ':content' => $msgContent]);
-        // -----------------------------------------------------
+        // Message système "A rejoint"
+        $stmtMsg = $db->prepare("
+            INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi)
+            VALUES (:tid, :uid, '::sys_join::', NOW())
+        ");
+        $stmtMsg->execute([':tid' => $id, ':uid' => $userId]);
 
         $db->commit();
         $_SESSION['flash_success'] = "Réservation confirmée, bon voyage !";

@@ -149,11 +149,44 @@ function validerEtape3() {
 }
 
 function validerEtape4() {
-    const date = document.getElementById("dateInput").value;
+    const dateInput = document.getElementById("dateInput");
     const tel = document.getElementById("telInput").value;
 
-    if (date && tel.length === 10) {
+    // Convertir la date saisie en objet Date
+    const dateSaisie = new Date(dateInput.value);
+
+    // Calculer la date d'il y a 13 ans jour pour jour
+    const dateLimite13ans = new Date();
+    dateLimite13ans.setFullYear(dateLimite13ans.getFullYear() - 13);
+    // On met les heures à 0 pour éviter les bugs de fuseau horaire
+    dateLimite13ans.setHours(0, 0, 0, 0);
+
+    const dateMin = new Date("1900-01-01");
+
+    // 1. Vérifier si vide
+    if (!dateInput.value) {
+        alert("Veuillez entrer une date.");
+        return;
+    }
+
+    // 2. Vérification de l'âge (Moins de 13 ans ?)
+    // Si la date de naissance est APRÈS la date limite, l'utilisateur est trop jeune
+    if (dateSaisie > dateLimite13ans) {
+        alert("Vous devez avoir au moins 13 ans pour vous inscrire.");
+        return;
+    }
+
+    // 3. Vérifier si l'année est cohérente (> 1900)
+    if (dateSaisie < dateMin) {
+        alert("Veuillez entrer une année de naissance valide.");
+        return;
+    }
+
+    // 4. Vérifier le téléphone
+    if (tel.length === 10) {
         changerEtape(5);
+    } else {
+        alert("Le numéro de téléphone doit comporter 10 chiffres.");
     }
 }
 
@@ -259,3 +292,20 @@ function togglePassword(inputId, iconId) {
         icon.classList.add("bi-eye");
     }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const dateInput = document.getElementById("dateInput");
+    if (dateInput) {
+        const today = new Date();
+        today.setFullYear(today.getFullYear() - 13);
+
+        // Formatage en YYYY-MM-DD pour l'attribut HTML
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+
+        const maxDate = `${year}-${month}-${day}`;
+        dateInput.setAttribute("max", maxDate);
+        dateInput.setAttribute("min", "1900-01-01");
+    }
+});

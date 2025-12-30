@@ -94,6 +94,28 @@ Flight::route('POST /inscription', function(){
         return;
     }
 
+    $dateNaiss = new DateTime($data->date);
+    $dateMin1900 = new DateTime('1900-01-01');
+    $dateLimite13ans = new DateTime('-13 years');
+
+    if ($dateNaiss > $dateLimite13ans) {
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => 'Vous devez avoir au moins 13 ans pour vous inscrire.',
+            'formData' => $data
+        ]);
+        return;
+    }
+
+    if ($dateNaiss < $dateMin1900) {
+        Flight::render('inscription.tpl', [
+            'titre' => 'S\'inscrire',
+            'error' => 'Date de naissance invalide.',
+            'formData' => $data
+        ]);
+        return;
+    }
+
     try {
         $db->beginTransaction();
 

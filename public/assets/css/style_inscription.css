@@ -1,183 +1,183 @@
 /* --- STYLE GLOBAL --- */
 body {
-  background-color: #452b85 !important; /* Force le fond violet */
+    background-color: #452b85 !important; /* Force le fond violet */
 }
 
 /* --- TITRES & TEXTES --- */
 .titre-inscription {
-  color: #8c52ff;
-  font-family: "Garet", sans-serif;
-  font-weight: bold;
+    color: #8c52ff;
+    font-family: "Garet", sans-serif;
+    font-weight: bold;
 }
 .form-label {
-  color: #8c52ff;
-  font-size: 1.2rem;
+    color: #8c52ff;
+    font-size: 1.2rem;
 }
 .asterisque {
-  color: #ed3f27;
-  margin-left: 5px;
+    color: #ed3f27;
+    margin-left: 5px;
 }
 .texte-champ {
-  color: #ed3f27;
-  font-style: italic;
+    color: #ed3f27;
+    font-style: italic;
 }
 
 /* --- CHAMPS DE FORMULAIRE --- */
 .form-control {
-  border: 2px solid #8c52ff;
-  border-radius: 12px;
-  padding: 15px 20px;
-  font-size: 1.1rem;
-  background-color: #f9f9f9;
-  transition: all 0.3s ease;
+    border: 2px solid #8c52ff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
 }
 .form-control:focus {
-  background-color: #fff;
-  border-color: #452b85;
-  box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25);
-  outline: none;
+    background-color: #fff;
+    border-color: #452b85;
+    box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25);
+    outline: none;
 }
 
 /* --- BOUTONS --- */
 .btn-inscription {
-  background-color: #8c52ff;
-  color: white;
-  border: none;
-  padding: 12px 0;
-  border-radius: 12px;
-  font-size: 1.2rem;
-  width: 100%;
-  transition: transform 0.2s, background-color 0.3s;
+    background-color: #8c52ff;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    width: 100%;
+    transition: transform 0.2s, background-color 0.3s;
 }
 .btn-inscription:hover {
-  background-color: #452b85;
-  color: white;
-  transform: scale(1.02);
+    background-color: #452b85;
+    color: white;
+    transform: scale(1.02);
 }
 
 .btn-petit {
-  width: 100px !important;
-  padding: 10px 0 !important;
-  margin-left: 40px;
-  margin-right: 40px;
+    width: 100px !important;
+    padding: 10px 0 !important;
+    margin-left: 40px;
+    margin-right: 40px;
 }
 
 @media (min-width: 768px) {
-  .btn-inscription {
-    width: 40%;
-    padding: 12px 40px;
-  }
+    .btn-inscription {
+        width: 40%;
+        padding: 12px 40px;
+    }
 }
 
 /* --- SCROLLBAR PERSONNALISÉE --- */
 .card-scrollable {
-  overflow-y: auto; /* Active le scroll vertical */
-  scroll-behavior: smooth;
+    overflow-y: auto; /* Active le scroll vertical */
+    scroll-behavior: smooth;
 }
 
 .card-scrollable::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 .card-scrollable::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-  margin: 10px 0;
+    background: #f1f1f1;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 .card-scrollable::-webkit-scrollbar-thumb {
-  background: #8c52ff;
-  border-radius: 10px;
+    background: #8c52ff;
+    border-radius: 10px;
 }
 .card-scrollable::-webkit-scrollbar-thumb:hover {
-  background: #452b85;
+    background: #452b85;
 }
 
 /* --- INPUT NOMBRE (PLACES) --- */
 .number-input-container {
-  display: flex;
-  width: 120px; /* Largeur totale du bloc */
-  height: 50px; /* Hauteur du bloc */
-  border: 2px solid #8c52ff; /* Bordure violette autour de tout */
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: white;
-  margin: 0 auto; /* Centrage */
+    display: flex;
+    width: 120px; /* Largeur totale du bloc */
+    height: 50px; /* Hauteur du bloc */
+    border: 2px solid #8c52ff; /* Bordure violette autour de tout */
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    margin: 0 auto; /* Centrage */
 }
 
 .number-field {
-  border: none !important; /* On enlève la bordure du champ lui-même */
-  height: 100%;
-  text-align: center;
-  font-size: 1.5rem;
-  color: #000;
-  width: 100%;
-  background: transparent;
+    border: none !important; /* On enlève la bordure du champ lui-même */
+    height: 100%;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #000;
+    width: 100%;
+    background: transparent;
 }
 .number-field:focus {
-  box-shadow: none; /* Pas de halo bleu */
+    box-shadow: none; /* Pas de halo bleu */
 }
 /* Cacher flèches Chrome/Safari */
 .number-field::-webkit-outer-spin-button,
 .number-field::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* La colonne de droite (fond violet) */
 .spinners-container {
-  display: flex;
-  flex-direction: column; /* Empile les boutons haut/bas */
-  width: 40px; /* Largeur de la zone violette */
-  background-color: #8c52ff;
-  border-left: 1px solid #8c52ff;
+    display: flex;
+    flex-direction: column; /* Empile les boutons haut/bas */
+    width: 40px; /* Largeur de la zone violette */
+    background-color: #8c52ff;
+    border-left: 1px solid #8c52ff;
 }
 
 /* Les petits boutons flèches */
 .spinner-btn {
-  flex: 1; /* Chaque bouton prend 50% de la hauteur */
-  border: none;
-  background: none;
-  color: white; /* Flèches blanches */
-  font-size: 0.8rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
+    flex: 1; /* Chaque bouton prend 50% de la hauteur */
+    border: none;
+    background: none;
+    color: white; /* Flèches blanches */
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
 }
 
 .spinner-btn:hover {
-  background-color: #452b85; /* Plus foncé au survol */
+    background-color: #452b85; /* Plus foncé au survol */
 }
 
 /* Petite ligne entre les deux boutons flèches */
 .spinner-btn:first-child {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* --- GROUPE INPUT + ICONE (MDP) --- */
 .input-group .form-control {
-  border: 2px solid #8c52ff;
-  border-right: none; /* On enlève le côté droit de l'input */
-  border-radius: 12px 0 0 12px;
+    border: 2px solid #8c52ff;
+    border-right: none; /* On enlève le côté droit de l'input */
+    border-radius: 12px 0 0 12px;
 }
 
 .input-group .input-group-text {
-  border: 2px solid #8c52ff;
-  border-left: none; /* On enlève le côté gauche de l'icône */
-  border-radius: 0 12px 12px 0;
-  background-color: white;
+    border: 2px solid #8c52ff;
+    border-left: none; /* On enlève le côté gauche de l'icône */
+    border-radius: 0 12px 12px 0;
+    background-color: white;
 }
 
 .input-group .form-control:focus {
-  box-shadow: none; /* On gère le shadow manuellement si besoin */
-  border-color: #8c52ff;
+    box-shadow: none; /* On gère le shadow manuellement si besoin */
+    border-color: #8c52ff;
 }
 
 /* Gestion de l'état invalide (Rouge) */
 .form-control.is-invalid + .input-group-text {
-  border-color: #dc3545;
+    border-color: #dc3545;
 }
 
 .form-control.is-invalid + .input-group-text i {
-  color: #dc3545 !important;
+    color: #dc3545 !important;
 }

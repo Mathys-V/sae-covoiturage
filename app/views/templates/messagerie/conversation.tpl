@@ -121,8 +121,19 @@
                             {$msg.contenu|nl2br}
                         </div>
                         <div class="msg-info">
-                            {$msg.nom_affiche} • {$msg.heure_fmt}
-                        </div>
+                    {if $msg.type == 'other'}
+                        <a href="/sae-covoiturage/public/profil/voir/{$msg.id_expediteur}" 
+                           class="text-decoration-none fw-bold" 
+                           style="color: #6c757d;"
+                           onmouseover="this.style.textDecoration='underline'; this.style.color='#8c52ff';" 
+                           onmouseout="this.style.textDecoration='none'; this.style.color='#6c757d';">
+                            {$msg.nom_affiche}
+                        </a>
+                    {else}
+                        {$msg.nom_affiche}
+                    {/if}
+                    • {$msg.heure_fmt}
+                </div>
                     </div>
                 {/if}
             {/foreach}

@@ -110,6 +110,7 @@ require 'routes/carte.php';        // La carte
 require 'routes/avis.php';        // Avis
 require 'routes/signalements.php'; // Signaler un utilisateur
 require 'routes/admin.php'; // Admin - Modération
+require 'routes/profil_public.php'; // Profil public d'un utilisateur
 
 
 // -----------------------------------------------------------

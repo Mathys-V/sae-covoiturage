@@ -44,16 +44,19 @@
                         <div class="col-md-4 border-end border-secondary border-opacity-25">
                             <h5 class="fw-bold mb-3 text-purple-dark">Informations du conducteur</h5>
                             
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="me-3">
-                                    <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm avatar-img">
+                            <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark group-hover">
+                                <div class="d-flex align-items-center mb-3 p-2 rounded hover-profile transition">
+                                    <div class="me-3">
+                                        <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm avatar-img">
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold fs-5 text-purple-primary">{$trajet.prenom} {$trajet.nom|upper}</div>
+                                        <small class="text-muted d-block"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
+                                        <small class="text-warning fst-italic"><i class="bi bi-eye-fill me-1"></i> Voir le profil</small>
+                                    </div>
+                                    <i class="bi bi-chevron-right ms-auto text-muted"></i>
                                 </div>
-                                <div>
-                                    <div class="fw-bold fs-5">{$trajet.prenom} {$trajet.nom|upper}</div>
-                                    <small class="text-muted"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
-                                </div>
-                            </div>
-                            
+                            </a>
                             <div class="bg-white rounded-3 p-3 mt-3 shadow-sm">
                                 <h6 class="fw-bold mb-2 text-purple-primary">Trajet prévu</h6>
                                 <p class="mb-1"><i class="bi bi-calendar-event me-2"></i> Le {$trajet.date_heure_depart|date_format:"%d/%m/%Y"}</p>
@@ -108,5 +111,6 @@
 </div>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_resultats_recherche.js"></script>
+
 
 {include file='includes/footer.tpl'}

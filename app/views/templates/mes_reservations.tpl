@@ -29,6 +29,14 @@
         margin-bottom: 8px;
         display: block;
     }
+/* Effet au survol du profil */
+    .hover-bg-light:hover {
+        background-color: #e2e6ea;
+        cursor: pointer;
+    }
+    .transition {
+        transition: background-color 0.2s;
+    }
 </style>
 
 <div class="container my-5 flex-grow-1">
@@ -50,26 +58,29 @@
                             Conducteur
                         </h5>
 
-                        <div class="d-flex align-items-center mb-4">
-                            <div class="me-3">
-                                {if $reservation.conducteur_photo}
-                                    <img src="/sae-covoiturage/public/uploads/{$reservation.conducteur_photo}"
-                                         class="rounded-circle shadow-sm"
-                                         width="60" height="60"
-                                         style="object-fit:cover;">
-                                {else}
-                                    <div class="avatar-fallback">
-                                        {$reservation.conducteur_prenom|substr:0:1}{$reservation.conducteur_nom|substr:0:1}
-                                    </div>
-                                {/if}
-                            </div>
-                            <div>
-                                <div class="fw-bold">
-                                    {$reservation.conducteur_prenom} {$reservation.conducteur_nom|upper}
+                        <a href="/sae-covoiturage/public/profil/voir/{$reservation.id_conducteur}" class="text-decoration-none text-dark">
+                            <div class="d-flex align-items-center mb-4 p-2 rounded hover-bg-light transition">
+                                <div class="me-3">
+                                    {if $reservation.conducteur_photo}
+                                        <img src="/sae-covoiturage/public/uploads/{$reservation.conducteur_photo}"
+                                             class="rounded-circle shadow-sm"
+                                             width="60" height="60"
+                                             style="object-fit:cover;">
+                                    {else}
+                                        <div class="avatar-fallback">
+                                            {$reservation.conducteur_prenom|substr:0:1}{$reservation.conducteur_nom|substr:0:1}
+                                        </div>
+                                    {/if}
                                 </div>
-                                <small class="text-muted"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
+                                <div>
+                                    <div class="fw-bold">
+                                        {$reservation.conducteur_prenom} {$reservation.conducteur_nom|upper}
+                                    </div>
+                                    <small class="text-muted d-block"><i class="bi bi-mortarboard-fill me-1"></i> Étudiant</small>
+                                    <small class="text-warning fst-italic"><i class="bi bi-eye-fill"></i> Voir le profil</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
 
                         <div class="bg-light rounded-3 p-3">
                             <label class="pb-3 fw-bold" style="color: #8c52ff;">Information du trajet</label>

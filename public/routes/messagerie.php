@@ -81,13 +81,20 @@ Flight::route('GET /messagerie', function(){
         $conv['nb_non_lus'] = $stmtCount->fetchColumn();
     }
 
-    // 3. Tri
+// 3. Tri ROBUSTE : Messages récents en premier, trajets vides en bas
     usort($conversations, function($a, $b) {
-        $hasMsgA = !empty($a['dernier_message']);
-        $hasMsgB = !empty($b['dernier_message']);
-        if ($hasMsgA && !$hasMsgB) return -1; 
-        if (!$hasMsgA && $hasMsgB) return 1;  
-        return strtotime($b['date_tri']) - strtotime($a['date_tri']);
+        // Si la conversation a un message, on prend sa date, sinon 0 (pour la mettre à la fin)
+        $timestampA = !empty($a['dernier_message']) ? strtotime($a['date_tri']) : 0;
+        $timestampB = !empty($b['dernier_message']) ? strtotime($b['date_tri']) : 0;
+
+        // Si les deux ont des messages (ou les deux n'en ont pas)
+        if ($timestampA == $timestampB) {
+            // Départ le plus proche en premier pour les trajets vides
+            return strtotime($a['date_heure_depart']) - strtotime($b['date_heure_depart']);
+        }
+
+        // Sinon, celui avec la date la plus grande (le message le plus récent) passe devant
+        return $timestampB - $timestampA;
     });
 
     Flight::render('messagerie/liste.tpl', [
@@ -95,6 +102,7 @@ Flight::route('GET /messagerie', function(){
         'conversations' => $conversations
     ]);
 });
+
 
 // AFFICHER UNE CONVERSATION
 Flight::route('GET /messagerie/conversation/@id', function($id){
@@ -171,6 +179,22 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
             $trajet['statut_visuel'] = 'complet'; $trajet['statut_libelle'] = 'Complet'; $trajet['statut_couleur'] = 'warning';
         } else {
             $trajet['statut_visuel'] = 'avenir'; $trajet['statut_libelle'] = 'À venir'; $trajet['statut_couleur'] = 'primary';
+        }
+    }
+
+    // --- AUTOMATISATION : Message de fin de trajet ---
+    // Si le trajet est terminé (visuellement)
+    if ($trajet['statut_visuel'] == 'termine') {
+        // Vérifier si le message de fin existe déjà
+        $stmtCheckEnd = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu = '::sys_end::'");
+        $stmtCheckEnd->execute([$id]);
+        $hasEndMsg = $stmtCheckEnd->fetchColumn();
+
+        if ($hasEndMsg == 0) {
+            // Insérer le message système de fin
+            $stmtInsert = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())");
+            // On met l'admin ou le conducteur comme expéditeur (ici le conducteur pour simplifier les FK)
+            $stmtInsert->execute([$id, $trajet['id_conducteur']]);
         }
     }
 

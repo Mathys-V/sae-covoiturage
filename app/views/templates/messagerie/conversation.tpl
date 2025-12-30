@@ -3,81 +3,115 @@
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/messagerie/chat.css">
 
 <style>
-    /* Zone de texte plus claire et "cliquable" */
+    /* Styles spécifiques pour la modale de signalement */
     .custom-textarea {
-        background-color: #f8f9fa;       /* Fond gris très léger */
-        border: 2px solid #e9ecef;       /* Bordure visible mais douce */
-        border-radius: 12px;             /* Coins arrondis */
-        padding: 15px;                   /* Espace interne confortable */
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px;
         font-size: 0.95rem;
         color: #333;
-        resize: none;                    /* Empêche de déformer la modale */
-        transition: all 0.3s ease;       /* Animation fluide au clic */
+        resize: none;
+        transition: all 0.3s ease;
         width: 100%;
     }
-
-    /* Quand on clique dedans */
     .custom-textarea:focus {
-        background-color: #ffffff;       /* Devient blanc */
-        border-color: #8c52ff;           /* Bordure violette */
-        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet */
+        background-color: #ffffff;
+        border-color: #8c52ff;
+        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
         outline: none;
     }
-
-    /* Label au-dessus */
     .form-label-bold {
         font-weight: 700;
         color: #2c3e50;
         margin-bottom: 8px;
         display: block;
     }
+
+    /* Styles pour les bulles de chat (au cas où le CSS externe manque) */
+    .msg-row { display: flex; flex-direction: column; max-width: 75%; margin-bottom: 10px; }
+    .msg-row.self { align-self: flex-end; align-items: flex-end; }
+    .msg-row.other { align-self: flex-start; align-items: flex-start; }
+    
+    .msg-row .msg-content {
+        padding: 10px 15px;
+        border-radius: 15px;
+        position: relative;
+        word-wrap: break-word;
+    }
+    .msg-row.self .msg-content { background-color: #8c52ff; color: white; border-bottom-right-radius: 2px; }
+    .msg-row.other .msg-content { background-color: #f1f0f0; color: #333; border-bottom-left-radius: 2px; }
+    
+    .msg-info { font-size: 0.7rem; margin-top: 4px; opacity: 0.7; }
+    .date-divider { text-align: center; margin: 15px 0; font-size: 0.8rem; color: #aaa; }
+    .system-msg { text-align: center; font-style: italic; color: #888; margin: 10px 0; font-size: 0.9rem; }
 </style>
 
-<div class="chat-wrapper">
+<div class="chat-wrapper" style="height: 85vh; display: flex; flex-direction: column;">
     
-    <div class="chat-header">
-        <div class="d-flex align-items-center" style="max-width: 70%;">
-            <a href="/sae-covoiturage/public/messagerie" class="btn-back">
+    <div class="chat-header p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center" style="max-width: 80%;">
+            <a href="/sae-covoiturage/public/messagerie" class="btn btn-light rounded-circle me-3">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <div class="text-truncate">
-                <h2 class="chat-header-title text-truncate">{$trajet.ville_depart} → {$trajet.ville_arrivee}</h2>
-                <div class="chat-header-date d-flex align-items-center gap-2">
+                <h5 class="mb-0 text-truncate fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$trajet.ville_arrivee}</h5>
+                <div class="d-flex align-items-center gap-2 small mt-1">
                     <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-2">
-                        {if $trajet.statut_visuel == 'avenir'}<i class="bi bi-clock"></i>
-                        {elseif $trajet.statut_visuel == 'encours'}<i class="bi bi-car-front-fill"></i>
-                        {else}<i class="bi bi-check-circle-fill"></i>{/if}
+                        {if $trajet.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
+                        {elseif $trajet.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
+                        {else}<i class="bi bi-check-circle-fill me-1"></i>{/if}
                         {$trajet.statut_libelle}
                     </span>
-                    <span>{$trajet.date_fmt}</span>
+                    <span class="text-muted">{$trajet.date_fmt}</span>
                 </div>
             </div>
         </div>
         
+        {if $participants|@count > 0}
         <button class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-report" title="Signaler un problème">
-            <i class="bi bi-flag"></i> <span class="d-none d-md-inline ms-1">Signaler</span>
+            <i class="bi bi-flag"></i>
         </button>
+        {/if}
     </div>
 
-    <div class="messages-container" id="messagesArea">
+    <div class="messages-container p-3" id="messagesArea" style="flex: 1; overflow-y: auto; background-color: #f8f9fa;">
         {if empty($messages)}
-            <div class="text-center my-auto opacity-50">
-                <i class="bi bi-chat-heart display-4 text-purple"></i>
-                <p class="mt-3 fw-bold">La conversation commence ici.</p>
-                <p class="small">Dites bonjour à votre groupe de covoiturage !</p>
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 opacity-50">
+                <i class="bi bi-chat-dots display-1 text-purple mb-3"></i>
+                <p class="fw-bold fs-5">La conversation commence ici.</p>
+                <p class="small text-muted">Discutez avec les membres du trajet !</p>
             </div>
         {else}
             {foreach $messages as $msg}
                 {if $msg.type == 'separator'}
                     <div class="date-divider"><span>{$msg.date}</span></div>
+                
                 {elseif $msg.type == 'system'}
-                    <div class="system-msg"><span>{$msg.text_affiche}</span></div>
+                    
+                    {if $msg.contenu == '::sys_end::'}
+                        <div class="system-msg my-4">
+                            <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #f3f0ff;">
+                                <div class="text-center">
+                                    <h4 class="fw-bold text-purple mb-2"><i class="bi bi-flag-fill"></i> Trajet terminé !</h4>
+                                    <p class="text-muted mb-3">Nous espérons que vous avez fait bon voyage. C'est le moment de laisser un avis.</p>
+                                    <a href="/sae-covoiturage/public/avis/choix/{$trajet.id_trajet}" class="btn btn-purple rounded-pill px-4 fw-bold shadow-sm">
+                                        <i class="bi bi-star-fill me-2"></i> Noter les participants
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {else}
+                        <div class="system-msg"><span>{$msg.text_affiche}</span></div>
+                    {/if}
+
                 {else}
                     <div class="msg-row {if $msg.type == 'self'}self{else}other{/if}">
-                        {if $msg.type != 'self'}<div class="msg-name">{$msg.nom_affiche}</div>{/if}
-                        <div class="msg-bubble">
-                            {$msg.contenu|escape:'html'|nl2br}
-                            <span class="msg-time">{$msg.heure_fmt}</span>
+                        <div class="msg-content shadow-sm">
+                            {$msg.contenu|nl2br}
+                        </div>
+                        <div class="msg-info">
+                            {$msg.nom_affiche} • {$msg.heure_fmt}
                         </div>
                     </div>
                 {/if}
@@ -85,11 +119,13 @@
         {/if}
     </div>
 
-    <div class="chat-footer">
-        <form id="chatForm" class="input-group-chat">
-            <input type="text" id="messageInput" class="chat-input" placeholder="Écrivez votre message..." required autocomplete="off">
+    <div class="chat-footer p-3 bg-white border-top">
+        <form id="chatForm" class="d-flex gap-2">
+            <input type="text" id="messageInput" class="form-control rounded-pill bg-light border-0 px-4 py-2" placeholder="Écrivez votre message..." required autocomplete="off">
             <input type="hidden" id="trajetId" value="{$trajet.id_trajet}">
-            <button type="submit" class="btn-send"><i class="bi bi-send-fill"></i></button>
+            <button type="submit" class="btn btn-purple rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
+                <i class="bi bi-send-fill fs-5"></i>
+            </button>
         </form>
     </div>
 
@@ -98,19 +134,15 @@
 <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
-      
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold text-danger">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      
       <div class="modal-body p-4">
         <p class="text-muted small mb-4">Merci de nous indiquer la raison de ce signalement. Un modérateur examinera la situation rapidement.</p>
-        
         <form id="formSignalement">
-            
             <div class="mb-3">
                 <label class="form-label-bold">Qui concerne ce signalement ?</label>
                 <select class="form-select bg-light border-0 py-2" id="userSignalement" required>
@@ -120,7 +152,6 @@
                     {/foreach}
                 </select>
             </div>
-
             <div class="mb-3">
                 <label class="form-label-bold">Motif</label>
                 <select class="form-select bg-light border-0 py-2" id="motifSignalement" required>
@@ -132,19 +163,16 @@
                     <option value="Autre">Autre</option>
                 </select>
             </div>
-
             <div class="mb-4">
                 <label class="form-label-bold">Détails supplémentaires</label>
                 <textarea class="custom-textarea" id="detailsSignalement" rows="4" placeholder="Décrivez la situation ici..."></textarea>
             </div>
-
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">Envoyer le signalement</button>
                 <button type="button" class="btn btn-light rounded-pill text-muted" data-bs-dismiss="modal">Annuler</button>
             </div>
         </form>
       </div>
-
     </div>
   </div>
 </div>
@@ -156,16 +184,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('messageInput');
     const trajetId = document.getElementById('trajetId').value;
 
+    // Scroll automatique en bas
     function scrollToBottom() {
         if(messagesArea) messagesArea.scrollTop = messagesArea.scrollHeight;
     }
     scrollToBottom();
 
-    // ENVOI MESSAGE
+    // 1. ENVOI DE MESSAGE
     chatForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const text = messageInput.value.trim();
         if(!text) return;
+
+        // Désactiver le bouton pour éviter le double clic
+        const btn = chatForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
 
         fetch('/sae-covoiturage/public/api/messagerie/send', {
             method: 'POST',
@@ -177,55 +210,66 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if(data.success) location.reload();
-            else alert("Erreur lors de l'envoi");
+            if(data.success) {
+                messageInput.value = ''; // Vider l'input
+                location.reload();       // Recharger pour afficher le message
+            } else {
+                alert("Erreur lors de l'envoi");
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.disabled = false;
         });
     });
 
-    // GESTION SIGNALEMENT
+    // 2. GESTION SIGNALEMENT
     const btnSignaler = document.querySelector('.btn-report');
     const modalEl = document.getElementById('modalSignalement');
-    const modal = new bootstrap.Modal(modalEl);
-    const formSignalement = document.getElementById('formSignalement');
+    
+    // On vérifie si le bouton existe (il n'existe pas si pas de participants)
+    if(btnSignaler && modalEl){
+        const modal = new bootstrap.Modal(modalEl);
+        const formSignalement = document.getElementById('formSignalement');
 
-    if(btnSignaler){
         btnSignaler.addEventListener('click', function() {
             modal.show();
         });
-    }
 
-    formSignalement.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const user = document.getElementById('userSignalement').value;
-        const motif = document.getElementById('motifSignalement').value;
-        const details = document.getElementById('detailsSignalement').value;
+        formSignalement.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('userSignalement').value;
+            const motif = document.getElementById('motifSignalement').value;
+            const details = document.getElementById('detailsSignalement').value;
 
-        if(!user || !motif) {
-            alert("Veuillez remplir tous les champs obligatoires.");
-            return;
-        }
-
-        fetch('/sae-covoiturage/public/api/signalement/nouveau', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_trajet: trajetId,
-                id_signale: user,
-                motif: motif,
-                description: details
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            modal.hide();
-            if(data.success) {
-                alert("Signalement envoyé. Merci de votre vigilance.");
-                formSignalement.reset();
-            } else {
-                alert("Erreur : " + (data.msg || "Impossible d'envoyer"));
+            if(!user || !motif) {
+                alert("Veuillez remplir tous les champs obligatoires.");
+                return;
             }
+
+            fetch('/sae-covoiturage/public/api/signalement/nouveau', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_trajet: trajetId,
+                    id_signale: user,
+                    motif: motif,
+                    description: details
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                modal.hide();
+                if(data.success) {
+                    alert("Signalement envoyé. Merci de votre vigilance.");
+                    formSignalement.reset();
+                } else {
+                    alert("Erreur : " + (data.msg || "Impossible d'envoyer"));
+                }
+            });
         });
-    });
+    }
 });
 </script>
 

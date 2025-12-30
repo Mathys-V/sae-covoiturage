@@ -166,6 +166,8 @@
                                             <div class="small text-muted">{$trajet.conducteur_age|default:'--'} ans</div>
                                         </div>
                                         <button class="btn-mini-purple ms-3">Noter</button>
+
+<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$trajet.id_conducteur}" class="btn-mini-purple ms-3 text-decoration-none">Noter</a>
                                     </div>
 
                                     <h5 class="fw-bold mb-3">Trajet effectué</h5>
@@ -186,7 +188,9 @@
                                                     <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
                                                     <span class="fw-bold me-2">{$passager.prenom}</span>
                                                     <button class="btn-mini-dark me-2">Signaler</button>
-                                                    <button class="btn-mini-purple">Noter</button>
+                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
+
+<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
                                                 </div>
                                             {/foreach}
                                         {else}
@@ -195,12 +199,16 @@
                                                 <span class="fw-bold me-2">Passager 1</span>
                                                 <button class="btn-mini-dark me-2">Signaler</button>
                                                 <button class="btn-mini-purple">Noter</button>
+
+<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
                                             </div>
                                             <div class="passenger-item">
                                                 <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
                                                 <span class="fw-bold me-2">Passager 2</span>
                                                 <button class="btn-mini-dark me-2">Signaler</button>
                                                 <button class="btn-mini-purple">Noter</button>
+
+<a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
                                             </div>
                                         {/if}
                                     </div>

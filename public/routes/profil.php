@@ -25,6 +25,22 @@ Flight::route('GET /profil', function(){
     $stmt->execute([$idUser]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // --- DÉBUT MODIFICATION : Auto-Vérification ---
+    // Si l'utilisateur a reçu des notes (conducteur OU passager) mais que le flag est encore à 'N'
+    if ($user && $user['verified_flag'] === 'N') {
+        if ($user['note_conducteur'] > 0 || $user['note_passager'] > 0) {
+            
+            // 1. On met à jour la base de données
+            $updFlag = $db->prepare("UPDATE UTILISATEURS SET verified_flag = 'Y' WHERE id_utilisateur = ?");
+            $updFlag->execute([$idUser]);
+            
+            // 2. On met à jour la variable locale pour l'affichage actuel
+            $user['verified_flag'] = 'Y';
+            
+            // 3. On met à jour la session pour que ça reste actif sur les autres pages
+            $_SESSION['user']['verified_flag'] = 'Y';
+        }
+    }
     // Mettre à jour la session
     if ($user) {
         unset($user['mot_de_passe']);

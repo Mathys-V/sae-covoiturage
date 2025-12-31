@@ -105,7 +105,7 @@ Flight::route('GET /avis/laisser/@id_trajet/@id_dest', function($id_trajet, $id_
     ]);
 });
 
-// 3. ENREGISTREMENT (CORRIGÉ : GESTION ID_RESERVATION)
+// 3. ENREGISTREMENT (CORRIGÉ : GESTION ID_RESERVATION + VÉRIF PROFIL)
 Flight::route('POST /avis/ajouter', function() {
     if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
@@ -125,12 +125,7 @@ Flight::route('POST /avis/ajouter', function() {
 
     $roleDestinataire = ($id_dest == $idConducteur) ? 'C' : 'P';
 
-    // 2. TROUVER LA RÉSERVATION ASSOCIÉE (Obligatoire pour la BDD)
-    // - Si je note le conducteur => C'est MA réservation (moi passager) qui compte.
-    // - Si le conducteur me note => C'est MA réservation (moi passager) qui compte.
-    // - Si passager note passager => On prend la réservation du destinataire par convention.
-    
-    // Règle simple : On cherche la réservation du PASSAGER impliqué dans l'échange.
+    // 2. TROUVER LA RÉSERVATION ASSOCIÉE
     $id_passager_concerne = ($id_dest == $idConducteur) ? $id_auteur : $id_dest;
 
     $stmtRes = $db->prepare("SELECT id_reservation FROM RESERVATIONS WHERE id_trajet = ? AND id_passager = ?");
@@ -144,7 +139,9 @@ Flight::route('POST /avis/ajouter', function() {
     }
 
     try {
-        // Insertion SANS id_trajet (car la colonne n'existe pas), mais AVEC id_reservation
+        $db->beginTransaction();
+
+        // A. Insérer l'avis
         $sql = "INSERT INTO AVIS (id_reservation, id_auteur, id_destinataire, role_destinataire, note, commentaire, date_avis) 
                 VALUES (:res, :aut, :dest, :role, :note, :comm, NOW())";
         
@@ -158,10 +155,18 @@ Flight::route('POST /avis/ajouter', function() {
             ':comm' => $commentaire
         ]);
 
+        // B. Passer le profil du destinataire en "Vérifié" (verified_flag = 'Y')
+        // Car il vient de recevoir un avis
+        $stmtVerif = $db->prepare("UPDATE UTILISATEURS SET verified_flag = 'Y' WHERE id_utilisateur = :dest");
+        $stmtVerif->execute([':dest' => $id_dest]);
+
+        $db->commit();
+
         $_SESSION['flash_success'] = "Avis publié avec succès !";
         Flight::redirect("/avis/choix/$id_trajet");
 
     } catch (Exception $e) {
+        $db->rollBack();
         $_SESSION['flash_error'] = "Erreur SQL : " . $e->getMessage();
         Flight::redirect("back");
     }

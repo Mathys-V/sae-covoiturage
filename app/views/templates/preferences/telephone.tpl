@@ -1,304 +1,172 @@
 {include file='includes/header.tpl'}
 
 <style>
-    /* --- CSS GLOBAL --- */
-    :root {
-        --bg-dark-purple: #422875;
-        --accent-light: #8C52FF;
-        --green-check: #00e676; 
-        --error-red: #ff4444;
-    }
-
-    body { background-color: var(--bg-dark-purple) !important; }
-
-    main.pref-main {
-        background-color: var(--bg-dark-purple);
-        flex-grow: 1;
-        display: flex; flex-direction: column; align-items: center; 
-        padding: 40px 20px; color: white; width: 100%;
-        min-height: 80vh;
-    }
-
-    .header-top {
-        width: 100%; max-width: 600px; display: flex; align-items: center; 
-        margin-bottom: 30px; position: relative;
-    }
-    .back-btn {
-        text-decoration: none; color: white; 
-        border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; 
-        width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; 
-        transition: background 0.3s; margin-right: 15px;
-    }
-    .back-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-
-    h1.pref-title {
-        flex-grow: 1; text-align: center; margin: 0; font-size: 1.8rem; padding-right: 40px; color: white; font-weight: bold;
-    }
-
-    form.pref-form { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 30px; }
-
-    /* --- INPUT TELEPHONE --- */
-    .phone-input-wrapper {
-        position: relative; width: 100%; margin-bottom: 5px;
-    }
-    .phone-input {
-        width: 100%; padding: 15px; border-radius: 10px; border: none; font-size: 1.2rem;
-        box-sizing: border-box; color: #333; outline: none; padding-right: 40px;
-        background-color: white;
-        transition: border 0.3s;
-        border: 2px solid transparent;
-    }
-    /* Classe pour l'erreur (Bordure Rouge) */
-    .phone-input.error {
-        border-color: var(--error-red);
-        color: var(--error-red);
-    }
-
-    .clear-btn {
-        position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-        font-size: 1.5rem; cursor: pointer; color: #333;
-    }
+    :root { --bg-dark: #422875; --accent: #8C52FF; }
+    body { background-color: var(--bg-dark) !important; color: white; }
+    .pref-main { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
     
-    /* Message d'erreur sous l'input */
-    .error-msg {
-        color: var(--error-red); font-size: 0.9rem; margin-bottom: 10px; display: none; text-align: left; width: 100%;
+    .header-top { display: flex; align-items: center; margin-bottom: 30px; }
+    .back-btn { color: white; border: 1px solid rgba(255,255,255,0.3); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; }
+    .title { flex-grow: 1; text-align: center; font-weight: bold; margin: 0; padding-right: 40px; }
+
+    /* BANDEAU INFO SAE */
+    .sae-info {
+        background: rgba(140, 82, 255, 0.15); border: 1px solid var(--accent);
+        border-radius: 15px; padding: 15px; margin-bottom: 30px; font-size: 0.9rem;
+        display: flex; gap: 15px; align-items: center;
     }
 
-    .info-text { margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; opacity: 0.9; text-align: center; }
+    .input-group-custom {
+        background: white; border-radius: 15px; padding: 5px;
+        display: flex; align-items: center; margin-bottom: 10px;
+    }
+    .input-group-custom input {
+        border: none; flex-grow: 1; padding: 15px; font-size: 1.1rem;
+        outline: none; background: transparent; color: #333;
+    }
+    .clear-icon { color: #999; padding: 0 15px; cursor: pointer; }
 
-    /* --- CHECKBOX STYLE --- */
-    .option-row {
-        display: flex; gap: 20px; align-items: flex-start;
-        padding-bottom: 20px; border-bottom: 1px solid var(--accent-light);
-        cursor: pointer;
+    .section-title {
+        color: #b0a4c5; font-size: 0.9rem; text-transform: uppercase;
+        margin-top: 30px; margin-bottom: 10px; letter-spacing: 1px;
     }
-    .option-row input[type="checkbox"] { display: none; }
-    
-    .custom-check {
-        position: relative;
-        width: 24px; height: 24px; border: 2px solid white; border-radius: 6px;
-        display: flex; justify-content: center; align-items: center; flex-shrink: 0;
-        transition: all 0.2s; background-color: transparent;
-    }
-    
-    /* État coché */
-    .option-row input:checked + .custom-check { background-color: transparent; }
-    .option-row input:checked + .custom-check::after {
-        content: '✓'; color: white; font-size: 16px;
-    }
-    
-    .text-content { display: flex; flex-direction: column; }
-    .label-title { font-size: 1.1rem; font-weight: normal; margin-bottom: 5px; }
-    .label-desc { font-size: 0.8rem; color: #ccc; line-height: 1.3; }
+
+    /* Switch CSS */
+    .option-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #553a85; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(22px); }
 
     .btn-save {
-        background: var(--accent-light); color: white; border: none; padding: 15px 40px;
-        border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
-        align-self: center; margin-top: 20px; transition: background 0.3s;
+        display: block; width: 100%; border: none; padding: 15px;
+        border-radius: 30px; background: var(--accent); color: white;
+        font-weight: bold; font-size: 1.1rem; margin-top: 40px;
+        opacity: 1; transition: 0.3s;
     }
-    .btn-save:hover { background: #7a42ea; }
-
-    .btn-save:disabled {
-        background-color: #ccc;  /* Gris */
-        cursor: not-allowed;     /* Curseur interdit */
-        opacity: 0.6;
-        pointer-events: none;    /* Empêche le clic */
-    }
-
-    /* --- POPUPS --- */
-    .custom-overlay { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.6); display: none; 
-        justify-content: center; align-items: center; z-index: 99999; 
-    }
-    .custom-box { 
-        background: #E6DFF0; padding: 30px; border-radius: 20px; 
-        text-align: center; width: 90%; max-width: 400px; color: black; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .custom-box h2 { color: var(--bg-dark-purple); margin-top: 0; font-weight: bold; margin-bottom: 15px; }
-    .custom-box p { font-size: 1.1rem; margin-bottom: 25px; color: #333; }
-
-    .btns { display: flex; justify-content: center; gap: 15px; }
-    .btn-ok { background: var(--accent-light); color: white; padding: 10px 30px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; }
-    .btn-cancel { background: #aaa; color: #333; padding: 10px 30px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; background: #666; }
 </style>
 
-<main class="pref-main">
+<div class="pref-main">
     <div class="header-top">
         <a href="/sae-covoiturage/public/profil/preferences" class="back-btn"><i class="bi bi-chevron-left"></i></a>
-        <h1 class="pref-title">Notifications par téléphone</h1>
+        <h2 class="title">Mobile & SMS</h2>
     </div>
 
-    <form id="telForm" class="pref-form" onsubmit="return false;" novalidate>
-        <p class="info-text">Ajoutez votre numéro de téléphone pour recevoir des alertes importantes concernant votre compte et vos réservations.</p>
-
-        <div class="phone-input-wrapper">
-            <input type="tel" id="user_tel" class="phone-input" value="{$tel_bdd}" placeholder="06 12 34 56 78" maxlength="14">
-            <span class="clear-btn" onclick="window.clearInput()"><i class="bi bi-x-lg"></i></span>
+    <div class="sae-info">
+        <i class="bi bi-info-circle-fill sae-icon" style="font-size: 1.5rem; color: #8C52FF;"></i>
+        <div>
+            <strong>Stockage Réel / Usage Inactif</strong><br>
+            Votre numéro est bien <strong>sauvegardé</strong> en base de données.
+            Cependant, l'application <strong>n'enverra jamais</strong> de SMS (ni urgence, ni pub), car aucun service de messagerie n'est connecté.
         </div>
-        <div class="error-msg" id="telError">Numéro incorrect (10 chiffres requis).</div>
+    </div>
 
-        <label class="option-row" style="border:none;">
-            <input type="checkbox" id="tel_sms">
-            <div class="custom-check"></div>
-            <div class="text-content">
-                <span class="label-title">Notifications par téléphone</span>
-                <span class="label-desc">Recevoir des alertes par téléphone</span>
-            </div>
+    <div class="section-title">Votre Numéro (Sécurisé)</div>
+    <p class="small text-white-50 mb-3">
+        Numéro stocké pour compléter votre profil. (La fonctionnalité d'appel d'urgence n'est pas implémentée).
+    </p>
+    
+    <div class="input-group-custom">
+        <input type="tel" id="user_tel" value="{$tel_bdd}" placeholder="06 12 34 56 78" maxlength="14">
+        <i class="bi bi-x-circle-fill clear-icon" onclick="document.getElementById('user_tel').value=''; checkVal();"></i>
+    </div>
+    <div id="telError" style="color: #ff4444; font-size: 0.9rem; display: none; margin-bottom: 10px;">
+        Format invalide (10 chiffres requis).
+    </div>
+
+    <div class="section-title">Préférences SMS (Simulation)</div>
+    
+    <div class="option-row">
+        <div>
+            <div style="font-weight: bold;">Recevoir des SMS marketing</div>
+            <small style="color: #b0a4c5;">Codes promos et partenaires.</small>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="simu_sms_marketing">
+            <span class="slider"></span>
         </label>
-
-        <button type="button" id="btnSave" class="btn-save" onclick="window.checkAndConfirm()" disabled>Enregistrer</button>
-    </form>
-</main>
-
-<div class="custom-overlay" id="confirmModal">
-    <div class="custom-box">
-        <h2>Confirmation</h2>
-        <p>Voulez-vous enregistrer ce numéro ?</p>
-        <div class="btns">
-            <button class="btn-cancel" onclick="window.closeAll()">Non</button>
-            <button class="btn-ok" onclick="window.saveDataBDD()">Oui</button>
-        </div>
     </div>
-</div>
 
-<div class="custom-overlay" id="successModal">
-    <div class="custom-box">
-        <h2>Succès</h2>
-        <p>Numéro mis à jour avec succès !</p>
-        <button class="btn-ok" onclick="window.closeAll()">Ok</button>
-    </div>
+    <button type="button" id="btnSave" class="btn-save" onclick="saveAll()">Enregistrer</button>
 </div>
 
 <script>
-{literal}
-    // --- RÉFÉRENCES ---
     const telInput = document.getElementById('user_tel');
-    const btnSave = document.getElementById('btnSave'); // Assure-toi d'avoir ajouté id="btnSave" au bouton HTML
-    const telError = document.getElementById('telError');
+    const btnSave = document.getElementById('btnSave');
+    const errorMsg = document.getElementById('telError');
 
-    // --- FONCTION DE NETTOYAGE ---
-    // Retourne juste les chiffres
-    const getRawValue = () => telInput.value.replace(/\D/g, '');
+    // Nettoie : garde que les chiffres
+    const cleanNumber = (val) => val.replace(/\D/g, '');
 
-    // --- 1. VALIDATION ET ÉTAT DU BOUTON ---
-    const checkValidity = () => {
-        const raw = getRawValue();
-        const isValid = /^\d{10}$/.test(raw);
-
-        // Gestion du BOUTON (Actif / Inactif)
-        if (isValid) {
-            btnSave.disabled = false;
-        } else {
-            btnSave.disabled = true;
-        }
-        
-        return isValid; // On renvoie true/false pour l'utiliser ailleurs
-    };
-
-    // --- 2. FORMATAGE VISUEL (Espaces) ---
-    const formatPhoneNumber = (val) => {
-        const cleaned = ('' + val).replace(/\D/g, '');
+    // Formate : ajoute des espaces tous les 2 chiffres
+    const formatNumber = (val) => {
+        let clean = cleanNumber(val);
         let formatted = '';
-        for (let i = 0; i < cleaned.length; i++) {
-            if (i > 0 && i % 2 === 0) { formatted += ' '; }
-            formatted += cleaned[i];
+        for(let i=0; i<clean.length; i++) {
+            if(i>0 && i%2===0) formatted += ' ';
+            formatted += clean[i];
         }
         return formatted;
     };
 
-    // --- 3. ÉCOUTEURS D'ÉVÉNEMENTS ---
-
-    // A. PENDANT LA FRAPPE (Input)
-    telInput.addEventListener('input', function() {
-        // On formate (ajoute les espaces)
-        this.value = formatPhoneNumber(this.value);
+    // Vérification
+    const checkVal = () => {
+        const raw = cleanNumber(telInput.value);
+        // On autorise vide (pour supprimer) OU 10 chiffres exacts
+        const isValid = raw.length === 0 || raw.length === 10;
         
-        // On vérifie si on doit allumer le bouton
-        const isValid = checkValidity();
-
-        // UX : Si l'utilisateur corrige et atteint 10 chiffres, on enlève l'erreur rouge tout de suite
-        if (isValid) {
-            telError.style.display = 'none';
-            telInput.classList.remove('error');
-        }
-    });
-
-    // B. QUAND ON QUITTE LE CHAMP (Blur) -> C'est ici qu'on AFFICHE l'erreur rouge
-    telInput.addEventListener('blur', function() {
-        const raw = getRawValue();
-        
-        // Si le champ n'est pas vide ET qu'il ne fait pas 10 chiffres
-        if (raw.length > 0 && raw.length !== 10) {
-            telError.style.display = 'block'; // Affiche le texte
-            telInput.classList.add('error');  // Ajoute la bordure rouge
-        }
-    });
-
-    // C. QUAND ON REVIENT DANS LE CHAMP (Focus) -> On cache l'erreur pour laisser corriger
-    telInput.addEventListener('focus', function() {
-        telError.style.display = 'none';
-        telInput.classList.remove('error');
-    });
-
-    // --- 4. CONFIRMATION (Au clic du bouton) ---
-    window.checkAndConfirm = function() {
-        if (checkValidity()) {
-            document.getElementById('confirmModal').style.display = 'flex';
+        if (!isValid && raw.length > 0) {
+            errorMsg.style.display = 'block';
+            btnSave.disabled = true;
         } else {
-            // Sécurité : si on arrive à cliquer quand même, on réaffiche l'erreur
-            telError.style.display = 'block';
-            telInput.classList.add('error');
+            errorMsg.style.display = 'none';
+            btnSave.disabled = false;
         }
     };
 
-    // --- 5. AUTRES FONCTIONS DU TEMPLATE ---
-    window.closeAll = function() { 
-        document.querySelectorAll('.custom-overlay').forEach(el => el.style.display = 'none');
-    };
+    telInput.addEventListener('input', function() {
+        this.value = formatNumber(this.value);
+        checkVal();
+    });
 
-    window.clearInput = function() {
-        telInput.value = '';
-        telInput.focus(); // Redonne le focus (donc cache l'erreur via l'event focus)
-        checkValidity();  // Met à jour le bouton (le désactive)
-    };
+    // Chargement Option SMS (Fictif)
+    if(localStorage.getItem('simu_sms_marketing') === 'true') {
+        document.getElementById('simu_sms_marketing').checked = true;
+    }
 
-    window.saveDataBDD = function() {
-        const telValue = telInput.value; 
-        const smsChecked = document.getElementById('tel_sms').checked;
-        localStorage.setItem('tel_sms', smsChecked);
+    function saveAll() {
+        const rawTel = cleanNumber(telInput.value);
+        const smsPref = document.getElementById('simu_sms_marketing').checked;
 
+        // 1. Sauvegarde Préférence Fictive
+        localStorage.setItem('simu_sms_marketing', smsPref);
+
+        // 2. Sauvegarde Numéro Réel (API)
+        btnSave.innerText = "Enregistrement...";
+        
         fetch('/sae-covoiturage/public/profil/preferences/telephone/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telephone: telValue })
+            body: JSON.stringify({ telephone: rawTel })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                document.getElementById('confirmModal').style.display = 'none';
-                document.getElementById('successModal').style.display = 'flex';
+            if(data.success) {
+                btnSave.innerText = "Tout est enregistré !";
+                btnSave.style.background = "#00e676";
+                setTimeout(() => { 
+                    btnSave.innerText = "Enregistrer"; 
+                    btnSave.style.background = "#8C52FF"; 
+                }, 2000);
             } else {
-                alert("Erreur : " + data.message);
-                window.closeAll();
+                alert("Erreur BDD : " + data.message);
+                btnSave.innerText = "Réessayer";
             }
-        })
-        .catch(err => { console.error(err); alert("Erreur technique"); });
-    };
-
-    // --- 6. INITIALISATION ---
-    document.addEventListener('DOMContentLoaded', () => {
-        if(localStorage.getItem('tel_sms') === 'true') {
-            document.getElementById('tel_sms').checked = true;
-        }
-        if(telInput.value) {
-            telInput.value = formatPhoneNumber(telInput.value);
-        }
-        // Vérifie l'état initial du bouton
-        checkValidity();
-    });
-{/literal}
+        });
+    }
 </script>
 
 {include file='includes/footer.tpl'}

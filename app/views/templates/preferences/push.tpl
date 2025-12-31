@@ -1,295 +1,146 @@
-<!DOCTYPE html>
-<html lang="fr">
+{include file='includes/header.tpl'}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{$titre}</title>
-    <style>
-        /* Styles de base identiques */
-        :root {
-            --primary-purple: #422875;
-            --accent-purple: #8C52FF;
-            --white: #ffffff;
-        }
+<style>
+    /* Réutilisation des variables pour cohérence */
+    :root { --bg-dark: #422875; --accent: #8C52FF; }
+    body { background-color: var(--bg-dark) !important; color: white; }
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    .pref-main { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+    
+    .header-top { display: flex; align-items: center; margin-bottom: 30px; }
+    .back-btn { 
+        color: white; border: 1px solid rgba(255,255,255,0.3); 
+        width: 40px; height: 40px; display: grid; place-items: center; 
+        border-radius: 50%; text-decoration: none; transition: 0.3s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+    
+    .title { flex-grow: 1; text-align: center; font-weight: bold; margin: 0; padding-right: 40px; }
 
-        main {
-            background-color: var(--primary-purple);
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            color: white;
-        }
+    /* BANDEAU INFO SAE */
+    .sae-info {
+        background: rgba(140, 82, 255, 0.15);
+        border: 1px solid var(--accent);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+    .sae-icon { font-size: 1.5rem; color: var(--accent); }
 
-        /* HEADER AVEC RETOUR */
-        .header-top {
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
+    /* TOGGLES IOS STYLE */
+    .option-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .text-content h4 { font-size: 1.1rem; margin: 0 0 5px 0; }
+    .text-content p { font-size: 0.85rem; color: #b0a4c5; margin: 0; }
 
-        .back-btn {
-            text-decoration: none;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.3s;
-            margin-right: 15px;
-        }
+    /* Switch CSS pur */
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #553a85; transition: .4s; border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute; content: ""; height: 20px; width: 20px;
+        left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(22px); }
 
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
+    .btn-save {
+        display: block; width: 100%; border: none; padding: 15px;
+        border-radius: 30px; background: var(--accent); color: white;
+        font-weight: bold; font-size: 1.1rem; margin-top: 30px;
+        transition: transform 0.2s;
+    }
+    .btn-save:active { transform: scale(0.98); }
+</style>
 
-        h1 {
-            flex-grow: 1;
-            text-align: center;
-            margin: 0;
-            font-size: 1.8rem;
-            padding-right: 40px;
-        }
+<div class="pref-main">
+    <div class="header-top">
+        <a href="/sae-covoiturage/public/profil/preferences" class="back-btn"><i class="bi bi-chevron-left"></i></a>
+        <h2 class="title">Notifications Mobile</h2>
+    </div>
 
-        /* FORMULAIRE & CHECKBOXES */
-        form {
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .option-row {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--accent-purple);
-        }
-
-        /* Checkbox cachée */
-        .option-row input[type="checkbox"] {
-            display: none;
-        }
-
-        /* Checkbox Custom (Carré) */
-        .custom-check {
-            width: 24px;
-            height: 24px;
-            border: 2px solid white;
-            border-radius: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        /* État coché */
-        .option-row input:checked+.custom-check {
-            background-color: transparent;
-        }
-
-        .option-row input:checked+.custom-check::after {
-            content: '✓';
-            color: white;
-            font-size: 16px;
-        }
-
-        .text-content {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        .label-title {
-            font-size: 1.1rem;
-            font-weight: normal;
-            margin-bottom: 5px;
-        }
-
-        .label-desc {
-            font-size: 0.8rem;
-            color: #ccc;
-            line-height: 1.3;
-        }
-
-        .btn-save {
-            background: var(--accent-purple);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            align-self: center;
-            margin-top: 20px;
-            transition: background 0.3s;
-        }
-
-        .btn-save:hover {
-            background: #7a42ea;
-        }
-
-        /* MODALES (Même code que d'habitude) */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-
-        .box {
-            background: #E6DFF0;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            color: black;
-        }
-
-        .box h2 {
-            color: var(--primary-purple);
-            margin-top: 0;
-        }
-
-        .btns {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .btn-ok {
-            background: var(--accent-purple);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-cancel {
-            background: #bbb;
-            color: #333;
-            padding: 10px 30px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    {include file='includes/header.tpl'}
-    <main>
-        <div class="header-top">
-            <a href="/sae-covoiturage/public/profil/preferences" class="back-btn"><i class="bi bi-chevron-left"></i></a>
-            <h1 class="pref-title"> Notications </h1>
+    <div class="sae-info">
+        <i class="bi bi-info-circle sae-icon"></i>
+        <div>
+            <strong>Mode Simulation</strong><br>
+            Cette page simule les réglages pour une future application mobile (iOS/Android). Les notifications internes du site web restent toujours actives.
         </div>
+    </div>
 
-        <form id="pushForm">
-            <label class="option-row">
-                <input type="checkbox" id="push_compte">
-                <div class="custom-check"></div>
-                <div class="text-content">
-                    <span class="label-title">Votre compte et vos réservations</span>
-                    <span class="label-desc">Recevez des informations importantes sur vos réservations, annulations et
-                        paiements</span>
-                </div>
-            </label>
-
-            <label class="option-row">
-                <input type="checkbox" id="push_messages">
-                <div class="custom-check"></div>
-                <div class="text-content">
-                    <span class="label-title">Messages d'autres membres</span>
-                    <span class="label-desc">Recevez une notification quand d'autres membres vous contactent au sujet de
-                        votre prochain trajet</span>
-                </div>
-            </label>
-
-            <button type="submit" class="btn-save">Enregistrer</button>
-        </form>
-    </main>
-
-    <div class="overlay" id="confirmModal">
-        <div class="box">
-            <h2>Confirmation</h2>
-            <p>Voulez-vous enregistrer ces préférences ?</p>
-            <div class="btns">
-                <button class="btn-cancel" onclick="closeAll()">Non</button>
-                <button class="btn-ok" onclick="saveData()">Oui</button>
+    <form id="pushForm">
+        <div class="option-row">
+            <div class="text-content">
+                <h4>Alertes de trajet</h4>
+                <p>Recevoir une notif. mobile en cas de retard ou d'annulation.</p>
             </div>
+            <label class="switch">
+                <input type="checkbox" id="push_trajet">
+                <span class="slider"></span>
+            </label>
         </div>
-    </div>
-    <div class="overlay" id="successModal">
-        <div class="box">
-            <h2>Succès</h2>
-            <p>Préférences mises à jour !</p>
-            <button class="btn-ok" onclick="closeAll()">Ok</button>
+
+        <div class="option-row">
+            <div class="text-content">
+                <h4>Messages privés</h4>
+                <p>Être notifié sur mon téléphone quand je reçois un message.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="push_messages">
+                <span class="slider"></span>
+            </label>
         </div>
-    </div>
 
-    {include file='includes/footer.tpl'}
+        <div class="option-row">
+            <div class="text-content">
+                <h4>Offres promotionnelles</h4>
+                <p>Recevoir des codes promos fictifs.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="push_promo">
+                <span class="slider"></span>
+            </label>
+        </div>
 
-    <script>
-        // 1. CHARGEMENT (Mémoire fictive)
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('push_compte') === 'true') document.getElementById('push_compte').checked =
-                true;
-            if (localStorage.getItem('push_messages') === 'true') document.getElementById('push_messages')
-                .checked = true;
+        <button type="submit" class="btn-save">Sauvegarder les préférences</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Chargement (Simulation LocalStorage)
+        ['push_trajet', 'push_messages', 'push_promo'].forEach(id => {
+            if(localStorage.getItem(id) === 'true') document.getElementById(id).checked = true;
         });
 
-        // 2. GESTION DU SUBMIT
+        // Sauvegarde avec Feedback visuel
         document.getElementById('pushForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            document.getElementById('confirmModal').style.display = 'flex';
+            
+            ['push_trajet', 'push_messages', 'push_promo'].forEach(id => {
+                localStorage.setItem(id, document.getElementById(id).checked);
+            });
+
+            // Feedback simple et natif (plus propre qu'une modale lourde pour ça)
+            const btn = document.querySelector('.btn-save');
+            const originalText = btn.innerText;
+            btn.innerText = "Sauvegardé !";
+            btn.style.background = "#00e676"; // Vert succès
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "#8C52FF";
+            }, 2000);
         });
+    });
+</script>
 
-        // 3. SAUVEGARDE (LocalStorage)
-        function saveData() {
-            localStorage.setItem('push_compte', document.getElementById('push_compte').checked);
-            localStorage.setItem('push_messages', document.getElementById('push_messages').checked);
-
-            document.getElementById('confirmModal').style.display = 'none';
-            document.getElementById('successModal').style.display = 'flex';
-        }
-
-        function closeAll() {
-            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-        }
-    </script>
-</body>
-
-</html>
+{include file='includes/footer.tpl'}

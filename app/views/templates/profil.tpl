@@ -35,10 +35,8 @@
                     </form>
 
                     <div class="avatar-circle" onclick="document.getElementById('input-photo').click();">
-
                         {if !empty($user.photo_profil)}
-                            <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}"
-                                class="avatar-img">
+                            <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}" class="avatar-img">
                         {else}
                             <div class="default-avatar">
                                 <i class="bi bi-person-fill"></i>
@@ -160,64 +158,35 @@
 
                         <div class="edit-content edit-mode">
                             <div class="row g-3">
-
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Marque</label>
                                     <select name="marque" class="form-control-custom" required>
-                                        <option value="" disabled {if !isset($vehicule.marque)}selected{/if}>Choisir...
-                                        </option>
-                                        {if isset($marques)}
-                                            {foreach from=$marques item=m}
-                                                <option value="{$m}"
-                                                    {if isset($vehicule.marque) && $vehicule.marque == $m}selected{/if}>{$m}
-                                                </option>
-                                            {/foreach}
-                                        {else}
-                                            <option value="Autre">Autre</option>
-                                        {/if}
+                                        <option value="" disabled {if !isset($vehicule.marque)}selected{/if}>Choisir...</option>
+                                        {if isset($marques)}{foreach from=$marques item=m}<option value="{$m}" {if isset($vehicule.marque) && $vehicule.marque == $m}selected{/if}>{$m}</option>{/foreach}{else}<option value="Autre">Autre</option>{/if}
                                     </select>
                                 </div>
-
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Modèle</label>
-                                    <input type="text" name="modele" class="form-control-custom"
-                                        placeholder="Ex: Clio 5" value="{$vehicule.modele|default:''}" required
-                                        maxlength="30">
+                                    <input type="text" name="modele" class="form-control-custom" placeholder="Ex: Clio 5" value="{$vehicule.modele|default:''}" required maxlength="30">
                                 </div>
-
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Couleur</label>
                                     <select name="couleur" class="form-control-custom" required>
-                                        <option value="" disabled {if !isset($vehicule.couleur)}selected{/if}>Choisir...
-                                        </option>
-                                        {if isset($couleurs)}
-                                            {foreach from=$couleurs item=c}
-                                                <option value="{$c}"
-                                                    {if isset($vehicule.couleur) && $vehicule.couleur == $c}selected{/if}>{$c}
-                                                </option>
-                                            {/foreach}
-                                        {else}
-                                            <option value="Autre">Autre</option>
-                                        {/if}
+                                        <option value="" disabled {if !isset($vehicule.couleur)}selected{/if}>Choisir...</option>
+                                        {if isset($couleurs)}{foreach from=$couleurs item=c}<option value="{$c}" {if isset($vehicule.couleur) && $vehicule.couleur == $c}selected{/if}>{$c}</option>{/foreach}{else}<option value="Autre">Autre</option>{/if}
                                     </select>
                                 </div>
-
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Places</label>
-                                    <input type="number" name="nb_places" class="form-control-custom"
-                                        placeholder="Ex: 5" value="{$vehicule.nb_places_totales|default:''}" min="1"
-                                        max="9" required>
+                                    <input type="number" name="nb_places" class="form-control-custom" placeholder="Ex: 5" value="{$vehicule.nb_places_totales|default:''}" min="1" max="9" required>
                                 </div>
-
                                 <div class="col-12">
                                     <label class="small text-muted ms-1">Immatriculation</label>
-                                    <input type="text" name="immat" class="form-control-custom" placeholder="AA-123-BB"
-                                        value="{$vehicule.immatriculation|default:''}" required maxlength="15">
+                                    <input type="text" name="immat" class="form-control-custom" placeholder="AA-123-BB" value="{$vehicule.immatriculation|default:''}" required maxlength="15" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" pattern="{literal}^([A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2})|(\d{1,4}[-\s]?[A-Z]{2,3}[-\s]?[A-Z]{2})${/literal}" title="Format accepté : AA-123-BB">
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end mt-3">
-                                <button type="button" class="btn-cancel"
-                                    onclick="toggleEdit('vehicule')">Annuler</button>
+                                <button type="button" class="btn-cancel" onclick="toggleEdit('vehicule')">Annuler</button>
                                 <button type="submit" class="btn-purple">Enregistrer</button>
                             </div>
                         </div>
@@ -227,53 +196,50 @@
                 <span class="card-label">Historique des trajets effectués</span>
 
                 {if isset($historique_trajets) && $historique_trajets|@count > 0}
-
                     {foreach from=$historique_trajets item=trajet}
                         <div class="info-card p-4">
                             <div class="row">
                                 <div class="col-md-7 border-end-md">
-
                                     <h5 class="fw-bold mb-3">Informations du conducteur</h5>
                                     <div class="d-flex align-items-center mb-4">
                                         <div class="avatar-small">
-                                            {if isset($trajet.conducteur_photo)}<img src="{$trajet.conducteur_photo}"
-                                                class="avatar-img">{else}<i class="bi bi-person-fill"></i>
+                                            {if !empty($trajet.conducteur_photo) && $trajet.conducteur_photo != 'default.png'}
+                                                <img src="/sae-covoiturage/public/uploads/{$trajet.conducteur_photo}" class="avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                <i class="bi bi-person-fill" style="display:none; font-size: 1.5rem; color: white;"></i>
+                                            {else}
+                                                <div class="default-avatar-small"><i class="bi bi-person-fill"></i></div>
                                             {/if}
                                         </div>
                                         <div>
-                                            <div class="fw-bold fs-5">{$trajet.conducteur_nom|default:'Conducteur Inconnu'}
-                                            </div>
+                                            <div class="fw-bold fs-5">{$trajet.conducteur_nom|default:'Conducteur Inconnu'}</div>
                                             <div class="small text-muted">{$trajet.conducteur_age|default:'--'} ans</div>
                                         </div>
-                                        <button class="btn-mini-purple ms-3">Noter</button>
-
-                                        <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$trajet.id_conducteur}"
-                                            class="btn-mini-purple ms-3 text-decoration-none">Noter</a>
+                                        <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$trajet.id_conducteur}" class="btn-mini-purple ms-3 text-decoration-none">Noter</a>
                                     </div>
 
                                     <h5 class="fw-bold mb-3">Trajet effectué</h5>
                                     <div class="ps-3 border-start border-3" style="border-color: #8c52ff !important;">
                                         <div class="mb-1">le {$trajet.date|default:'--/--/----'}</div>
                                         <div class="fw-bold">{$trajet.ville_depart|default:'Départ'}</div>
-                                        <div class="mb-1"><i class="bi bi-arrow-right-short"></i>
-                                            {$trajet.ville_arrivee|default:'Arrivée'}</div>
+                                        <div class="mb-1"><i class="bi bi-arrow-right-short"></i> {$trajet.ville_arrivee|default:'Arrivée'}</div>
                                         <div>Départ : {$trajet.heure_depart|default:'--:--'}</div>
-                                        <div class="small text-muted mt-1">Durée estimée : {$trajet.duree|default:'--'} minutes
-                                        </div>
+                                        <div class="small text-muted mt-1">Durée estimée : {$trajet.duree|default:'--'} minutes</div>
                                     </div>
 
                                     <div class="mt-4">
                                         {if isset($trajet.passagers)}
                                             {foreach from=$trajet.passagers item=passager}
                                                 <div class="passenger-item">
-                                                    <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
+                                                    <div class="avatar-mini me-2" style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: inline-block; vertical-align: middle; background: #ccc;">
+                                                        {if !empty($passager.photo_profil) && $passager.photo_profil != 'default.png'}
+                                                            <img src="/sae-covoiturage/public/uploads/{$passager.photo_profil}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.innerHTML='<i class=\'bi bi-person-circle fs-4 text-secondary\'></i>';">
+                                                        {else}
+                                                            <i class="bi bi-person-circle fs-4 text-secondary"></i>
+                                                        {/if}
+                                                    </div>
                                                     <span class="fw-bold me-2">{$passager.prenom}</span>
                                                     <button class="btn-mini-dark me-2">Signaler</button>
-                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
-                                                        class="btn-mini-purple text-decoration-none">Noter</a>
-
-                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
-                                                        class="btn-mini-purple text-decoration-none">Noter</a>
+                                                    <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
                                                 </div>
                                             {/foreach}
                                         {else}
@@ -281,19 +247,7 @@
                                                 <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
                                                 <span class="fw-bold me-2">Passager 1</span>
                                                 <button class="btn-mini-dark me-2">Signaler</button>
-                                                <button class="btn-mini-purple">Noter</button>
-
-                                                <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
-                                                    class="btn-mini-purple text-decoration-none">Noter</a>
-                                            </div>
-                                            <div class="passenger-item">
-                                                <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
-                                                <span class="fw-bold me-2">Passager 2</span>
-                                                <button class="btn-mini-dark me-2">Signaler</button>
-                                                <button class="btn-mini-purple">Noter</button>
-
-                                                <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}"
-                                                    class="btn-mini-purple text-decoration-none">Noter</a>
+                                                <a href="/sae-covoiturage/public/avis/laisser/{$trajet.id_trajet}/{$passager.id_utilisateur}" class="btn-mini-purple text-decoration-none">Noter</a>
                                             </div>
                                         {/if}
                                     </div>
@@ -303,122 +257,82 @@
                                     <div>
                                         <h5 class="fw-bold mb-3">Informations véhicule</h5>
                                         <div class="fs-6">
-                                            <div>{$trajet.vehicule_places|default:'4'} places disponibles</div>
-                                            <div class="text-muted">{$trajet.vehicule_modele|default:'Véhicule standard'}</div>
+                                            <div>{$trajet.vehicule_places|default:'--'} place{if $trajet.vehicule_places > 1}s{/if} disponible{if $trajet.vehicule_places > 1}s{/if}</div>
+                                            <div class="mt-1">
+                                                {if !empty($trajet.vehicule_marque) || !empty($trajet.vehicule_modele)}
+                                                    {$trajet.vehicule_marque|default:''} {$trajet.vehicule_modele|default:''}
+                                                {else}
+                                                    Véhicule standard
+                                                {/if}
+                                            </div>
+                                            {if !empty($trajet.vehicule_couleur)}
+                                                <div>{$trajet.vehicule_couleur}</div>
+                                            {/if}
                                         </div>
                                     </div>
 
                                     <div class="mt-4 text-end">
-                                        <button class="btn btn-purple w-100 py-2 rounded-pill">Discussion de groupe</button>
+                                        <a href="/sae-covoiturage/public/messagerie/{$trajet.id_trajet}" class="btn btn-purple w-100 py-2 rounded-pill text-decoration-none">Discussion de groupe</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     {/foreach}
-
-                    <div class="text-center mb-4">
-                        <button class="see-more-btn">Voir plus</button>
-                    </div>
-
+                    <div class="text-center mb-4"><button class="see-more-btn">Voir plus</button></div>
                 {else}
                     <div class="info-card">
-                        <p class="fs-5 text-center mb-0 fw-bold py-4">
-                            <i class="bi bi-car-front fs-1 d-block mb-3 text-secondary"></i>
-                            Aucun trajet effectué pour le moment.
-                        </p>
+                        <p class="fs-5 text-center mb-0 fw-bold py-4"><i class="bi bi-car-front fs-1 d-block mb-3 text-secondary"></i> Aucun trajet effectué pour le moment.</p>
                     </div>
                 {/if}
             </div>
 
             <div id="section-parametres" style="display:none;">
                 <div class="settings-list">
-                    <a href="/sae-covoiturage/public/profil/gestion_mdp" class="settings-item"><span>Mot de
-                            passe</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/profil/modifier_adresse" class="settings-item"><span>Adresse
-                            postale</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/profil/mes_signalements" class="settings-item"><span>Mes
-                            signalements</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/profil/preferences" class="settings-item"><span>Préférences de
-                            communication</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/mentions_legales" class="settings-item"><span>Informations
-                            légales</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/deconnexion" class="settings-item"><span>Déconnexion</span><i
-                            class="bi bi-chevron-right"></i></a>
-                    <a class="settings-item text-danger" data-bs-toggle="modal" data-bs-target="#modalSuppression">
-                        <span>Fermer le compte</span>
-                        <i class="bi bi-x-circle"></i>
+                    <a href="/sae-covoiturage/public/profil/gestion_mdp" class="settings-item"><span>Mot de passe</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/profil/modifier_adresse" class="settings-item"><span>Adresse postale</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/profil/mes_signalements" class="settings-item"><span>Mes signalements</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/profil/preferences" class="settings-item"><span>Préférences de communication</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/mentions_legales" class="settings-item"><span>Informations légales</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/deconnexion" class="settings-item"><span>Déconnexion</span><i class="bi bi-chevron-right"></i></a>
+                    <a href="#" class="settings-item text-danger-custom" data-bs-toggle="modal" data-bs-target="#modalSuppression">
+                        <span>Fermer le compte</span><i class="bi bi-x-circle"></i>
                     </a>
-
                 </div>
             </div>
 
             <div class="modal fade" id="modalSuppression" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content p-4 text-center">
-
-                        <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
-                            data-bs-dismiss="modal" aria-label="Close"></button>
-
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
                         <div id="step-1-content">
-                            <div class="mb-3">
-                                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
-                            </div>
-                            <h3 class="fw-bold text-black mb-3">
-                                <p>Êtes-vous sûr ?
-                            </h3>
-                            <p class="text-muted mb-4">
-                                Vous êtes sur le point de désactiver votre compte.<br>
-                                Vous ne pourrez plus vous connecter.
-                            </p>
+                            <div class="mb-3"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i></div>
+                            <h3 class="fw-bold text-black mb-3">Êtes-vous sûr ?</h3>
+                            <p class="text-muted mb-4">Vous êtes sur le point de désactiver votre compte.<br>Vous ne pourrez plus vous connecter.</p>
                             <div class="d-flex justify-content-center gap-2">
-                                <button type="button" class="btn btn-secondary px-4"
-                                    data-bs-dismiss="modal">Annuler</button>
-                                <button type="button" class="btn btn-danger px-4" onclick="showStep2()">Oui,
-                                    continuer</button>
+                                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Annuler</button>
+                                <button type="button" class="btn btn-danger px-4" onclick="showStep2()">Oui, continuer</button>
                             </div>
                         </div>
-
                         <div id="step-2-content" class="d-none">
-                            <div class="mb-3">
-                                <i class="bi bi-emoji-frown-fill text-danger" style="font-size: 3rem;"></i>
-                            </div>
+                            <div class="mb-3"><i class="bi bi-emoji-frown-fill text-danger" style="font-size: 3rem;"></i></div>
                             <h3 class="fw-bold text-danger mb-3">Vraiment sûr ?</h3>
-                            <p class="text-muted mb-4">
-                                C'est la dernière étape. Confirmez-vous vouloir nous quitter définitivement ?
-                            </p>
-
+                            <p class="text-muted mb-4">C'est la dernière étape. Confirmez-vous vouloir nous quitter définitivement ?</p>
                             <form action="/sae-covoiturage/public/profil/delete-account" method="POST">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <button type="button" class="btn btn-outline-secondary"
-                                        onclick="showStep1()">Retour</button>
-                                    <button type="submit" class="btn btn-danger fw-bold px-4">Supprimer mon
-                                        compte</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="showStep1()">Retour</button>
+                                    <button type="submit" class="btn btn-danger fw-bold px-4">Supprimer mon compte</button>
                                 </div>
                             </form>
                         </div>
-
                     </div>
                 </div>
             </div>
 
             <script>
-                function showStep2() {
-                    document.getElementById('step-1-content').classList.add('d-none'); // Cache étape 1
-                    document.getElementById('step-2-content').classList.remove('d-none'); // Affiche étape 2
-                }
-
-                function showStep1() {
-                    document.getElementById('step-2-content').classList.add('d-none'); // Cache étape 2
-                    document.getElementById('step-1-content').classList.remove('d-none'); // Affiche étape 1
-                }
-
-                // Réinitialiser le pop-up à l'étape 1 quand on le ferme (pour la prochaine fois)
+                function showStep2() { document.getElementById('step-1-content').classList.add('d-none'); document.getElementById('step-2-content').classList.remove('d-none'); }
+                function showStep1() { document.getElementById('step-2-content').classList.add('d-none'); document.getElementById('step-1-content').classList.remove('d-none'); }
                 var myModalEl = document.getElementById('modalSuppression')
-                if (myModalEl) {
-                    myModalEl.addEventListener('hidden.bs.modal', function(event) {
-                        showStep1();
-                    })
-                }
+                if (myModalEl) { myModalEl.addEventListener('hidden.bs.modal', function(event) { showStep1(); }) }
             </script>
 
         </main>

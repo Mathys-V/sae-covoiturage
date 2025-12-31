@@ -158,14 +158,105 @@
 
                     {* Bouton signaler *}
                     <div class="text-end mt-3">
-                        <button class="btn btn-link text-muted" style="text-decoration: none;">
-                            <i class="bi bi-flag-fill me-1"></i> Signaler ce trajet
+                        <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#modalSignalement" style="text-decoration: none;">
+                            <i class="bi bi-flag-fill me-1"></i> Signaler le conducteur
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg border-0">
+
+                <div class="modal-header bg-danger text-white rounded-top-4">
+                    <h5 class="modal-title">
+                        <i class="bi bi-flag-fill me-2"></i> Signaler ce conducteur
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <input type="hidden" id="trajetSignalement" value="{$trajet.id_trajet}">
+                    <input type="hidden" id="conducteurSignalement" value="{$trajet.id_conducteur}">
+
+                    <div class="mb-3">
+                        <label class="fw-semibold">Motif</label>
+                        <select id="motifSignalement" class="form-select" required>
+                            <option value="" selected disabled>Choisir un motif...</option>
+                            <option value="Profil non conforme">Profil non conforme</option>
+                            <option value="Comportement inapproprié">Comportement inapproprié</option>
+                            <option value="Non respect du trajet">Non respect du trajet</option>
+                            <option value="Véhicule non conforme">Véhicule non conforme</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-semibold">Détails</label>
+                        <textarea id="detailsSignalement" class="form-control" rows="4"
+                            placeholder="Expliquez la situation..." required></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="btnEnvoyerSignalement" class="btn btn-danger fw-bold">
+                            Envoyer le signalement
+                        </button>
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{literal}
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        const modal = new bootstrap.Modal(document.getElementById('modalSignalement'));
+    
+        document.querySelector('[data-bs-target="#modalSignalement"]').addEventListener('click', () => {
+            modal.show();
+        });
+    
+        document.getElementById('btnEnvoyerSignalement').addEventListener('click', () => {
+    
+            const trajetId = document.getElementById('trajetSignalement').value;
+            const conducteurId = document.getElementById('conducteurSignalement').value;
+            const motif = document.getElementById('motifSignalement').value;
+            const details = document.getElementById('detailsSignalement').value;
+    
+            if(!motif || !details){
+                alert("Veuillez remplir tous les champs.");
+                return;
+            }
+    
+            fetch('/sae-covoiturage/public/api/signalement/nouveau', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    id_trajet: trajetId,
+                    id_signale: conducteurId,
+                    motif: motif,
+                    description: details
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                modal.hide();
+                if(data.success){
+                    alert("Signalement envoyé avec succès.");
+                    document.getElementById('motifSignalement').value = "";
+                    document.getElementById('detailsSignalement').value = "";
+                } else {
+                    alert(data.msg || "Erreur lors de l'envoi.");
+                }
+            });
+        });
+    });
+    </script>
+{/literal}    
 
 {include file='includes/footer.tpl'}

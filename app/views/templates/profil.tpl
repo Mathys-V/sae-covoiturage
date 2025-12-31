@@ -10,6 +10,27 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_profil.css">
+
+    <style>
+        .avatar-circle {
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+            cursor: pointer; border-radius: 50%;
+        }
+        .avatar-circle:hover .avatar-overlay {
+            opacity: 1;
+        }
+        .avatar-overlay i {
+            color: white; font-size: 2rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -34,7 +55,7 @@
                             onchange="document.getElementById('form-photo').submit();">
                     </form>
 
-                    <div class="avatar-circle" onclick="document.getElementById('input-photo').click();">
+                    <div class="avatar-circle" onclick="document.getElementById('input-photo').click();" title="Modifier la photo">
                         {if !empty($user.photo_profil)}
                             <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}"
                                 class="avatar-img">
@@ -43,15 +64,33 @@
                                 <i class="bi bi-person-fill"></i>
                             </div>
                         {/if}
+                        <div class="avatar-overlay">
+                            <i class="bi bi-camera-fill"></i>
+                        </div>
                     </div>
-                    <div class="ms-md-4 text-center text-md-start flex-grow-1">
-                        <div class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start">
-                            <h1 class="fw-bold mb-0">{$user.prenom} {$user.nom}</h1>
 
+                    <div class="ms-md-4 text-center text-md-start flex-grow-1">
+                        
+                        <div id="identity-display" class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start">
+                            <h1 class="fw-bold mb-0">{$user.prenom} {$user.nom}</h1>
                             <i class="bi bi-pencil-fill fs-5 text-secondary" style="cursor:pointer;"
-                                title="Modifier la photo" onclick="document.getElementById('input-photo').click();">
+                                title="Modifier mon nom" onclick="toggleIdentityEdit()">
                             </i>
                         </div>
+
+                        <form id="identity-edit" action="/sae-covoiturage/public/profil/update-identity" method="POST" class="d-none align-items-center gap-2 justify-content-center justify-content-md-start">
+                            <input type="text" name="prenom" value="{$user.prenom}" class="form-control form-control-sm" style="max-width: 120px;" placeholder="Prénom" required>
+                            <input type="text" name="nom" value="{$user.nom}" class="form-control form-control-sm" style="max-width: 120px;" placeholder="Nom" required>
+                            
+                            <button type="submit" class="btn btn-sm text-white" style="background-color: #8c52ff; border-color: #8c52ff;">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleIdentityEdit()">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+
                         <div class="text-white-50 fs-5">{$user.email}</div>
 
                         {if isset($user.verified_flag) && $user.verified_flag == 'Y'}
@@ -435,6 +474,28 @@
 
                     // Changer le texte du bouton
                     btn.innerText = isHidden ? "Voir moins" : "Voir plus";
+                }
+
+                // FONCTION POUR BASCULER L'ÉDITION DU NOM
+                function toggleIdentityEdit() {
+                    const display = document.getElementById('identity-display');
+                    const edit = document.getElementById('identity-edit');
+                    
+                    if (display.classList.contains('d-flex')) {
+                        // Passer en mode édition
+                        display.classList.remove('d-flex');
+                        display.classList.add('d-none');
+                        
+                        edit.classList.remove('d-none');
+                        edit.classList.add('d-flex');
+                    } else {
+                        // Passer en mode affichage
+                        display.classList.add('d-flex');
+                        display.classList.remove('d-none');
+                        
+                        edit.classList.add('d-none');
+                        edit.classList.remove('d-flex');
+                    }
                 }
             </script>
 

@@ -109,11 +109,17 @@
                                     {* LOGIQUE D'AFFICHAGE NEUTRE POUR LES MESSAGES SYSTÈME *}
                                     {if $conv.dernier_message == '::sys_join::'}
                                         <em class="fst-italic"><i class="bi bi-person-plus"></i> Un utilisateur a rejoint le trajet</em>
+                                    
                                     {elseif $conv.dernier_message == '::sys_leave::'}
                                         <em class="fst-italic"><i class="bi bi-person-dash"></i> Un utilisateur a quitté le trajet</em>
+                                    
                                     {elseif $conv.dernier_message == '::sys_end::'}
                                         <strong class="text-purple"><i class="bi bi-flag-fill"></i> Trajet terminé</strong>
                                     
+                                    {* --- NOUVEAU : Message Annulation --- *}
+                                    {elseif $conv.dernier_message == '::sys_cancel::'}
+                                        <strong class="text-danger"><i class="bi bi-x-circle-fill"></i> Le trajet a été annulé</strong>
+
                                     {* MESSAGES CLASSIQUES *}
                                     {else}
                                         {if $conv.conducteur_prenom}

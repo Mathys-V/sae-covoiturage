@@ -28,7 +28,7 @@
         display: block;
     }
 
-    /* Styles pour les bulles de chat (au cas où le CSS externe manque) */
+    /* Styles pour les bulles de chat */
     .msg-row { display: flex; flex-direction: column; max-width: 75%; margin-bottom: 10px; }
     .msg-row.self { align-self: flex-end; align-items: flex-end; }
     .msg-row.other { align-self: flex-start; align-items: flex-start; }
@@ -98,6 +98,7 @@
                 
                 {elseif $msg.type == 'system'}
                     
+                    {* CAS 1 : Trajet Terminé *}
                     {if $msg.contenu == '::sys_end::'}
                         <div class="system-msg my-4">
                             <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #f3f0ff;">
@@ -111,6 +112,24 @@
                                 </div>
                             </div>
                         </div>
+
+                    {* CAS 2 : Trajet Annulé (AJOUTÉ) *}
+                    {elseif $msg.contenu == '::sys_cancel::'}
+                        <div class="system-msg my-4">
+                            <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #fff5f5; border-left: 5px solid #dc3545 !important;">
+                                <div class="text-center">
+                                    <h4 class="fw-bold text-danger mb-2">
+                                        <i class="bi bi-x-circle-fill me-2"></i> Trajet Annulé
+                                    </h4>
+                                    <p class="text-muted mb-0">
+                                        Le conducteur a annulé ce trajet. <br>
+                                        Toutes les réservations ont été annulées automatiquement.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    {* CAS 3 : Autres messages système (Join/Leave) *}
                     {else}
                         <div class="system-msg"><span>{$msg.text_affiche}</span></div>
                     {/if}

@@ -1,6 +1,6 @@
 <?php
 
-// AFFICHER LE FORMULAIRE
+// AFFICHER LE FORMULAIRE DE CRÉATION
 Flight::route('GET /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) {
         $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet.";
@@ -29,7 +29,7 @@ Flight::route('GET /trajet/nouveau', function(){
     ]);
 });
 
-// TRAITEMENT (POST)
+// TRAITEMENT CRÉATION (POST)
 Flight::route('POST /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -71,7 +71,7 @@ Flight::route('POST /trajet/nouveau', function(){
                         :conducteur, :vehicule, 
                         :depart, '00000', '', 
                         :arrivee, '00000', '', 
-                        :dateheure, :duree,  -- ICI : :duree au lieu de '01:00:00'
+                        :dateheure, :duree,
                         :places, :desc, 'A'
                     )";
             
@@ -82,13 +82,10 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':depart'     => $data->depart,
                 ':arrivee'    => $data->arrivee,
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
-                ':duree'      => $data->duree_calc, // ICI : Récupération de la valeur calculée
+                ':duree'      => $data->duree_calc,
                 ':places'     => (int)$data->places,
                 ':desc'       => $data->description
             ]);
-
-            // --- CORRECTION : AUCUNE CRÉATION DE CONVERSATION ICI ---
-            // La conversation est implicite au trajet.
 
             $compteur++;
 
@@ -118,7 +115,77 @@ Flight::route('POST /trajet/nouveau', function(){
     }
 });
 
-// MES TRAJETS (Conducteur)
+// SUPPRIMER / ANNULER UN TRAJET
+Flight::route('POST /trajet/supprimer', function(){
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    $idTrajet = Flight::request()->data->id_trajet;
+
+    // 1. Vérification : Est-ce bien mon trajet ?
+    $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
+    $stmtVerif->execute([':id' => $idTrajet]);
+    $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
+
+    if (!$trajet || $trajet['id_conducteur'] != $idUser) {
+        $_SESSION['flash_error'] = "Action non autorisée.";
+        Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // 2. Vérifier s'il y a des réservations actives
+        $stmtCheck = $db->prepare("SELECT COUNT(*) FROM RESERVATIONS WHERE id_trajet = :id AND statut_code IN ('V', 'A')");
+        $stmtCheck->execute([':id' => $idTrajet]);
+        $nbReservations = $stmtCheck->fetchColumn();
+
+        if ($nbReservations > 0) {
+            // --- CAS A : PASSAGERS PRÉSENTS -> ANNULATION (Soft Delete) ---
+
+            // Envoyer le message système
+            $msgSysteme = "::sys_cancel::";
+            $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
+            $stmtMsg->execute([
+                ':tid' => $idTrajet, 
+                ':uid' => $idUser,
+                ':msg' => $msgSysteme
+            ]);
+            
+            // Passer le trajet en 'C' (Annulé)
+            $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id");
+            $updTrajet->execute([':id' => $idTrajet]);
+
+            // Passer les réservations en 'R' (Rejeté)
+            $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'R' WHERE id_trajet = :id");
+            $updRes->execute([':id' => $idTrajet]);
+
+            $_SESSION['flash_success'] = "Le trajet a été annulé et les passagers notifiés.";
+
+        } else {
+            // --- CAS B : AUCUN PASSAGER -> SUPPRESSION DÉFINITIVE ---
+            
+            $db->prepare("DELETE FROM MESSAGES WHERE id_trajet = :id")->execute([':id' => $idTrajet]);
+            $db->prepare("DELETE FROM RESERVATIONS WHERE id_trajet = :id")->execute([':id' => $idTrajet]);
+            $del = $db->prepare("DELETE FROM TRAJETS WHERE id_trajet = :id");
+            $del->execute([':id' => $idTrajet]);
+
+            $_SESSION['flash_success'] = "Le trajet a été supprimé.";
+        }
+
+        $db->commit();
+
+    } catch (PDOException $e) {
+        $db->rollBack();
+        $_SESSION['flash_error'] = "Erreur technique : " . $e->getMessage();
+    }
+
+    Flight::redirect('/mes_trajets');
+});
+
+// MES TRAJETS (Affichage et Tris)
 Flight::route('/mes_trajets', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
@@ -164,64 +231,72 @@ Flight::route('/mes_trajets', function(){
         $dureeParts = explode(':', $trajet['duree_estimee']);
         $trajet['duree_fmt'] = (int)$dureeParts[0] . 'h' . $dureeParts[1];
 
-        // --- STATUT ---
+        // --- STATUT VISUEL ---
         $arrivee = clone $depart;
         $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
 
-        if ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
+        // 1. Priorité au statut ANNULÉ
+        if ($trajet['statut_flag'] == 'C') {
+            $trajet['statut_visuel'] = 'annule';
+            $trajet['statut_libelle'] = 'Annulé';
+            $trajet['statut_couleur'] = 'danger'; // Rouge
+        } 
+        // 2. Sinon, est-ce TERMINÉ ?
+        elseif ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
             $trajet['statut_visuel'] = 'termine';
             $trajet['statut_libelle'] = 'Terminé';
-            $trajet['statut_couleur'] = 'secondary';
-            $trajet['tri_poids'] = 3; // Priorité faible
-        } elseif ($now >= $depart && $now <= $arrivee) {
+            $trajet['statut_couleur'] = 'secondary'; // Gris
+        } 
+        // 3. Sinon, est-ce EN COURS ?
+        elseif ($now >= $depart && $now <= $arrivee) {
             $trajet['statut_visuel'] = 'encours';
             $trajet['statut_libelle'] = 'En cours';
-            $trajet['statut_couleur'] = 'success';
-            $trajet['tri_poids'] = 1; // Priorité MAXIMALE (En haut)
+            $trajet['statut_couleur'] = 'success'; // Vert
             
-            // Temps restant
             $diff = $now->diff($arrivee);
             if ($diff->h > 0) $trajet['temps_restant'] = $diff->format('%hh %Im');
             else $trajet['temps_restant'] = $diff->format('%I min');
 
-        } else {
+        } 
+        // 4. Sinon, c'est À VENIR
+        else {
             $trajet['statut_visuel'] = 'avenir';
             $trajet['statut_libelle'] = 'À venir';
-            $trajet['statut_couleur'] = 'primary';
-            $trajet['tri_poids'] = 2; // Priorité moyenne
+            $trajet['statut_couleur'] = 'primary'; // Violet
         }
     }
 
-    // 3. TRI PERSONNALISÉ (PHP)
-    usort($trajets, function($a, $b) {
-        // CRITÈRE 1 : Le statut (D'abord En cours, puis À venir, puis Terminé)
-        // Rappel des poids définis plus haut : Encours=1, Avenir=2, Terminé=3
-        if ($a['tri_poids'] !== $b['tri_poids']) {
-            return $a['tri_poids'] - $b['tri_poids'];
+    // 3. SÉPARATION DES LISTES
+    $trajets_actifs = [];
+    $trajets_archives = [];
+
+    foreach ($trajets as $t) {
+        // On met les trajets ANNULÉS et TERMINÉS dans l'historique
+        if ($t['statut_visuel'] === 'termine' || $t['statut_visuel'] === 'annule') {
+            $trajets_archives[] = $t;
+        } else {
+            $trajets_actifs[] = $t;
         }
+    }
 
-        // CRITÈRE 2 : La date (Si le statut est le même)
-        $dateA = strtotime($a['date_heure_depart']);
-        $dateB = strtotime($b['date_heure_depart']);
+    // 4. TRIS
 
-        // Si ce sont des trajets TERMINÉS (Poids 3)
-        // On les trie du plus récent au plus vieux (Historique classique)
-        if ($a['tri_poids'] === 3) {
-            return $dateB - $dateA; 
-        }
+    // A. Actifs : En cours d'abord, puis chronologique (Demain avant la semaine pro)
+    usort($trajets_actifs, function($a, $b) {
+        if ($a['statut_visuel'] === 'encours' && $b['statut_visuel'] !== 'encours') return -1;
+        if ($b['statut_visuel'] === 'encours' && $a['statut_visuel'] !== 'encours') return 1;
+        return strtotime($a['date_heure_depart']) - strtotime($b['date_heure_depart']);
+    });
 
-        // Si ce sont des trajets EN COURS (1) ou À VENIR (2)
-        // On les trie du plus PROCHE au plus LOINTAIN (Chronologique)
-        // C'est ici qu'on inverse la logique par rapport à votre ancien code
-        return $dateA - $dateB;
+    // B. Archives : Décroissant (Le plus récent en haut)
+    usort($trajets_archives, function($a, $b) {
+        return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
     });
 
     Flight::render('mes_trajets.tpl', [
         'titre' => 'Mes trajets',
-        'trajets' => $trajets
+        'trajets_actifs' => $trajets_actifs,
+        'trajets_archives' => $trajets_archives
     ]);
 });
-
-
-
 ?>

@@ -45,7 +45,7 @@
                             </div>
                         {/if}
                     </div>
-                    <div>
+                    <div class="ms-md-4 text-center text-md-start flex-grow-1">
                         <div class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start">
                             <h1 class="fw-bold mb-0">{$user.prenom} {$user.nom}</h1>
 
@@ -54,62 +54,64 @@
                             </i>
                         </div>
                         <div class="text-white-50 fs-5">{$user.email}</div>
-                        <div class="text-success fw-bold fs-5 mt-1">Profil vérifié <i
-                                class="bi bi-check-circle-fill"></i></div>
-                        <div class="d-flex align-items-center mt-3 gap-3">
 
-                            <div class="d-flex flex-column gap-1">
+                        {if isset($user.verified_flag) && $user.verified_flag == 'Y'}
+                            <div class="text-success fw-bold fs-5 mt-1">
+                                Profil vérifié <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                        {else}
+                            <div class="mt-2">
+                                <span class="badge bg-secondary opacity-75 fw-normal" style="cursor:help;" 
+                                      title="Recevez au moins un avis positif pour faire vérifier votre profil.">
+                                    Profil non vérifié <i class="bi bi-info-circle ms-1"></i>
+                                </span>
+                                <div class="small text-white-50 mt-1 fst-italic" style="font-size: 0.8rem;">
+                                    Obtenez un premier avis pour certifier votre profil.
+                                </div>
+                            </div>
+                        {/if}
 
+                        <div class="d-flex flex-column align-items-center align-items-md-start mt-3 gap-2">
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-white-50 small text-uppercase fw-bold" style="width: 90px; text-align:left;">Conducteur</span>
                                 <div class="text-warning fs-5 d-flex align-items-center">
-                                    {* On initialise la note. Si c'est NULL (pas d'avis), on met 0 *}
                                     {$noteC = $user.note_conducteur|default:0}
-
-                                    {* Boucle de 1 à 5 pour afficher les étoiles *}
                                     {for $i=1 to 5}
-                                        {if $noteC >= $i}
-                                            <i class="bi bi-star-fill"></i>
-                                        {elseif $noteC > ($i - 1)}
-                                            <i class="bi bi-star-half"></i>
-                                        {else}
-                                            <i class="bi bi-star"></i>
-                                        {/if}
+                                        {if $noteC >= $i}<i class="bi bi-star-fill"></i>
+                                        {elseif $noteC > ($i - 1)}<i class="bi bi-star-half"></i>
+                                        {else}<i class="bi bi-star"></i>{/if}
                                     {/for}
-
-                                    {* BONUS : Affiche la note exacte en chiffres s'il y a des avis *}
                                     {if $noteC > 0}
                                         <span class="text-white-50 fs-6 ms-2">({$noteC|number_format:1})</span>
-                                    {/if}
-                                </div>
-
-                                <div class="text-warning fs-5 d-flex align-items-center">
-                                    {* On initialise la note Passager *}
-                                    {$noteP = $user.note_passager|default:0}
-
-                                    {* Boucle pour les étoiles *}
-                                    {for $i=1 to 5}
-                                        {if $noteP >= $i}
-                                            <i class="bi bi-star-fill"></i>
-                                        {elseif $noteP > ($i - 1)}
-                                            <i class="bi bi-star-half"></i>
-                                        {else}
-                                            <i class="bi bi-star"></i>
-                                        {/if}
-                                    {/for}
-
-                                    {* Affichage de la note chiffrée *}
-                                    {if $noteP > 0}
-                                        <span class="text-white-50 fs-6 ms-2">({$noteP|number_format:1})</span>
+                                    {else}
+                                        <span class="text-white-50 small ms-2 fst-italic" style="font-size:0.8rem;">(Aucun avis)</span>
                                     {/if}
                                 </div>
                             </div>
 
-                            <a href="/sae-covoiturage/public/profil/avis" class="big-arrow-btn ms-3">
-                                <i class="bi bi-chevron-right"></i>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-white-50 small text-uppercase fw-bold" style="width: 90px; text-align:left;">Passager</span>
+                                <div class="text-warning fs-5 d-flex align-items-center">
+                                    {$noteP = $user.note_passager|default:0}
+                                    {for $i=1 to 5}
+                                        {if $noteP >= $i}<i class="bi bi-star-fill"></i>
+                                        {elseif $noteP > ($i - 1)}<i class="bi bi-star-half"></i>
+                                        {else}<i class="bi bi-star"></i>{/if}
+                                    {/for}
+                                    {if $noteP > 0}
+                                        <span class="text-white-50 fs-6 ms-2">({$noteP|number_format:1})</span>
+                                    {else}
+                                        <span class="text-white-50 small ms-2 fst-italic" style="font-size:0.8rem;">(Aucun avis)</span>
+                                    {/if}
+                                </div>
+                            </div>
+                            
+                            <a href="/sae-covoiturage/public/profil/avis" class="text-white text-decoration-underline fs-6 mt-2 fw-bold">
+                                Voir le détail des avis
                             </a>
 
                         </div>
-
-
                     </div>
                 </div>
 

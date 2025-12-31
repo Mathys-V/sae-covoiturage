@@ -152,7 +152,7 @@
                 
                 <div class="modal-footer border-0 pt-0 pb-4 pe-4">
                     <button type="button" class="btn btn-light rounded-pill text-muted" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                    <button type="button" id="btnConfirmSignalement" class="btn btn-danger rounded-pill px-4 fw-bold">
                         Envoyer le signalement
                     </button>
                 </div>

@@ -33,6 +33,10 @@ Flight::register('view', 'Smarty\Smarty', [], function($smarty) {
     $path = __DIR__ . '/../app/views/templates';
     $smarty->setTemplateDir($path);
     $smarty->setCompileDir(__DIR__ . '/../tmp/templates_c');
+
+    // Injection des listes directement dans Smarty (Dispo partout)
+    $smarty->assign('marques', $GLOBALS['voiture_marques']);
+    $smarty->assign('couleurs', $GLOBALS['voiture_couleurs']);
 });
 
 Flight::map('render', function($template, $data){
@@ -91,12 +95,6 @@ Flight::map('render', function($template, $data){
         unset($_SESSION['flash_error']); 
     }
 
-    // ===========================================================
-    // CORRECTION ICI : On utilise les noms exacts "marques" et "couleurs"
-    // ===========================================================
-    $data['marques'] = $GLOBALS['voiture_marques'];   // <-- C'est le nom utilisé dans inscription.tpl
-    $data['couleurs'] = $GLOBALS['voiture_couleurs']; // <-- C'est le nom utilisé dans inscription.tpl
-
     Flight::view()->assign($data);
     Flight::view()->display($template);
 });
@@ -107,7 +105,7 @@ Flight::map('render', function($template, $data){
 
 require 'routes/pages.php';      
 require 'routes/auth.php';       
-require 'routes/profil.php';     
+require 'routes/profil.php';      // Toutes les routes profil sont ici maintenant
 require 'routes/messagerie.php'; 
 require 'routes/trajets.php';    
 require 'routes/recherche.php';  
@@ -119,54 +117,8 @@ require 'routes/admin.php';
 require 'routes/profil_public.php'; 
 
 // -----------------------------------------------------------
-// ROUTE UPDATE VÉHICULE (SÉCURITÉ)
+// DÉMARRAGE
 // -----------------------------------------------------------
-Flight::route('POST /profil/update-vehicule', function(){
-    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
-
-    $data = Flight::request()->data;
-    $idUser = $_SESSION['user']['id_utilisateur'];
-    $db = Flight::get('db');
-
-    $marqueInput = ucfirst(strtolower(trim($data->marque)));
-    $couleurInput = ucfirst(strtolower(trim($data->couleur)));
-    $modele = strip_tags(trim($data->modele));
-    $nb_places = (int)$data->nb_places;
-    $immat = strtoupper(trim(str_replace([' ', '-'], '', $data->immat)));
-
-    if (!in_array($marqueInput, $GLOBALS['voiture_marques'])) {
-        $_SESSION['flash_error'] = "Marque invalide."; Flight::redirect('/profil'); return;
-    }
-    if (!in_array($couleurInput, $GLOBALS['voiture_couleurs'])) {
-        $_SESSION['flash_error'] = "Couleur invalide."; Flight::redirect('/profil'); return;
-    }
-    if (strlen($modele) > 30) { $_SESSION['flash_error'] = "Modèle trop long."; Flight::redirect('/profil'); return; }
-    
-    // Suite du traitement SQL (identique à avant)
-    try {
-        $stmtCheck = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = ? LIMIT 1");
-        $stmtCheck->execute([$idUser]);
-        $possede = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
-        if ($possede) {
-            $stmtUpd = $db->prepare("UPDATE VEHICULES SET marque=?, modele=?, couleur=?, nb_places_totales=?, immatriculation=? WHERE id_vehicule=?");
-            $stmtUpd->execute([$marqueInput, $modele, $couleurInput, $nb_places, $immat, $possede['id_vehicule']]);
-            $_SESSION['flash_success'] = "Véhicule modifié !";
-        } else {
-            $db->beginTransaction();
-            $stmtIns = $db->prepare("INSERT INTO VEHICULES (marque, modele, couleur, nb_places_totales, immatriculation, type_vehicule) VALUES (?, ?, ?, ?, ?, 'voiture')");
-            $stmtIns->execute([$marqueInput, $modele, $couleurInput, $nb_places, $immat]);
-            $idNew = $db->lastInsertId();
-            $db->prepare("INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule) VALUES (?, ?)")->execute([$idUser, $idNew]);
-            $db->commit();
-            $_SESSION['flash_success'] = "Véhicule ajouté !";
-        }
-    } catch (Exception $e) {
-        if($db->inTransaction()) $db->rollBack();
-        $_SESSION['flash_error'] = "Erreur technique.";
-    }
-    Flight::redirect('/profil');
-});
 
 Flight::start();
 ?>

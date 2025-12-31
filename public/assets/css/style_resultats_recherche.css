@@ -99,3 +99,41 @@
 .transition {
   transition: background-color 0.2s;
 }
+
+/* --- STYLE SIGNALEMENT (Nouveau) --- */
+.btn-report {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-report:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Zone de texte plus claire et "cliquable" */
+.custom-textarea {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 0.95rem;
+    color: #333;
+    resize: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.custom-textarea:focus {
+    background-color: #ffffff;
+    border-color: #8c52ff;
+    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
+    outline: none;
+}
+
+.form-label-bold {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    display: block;
+}

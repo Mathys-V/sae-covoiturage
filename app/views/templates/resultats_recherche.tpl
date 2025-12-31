@@ -84,8 +84,12 @@
                             </div>
 
                             <div class="d-flex justify-content-end mt-4 gap-3">
-                                <button class="btn btn-outline-dark rounded-pill px-4 btn-report">
-                                    <i class="bi bi-flag-fill me-1"></i> Signaler
+                                <button type="button" 
+                                        class="btn btn-outline-danger btn-report rounded-pill px-4" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalSignalement" 
+                                        data-id-trajet="{$trajet.id_trajet}"
+                                        data-id-conducteur="{$trajet.id_conducteur}"> <i class="bi bi-flag-fill me-1"></i> Signaler
                                 </button>
                                 <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5 shadow-sm btn-reserve">
                                     Réserver ce trajet
@@ -108,6 +112,53 @@
         </div>
     {/if}
 
+</div>
+
+<div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form id="formSignalementRecherche"> 
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">
+                        Merci de nous indiquer la raison de ce signalement. Un modérateur examinera la situation rapidement.
+                    </p>
+                    
+                    <input type="hidden" id="signalement_id_trajet">
+                    <input type="hidden" id="signalement_id_conducteur"> <div class="mb-3">
+                        <label class="form-label-bold">Motif</label>
+                        <select class="form-select bg-light border-0 py-2" id="signalement_motif" required>
+                            <option value="" selected disabled>Choisir un motif...</option>
+                            <option value="Comportement dangereux">Comportement dangereux</option>
+                            <option value="Absence / Retard">Absence / Retard</option>
+                            <option value="Véhicule non conforme">Véhicule non conforme</option>
+                            <option value="Propos inappropriés">Propos inappropriés</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label-bold">Détails supplémentaires</label>
+                        <textarea class="custom-textarea" id="signalement_details" rows="4" placeholder="Décrivez la situation ici..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 pt-0 pb-4 pe-4">
+                    <button type="button" class="btn btn-light rounded-pill text-muted" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        Envoyer le signalement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_resultats_recherche.js"></script>

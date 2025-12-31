@@ -1,3 +1,7 @@
+/* ==========================================
+   FONCTIONS DE GESTION DES ÉTAPES
+   ========================================== */
+
 function changerEtape(numeroEtape) {
     let toutesLesEtapes = document.querySelectorAll(".bloc-etape");
     toutesLesEtapes.forEach((div) => div.classList.add("d-none"));
@@ -24,6 +28,10 @@ function changerEtape(numeroEtape) {
         }
     }
 }
+
+/* ==========================================
+   VALIDATION ÉTAPE 1 : EMAIL
+   ========================================== */
 
 async function verifierEmail() {
     const emailInput = document.getElementById("emailInput");
@@ -66,6 +74,10 @@ async function verifierEmail() {
         );
     }
 }
+
+/* ==========================================
+   VALIDATION ÉTAPE 2 : MOT DE PASSE
+   ========================================== */
 
 function verifierMDP() {
     const mdpInput = document.getElementById("mdpInput");
@@ -129,15 +141,24 @@ function afficherErreur(message) {
     confMdpInput.classList.add("is-invalid");
 }
 
-function modifierPlaces(direction) {
-    const input = document.getElementById("nbPlacesInput");
-    let valeur = parseInt(input.value);
-    let nouvelleValeur = valeur + direction;
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
 
-    if (nouvelleValeur >= 1 && nouvelleValeur <= 8) {
-        input.value = nouvelleValeur;
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
     }
 }
+
+/* ==========================================
+   VALIDATION ÉTAPE 3 : NOM / PRÉNOM
+   ========================================== */
 
 function validerEtape3() {
     const nom = document.getElementById("nomInput").value.trim();
@@ -147,6 +168,10 @@ function validerEtape3() {
         changerEtape(4);
     }
 }
+
+/* ==========================================
+   VALIDATION ÉTAPE 4 : DATE / TEL
+   ========================================== */
 
 function validerEtape4() {
     const dateInput = document.getElementById("dateInput");
@@ -182,6 +207,10 @@ function validerEtape4() {
     }
 }
 
+/* ==========================================
+   VALIDATION ÉTAPE 5 : ADRESSE
+   ========================================== */
+
 function validerEtape5() {
     const rueInput = document.getElementById("rueInput");
     const villeInput = document.getElementById("villeInput");
@@ -213,8 +242,22 @@ function validerEtape5() {
     changerEtape(6);
 }
 
+/* ==========================================
+   VALIDATION ÉTAPE 6 & 7 : VOITURE
+   ========================================== */
+
 function choisirVoiture() {
     changerEtape(7);
+}
+
+function modifierPlaces(direction) {
+    const input = document.getElementById("nbPlacesInput");
+    let valeur = parseInt(input.value);
+    let nouvelleValeur = valeur + direction;
+
+    if (nouvelleValeur >= 1 && nouvelleValeur <= 8) {
+        input.value = nouvelleValeur;
+    }
 }
 
 function soumettreSansVoiture() {
@@ -265,16 +308,15 @@ function soumettreAvecVoiture() {
     }
 
     // 2. IMPORTANT : Vérifier que la plaque est valide (format)
-    // On appelle explicitement la fonction de validation. Si elle renvoie false, on arrête.
     if (!validerImmatriculation()) {
         alert("Le format de la plaque d'immatriculation est incorrect.");
-        document.getElementById("immatInput").focus(); // On remet le curseur dans le champ erreur
+        document.getElementById("immatInput").focus();
         return;
     }
 
     let form = document.querySelector("form");
 
-    // 3. Nettoyage : Supprimer l'input caché s'il existe déjà (cas de double clic)
+    // 3. Nettoyage : Supprimer l'input caché s'il existe déjà
     let ancienInput = form.querySelector('input[name="voiture"]');
     if (ancienInput) {
         ancienInput.remove();
@@ -291,28 +333,17 @@ function soumettreAvecVoiture() {
     form.submit();
 }
 
-function togglePassword(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        input.type = "password";
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-    }
-}
+/* ==========================================
+   INITIALISATION ET ÉCOUTEURS D'ÉVÉNEMENTS
+   ========================================== */
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Initialisation des dates min/max
     const dateInput = document.getElementById("dateInput");
     if (dateInput) {
         const today = new Date();
         today.setFullYear(today.getFullYear() - 13);
 
-        // Formatage en YYYY-MM-DD pour l'attribut HTML
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
@@ -320,5 +351,45 @@ document.addEventListener("DOMContentLoaded", function () {
         const maxDate = `${year}-${month}-${day}`;
         dateInput.setAttribute("max", maxDate);
         dateInput.setAttribute("min", "1900-01-01");
+    }
+
+    // 2. IMPORTANT : Empêcher le formulaire de s'envoyer via Entrée standard
+    // (Cela permet au code "keydown" ci-dessous de prendre le relais)
+    const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+        });
+    }
+});
+
+// 3. Gestion intelligente de la touche "Entrée"
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        // Empêche le comportement par défaut (rechargement/envoi)
+        event.preventDefault();
+
+        // Détection de l'étape active
+        const step1 = document.getElementById("step-1");
+        const step2 = document.getElementById("step-2");
+        const step3 = document.getElementById("step-3");
+        const step4 = document.getElementById("step-4");
+        const step5 = document.getElementById("step-5");
+        const step7 = document.getElementById("step-7");
+
+        // Action selon l'étape
+        if (step1 && !step1.classList.contains("d-none")) {
+            verifierEmail();
+        } else if (step2 && !step2.classList.contains("d-none")) {
+            verifierMDP();
+        } else if (step3 && !step3.classList.contains("d-none")) {
+            validerEtape3();
+        } else if (step4 && !step4.classList.contains("d-none")) {
+            validerEtape4();
+        } else if (step5 && !step5.classList.contains("d-none")) {
+            validerEtape5();
+        } else if (step7 && !step7.classList.contains("d-none")) {
+            soumettreAvecVoiture();
+        }
     }
 });

@@ -242,14 +242,13 @@
                     </div>
                 </div>
 
-
                 <div class="d-none bloc-etape" id="step-8">
                     <p class="form-label text-center fw-bold mb-3" style="center">
                         Votre compte a été créé avec succès
                     </p>
 
                     <div class="text-center mt-5 mb-4">
-                        <button type="submit" class="btn btn-inscription fw-bold" onclick="window.location.href='/sae-covoiturage/public'">Continuer</button>
+                        <a href="/sae-covoiturage/public" class="btn btn-inscription fw-bold text-decoration-none">Continuer</a>
                     </div>
                 </div>
             </form>
@@ -263,37 +262,6 @@
 
     </div>
 </section>
-
-<script>
-    // Fonction pour gérer le choix "Oui" (étape 6 -> 7)
-    function choisirVoiture() {
-        document.getElementById('voitureInput').value = 'oui';
-        // Logique pour passer à l'étape suivante (gérée par js_inscription.js normalement)
-        // Si besoin, ajoute ici la logique pour masquer step-6 et afficher step-7
-        document.getElementById('step-6').classList.add('d-none');
-        document.getElementById('step-7').classList.remove('d-none');
-    }
-
-    // Fonction pour gérer le choix "Non" (soumission directe)
-    function soumettreSansVoiture() {
-        document.getElementById('voitureInput').value = 'non';
-        // Soumettre le formulaire
-        document.querySelector('form').submit();
-    }
-
-    // Fonction pour soumettre le formulaire AVEC voiture (étape 7)
-    function soumettreAvecVoiture() {
-        // Validation simple (tous les champs requis remplis ?)
-        const marque = document.getElementById('marqueInput').value;
-        const immat = document.getElementById('immatInput').value;
-        
-        if(marque && immat) {
-            document.querySelector('form').submit();
-        } else {
-            alert("Veuillez remplir tous les champs obligatoires.");
-        }
-    }
-</script>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_inscription.js"></script>
 

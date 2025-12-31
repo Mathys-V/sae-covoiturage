@@ -113,16 +113,16 @@
                             </div>
                         </div>
 
-                    {* CAS 2 : Trajet Annulé (AJOUTÉ) *}
-                    {elseif $msg.contenu == '::sys_cancel::'}
+                    {* CAS 2 : Trajet Annulé (DÉTECTION CORRIGÉE) *}
+                    {elseif $msg.contenu|replace:'::sys_cancel::':'' != $msg.contenu}
                         <div class="system-msg my-4">
                             <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #fff5f5; border-left: 5px solid #dc3545 !important;">
                                 <div class="text-center">
                                     <h4 class="fw-bold text-danger mb-2">
-                                        <i class="bi bi-x-circle-fill me-2"></i> Trajet Annulé
+                                        <i class="bi bi-exclamation-octagon-fill me-2"></i> Trajet Annulé
                                     </h4>
                                     <p class="text-muted mb-0">
-                                        Le conducteur a annulé ce trajet. <br>
+                                        Le conducteur a annulé ce trajet.<br>
                                         Toutes les réservations ont été annulées automatiquement.
                                     </p>
                                 </div>

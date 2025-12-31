@@ -123,27 +123,26 @@
                                         Discussion de groupe
                                     </a>
                                     
-                                    <div class="d-flex gap-2">
-                                        
-                                        <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm" 
-                                            {if $trajet.statut_visuel == 'termine' || $trajet.statut_visuel == 'annule'}
-                                                disabled style="opacity:0.5; cursor:not-allowed;"
-                                            {/if}>
-                                            Modifier
-                                        </button>
-                                        
-                                        <form action="/sae-covoiturage/public/trajet/supprimer" method="POST" class="flex-grow-1" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?');">
-                                            <input type="hidden" name="id_trajet" value="{$trajet.id_trajet}">
-                                            
-                                            <button type="submit" class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm" 
-                                                {if $trajet.statut_visuel == 'termine' || $trajet.statut_visuel == 'annule'}
-                                                    disabled style="opacity:0.5; cursor:not-allowed;"
-                                                {/if}>
-                                                Supprimer
-                                            </button>
-                                        </form>
+<div class="d-flex gap-2 flex-wrap">
+    
+    <button class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm" 
+        {if $trajet.statut_visuel == 'termine' || $trajet.statut_visuel == 'annule'}
+            disabled style="opacity:0.5; cursor:not-allowed;"
+        {/if}>
+        Modifier
+    </button>
+    
+    {* On affiche le bouton seulement si le trajet n'est ni fini, ni déjà annulé *}
+    {if $trajet.statut_visuel != 'termine' && $trajet.statut_visuel != 'annule'}
+        <form action="/sae-covoiturage/public/trajet/annuler" method="POST" class="flex-grow-1" onsubmit="return confirm('⚠️ ATTENTION !\n\nÊtes-vous sûr de vouloir ANNULER ce trajet ?\n\n- Les réservations seront annulées.\n- Les passagers seront avertis.\n- Cette action est irréversible.');">
+            <input type="hidden" name="id_trajet" value="{$trajet.id_trajet}">
+            <button type="submit" class="btn btn-outline-danger fw-bold py-2 w-100 shadow-sm">
+                Annuler
+            </button>
+        </form>
+    {/if}
 
-                                    </div>
+</div>
                                 </div>
                             </div>
                         </div>

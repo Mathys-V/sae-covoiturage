@@ -106,21 +106,25 @@
                             <div class="small text-muted text-truncate">
                                 
                                 {if $conv.dernier_message}
-                                    {* LOGIQUE D'AFFICHAGE NEUTRE POUR LES MESSAGES SYSTÈME *}
+                                    {* --- GESTION DES MESSAGES SYSTÈME --- *}
+                                    
+                                    {* 1. Trajet Rejoint *}
                                     {if $conv.dernier_message == '::sys_join::'}
                                         <em class="fst-italic"><i class="bi bi-person-plus"></i> Un utilisateur a rejoint le trajet</em>
                                     
+                                    {* 2. Trajet Quitté *}
                                     {elseif $conv.dernier_message == '::sys_leave::'}
                                         <em class="fst-italic"><i class="bi bi-person-dash"></i> Un utilisateur a quitté le trajet</em>
                                     
+                                    {* 3. Trajet Terminé *}
                                     {elseif $conv.dernier_message == '::sys_end::'}
                                         <strong class="text-purple"><i class="bi bi-flag-fill"></i> Trajet terminé</strong>
                                     
-                                    {* --- NOUVEAU : Message Annulation --- *}
-                                    {elseif $conv.dernier_message == '::sys_cancel::'}
+                                    {* 4. Trajet Annulé (Correction : syntaxe modifier Smarty) *}
+                                    {elseif $conv.dernier_message|replace:'::sys_cancel::':'' != $conv.dernier_message}
                                         <strong class="text-danger"><i class="bi bi-x-circle-fill"></i> Le trajet a été annulé</strong>
 
-                                    {* MESSAGES CLASSIQUES *}
+                                    {* 5. Message Classique (Texte Utilisateur) *}
                                     {else}
                                         {if $conv.conducteur_prenom}
                                             <span class="fw-semibold">{$conv.conducteur_prenom}</span> : 
@@ -129,6 +133,7 @@
                                     {/if}
                                     
                                     <span class="text-muted ms-1 small">• {$conv.date_tri|date_format:"%d/%m %H:%M"}</span>
+                                
                                 {else}
                                     <em class="text-muted fst-italic">Nouvelle discussion</em>
                                 {/if}

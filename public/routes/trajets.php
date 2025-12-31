@@ -299,4 +299,64 @@ Flight::route('/mes_trajets', function(){
         'trajets_archives' => $trajets_archives
     ]);
 });
+
+
+
+
+
+Flight::route('POST /trajet/annuler', function(){
+    if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    
+    $db = Flight::get('db');
+    $id_trajet = Flight::request()->data->id_trajet;
+    $id_user = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Vérifier que le trajet appartient bien à l'utilisateur connecté
+    $stmt = $db->prepare("SELECT id_conducteur, statut_flag FROM TRAJETS WHERE id_trajet = ?");
+    $stmt->execute([$id_trajet]);
+    $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$trajet || $trajet['id_conducteur'] != $id_user) {
+        $_SESSION['flash_error'] = "Vous n'avez pas le droit d'annuler ce trajet.";
+        Flight::redirect('/mes-trajets');
+        return;
+    }
+
+    if ($trajet['statut_flag'] === 'C') {
+        $_SESSION['flash_error'] = "Ce trajet est déjà annulé.";
+        Flight::redirect('/mes-trajets'); // Correction ici aussi par sécurité
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // 2. Passer le TRAJET en 'C' (Cancelled)
+        $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = ?");
+        $updTrajet->execute([$id_trajet]);
+
+        // 3. Passer les RESERVATIONS en 'A' (Annulée)
+        $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_trajet = ? AND statut_code = 'V'");
+        $updRes->execute([$id_trajet]);
+
+        // 4. INJECTION MESSAGE SYSTÈME
+        $msgContent = "::sys_cancel:: Le conducteur a annulé ce trajet.";
+        $insMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
+        $insMsg->execute([$id_trajet, $id_user, $msgContent]);
+
+        $db->commit();
+        
+        $_SESSION['flash_success'] = "Trajet annulé. Les passagers seront notifiés.";
+        
+    } catch (Exception $e) {
+        $db->rollBack();
+        $_SESSION['flash_error'] = "Erreur lors de l'annulation.";
+    }
+
+    // --- CORRECTION MAJEURE ICI ---
+    // On retourne sur la liste "Mes Trajets" car la page "consulter" n'existe pas.
+    Flight::redirect('/mes_trajets');
+});
+
+
 ?>

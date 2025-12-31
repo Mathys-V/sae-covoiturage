@@ -155,17 +155,20 @@
                                         onclick="toggleEdit('vehicule')">Ajouter</button></div>
                             {/if}
                         </div>
-                        
+
                         <div class="edit-content edit-mode">
                             <div class="row g-3">
-                                
+
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Marque</label>
                                     <select name="marque" class="form-control-custom" required>
-                                        <option value="" disabled {if !isset($vehicule.marque)}selected{/if}>Choisir...</option>
+                                        <option value="" disabled {if !isset($vehicule.marque)}selected{/if}>Choisir...
+                                        </option>
                                         {if isset($marques)}
                                             {foreach from=$marques item=m}
-                                                <option value="{$m}" {if isset($vehicule.marque) && $vehicule.marque == $m}selected{/if}>{$m}</option>
+                                                <option value="{$m}"
+                                                    {if isset($vehicule.marque) && $vehicule.marque == $m}selected{/if}>{$m}
+                                                </option>
                                             {/foreach}
                                         {else}
                                             <option value="Autre">Autre</option>
@@ -176,16 +179,20 @@
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Modèle</label>
                                     <input type="text" name="modele" class="form-control-custom"
-                                        placeholder="Ex: Clio 5" value="{$vehicule.modele|default:''}" required maxlength="30">
+                                        placeholder="Ex: Clio 5" value="{$vehicule.modele|default:''}" required
+                                        maxlength="30">
                                 </div>
 
                                 <div class="col-6">
                                     <label class="small text-muted ms-1">Couleur</label>
                                     <select name="couleur" class="form-control-custom" required>
-                                        <option value="" disabled {if !isset($vehicule.couleur)}selected{/if}>Choisir...</option>
+                                        <option value="" disabled {if !isset($vehicule.couleur)}selected{/if}>Choisir...
+                                        </option>
                                         {if isset($couleurs)}
                                             {foreach from=$couleurs item=c}
-                                                <option value="{$c}" {if isset($vehicule.couleur) && $vehicule.couleur == $c}selected{/if}>{$c}</option>
+                                                <option value="{$c}"
+                                                    {if isset($vehicule.couleur) && $vehicule.couleur == $c}selected{/if}>{$c}
+                                                </option>
                                             {/foreach}
                                         {else}
                                             <option value="Autre">Autre</option>
@@ -202,9 +209,8 @@
 
                                 <div class="col-12">
                                     <label class="small text-muted ms-1">Immatriculation</label>
-                                    <input type="text" name="immat" class="form-control-custom"
-                                        placeholder="AA-123-BB" value="{$vehicule.immatriculation|default:''}"
-                                        required maxlength="15">
+                                    <input type="text" name="immat" class="form-control-custom" placeholder="AA-123-BB"
+                                        value="{$vehicule.immatriculation|default:''}" required maxlength="15">
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end mt-3">
@@ -332,15 +338,15 @@
                             signalements</span><i class="bi bi-chevron-right"></i></a>
                     <a href="/sae-covoiturage/public/profil/preferences" class="settings-item"><span>Préférences de
                             communication</span><i class="bi bi-chevron-right"></i></a>
-                    <a href="/sae-covoiturage/public/mentions_legales" class="settings-item"><span>Informations légales</span><i
-                            class="bi bi-chevron-right"></i></a>
+                    <a href="/sae-covoiturage/public/mentions_legales" class="settings-item"><span>Informations
+                            légales</span><i class="bi bi-chevron-right"></i></a>
                     <a href="/sae-covoiturage/public/deconnexion" class="settings-item"><span>Déconnexion</span><i
                             class="bi bi-chevron-right"></i></a>
-                    <a href="#" class="settings-item text-danger-custom" data-bs-toggle="modal"
-                        data-bs-target="#modalSuppression">
+                    <a class="settings-item text-danger" data-bs-toggle="modal" data-bs-target="#modalSuppression">
                         <span>Fermer le compte</span>
                         <i class="bi bi-x-circle"></i>
                     </a>
+
                 </div>
             </div>
 

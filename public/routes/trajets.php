@@ -194,13 +194,26 @@ Flight::route('/mes_trajets', function(){
 
     // 3. TRI PERSONNALISÉ (PHP)
     usort($trajets, function($a, $b) {
-        // Critère 1 : Le statut (En cours < À venir < Terminé)
+        // CRITÈRE 1 : Le statut (D'abord En cours, puis À venir, puis Terminé)
+        // Rappel des poids définis plus haut : Encours=1, Avenir=2, Terminé=3
         if ($a['tri_poids'] !== $b['tri_poids']) {
             return $a['tri_poids'] - $b['tri_poids'];
         }
 
-        // Critère 2 : La date (Du plus récent au plus ancien)
-        return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
+        // CRITÈRE 2 : La date (Si le statut est le même)
+        $dateA = strtotime($a['date_heure_depart']);
+        $dateB = strtotime($b['date_heure_depart']);
+
+        // Si ce sont des trajets TERMINÉS (Poids 3)
+        // On les trie du plus récent au plus vieux (Historique classique)
+        if ($a['tri_poids'] === 3) {
+            return $dateB - $dateA; 
+        }
+
+        // Si ce sont des trajets EN COURS (1) ou À VENIR (2)
+        // On les trie du plus PROCHE au plus LOINTAIN (Chronologique)
+        // C'est ici qu'on inverse la logique par rapport à votre ancien code
+        return $dateA - $dateB;
     });
 
     Flight::render('mes_trajets.tpl', [

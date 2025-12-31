@@ -421,7 +421,7 @@ Flight::route('POST /profil/modifier_mdp', function(){
 
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
-    $data = Flight::request()->data;POST
+    $data = Flight::request()->data;
 
     $stmt = $db->prepare("SELECT mot_de_passe FROM UTILISATEURS WHERE id_utilisateur = :id");
     $stmt->execute([':id' => $idUser]);

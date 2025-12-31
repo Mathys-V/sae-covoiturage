@@ -52,6 +52,7 @@ Flight::route('GET /profil', function(){
     if ($vehicule === false) $vehicule = null;
 
     // --- C. RÉCUPÉRATION HISTORIQUE (Avec Couleur) ---
+    // J'ai ajouté v.couleur AS vehicule_couleur ici
     $sqlHistory = "
         SELECT 
             t.id_trajet, 

@@ -19,3 +19,6 @@ public/uploads/*
 # Editeurs de code (Optionnel, pour ne pas partager tes configs locales)
 .idea/
 .vscode/
+
+# Fichiers temporaires de dev
+code_mail.txt

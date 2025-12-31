@@ -1,50 +1,108 @@
 {include file='includes/header.tpl'}
 
-<div class="container mt-5 mb-5 d-flex justify-content-center">
-    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%; border-radius: 20px;">
-        <h2 class="text-center fw-bold mb-3" style="color: #8c52ff;">Nouveau mot de passe</h2>
+<style>
+    /* Fond violet global */
+    body {
+        background-color: #422875 !important;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Bouton violet */
+    .btn-purple {
+        background-color: #8c52ff;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-purple:hover {
+        background-color: #7a46e0;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Style des inputs */
+    .form-control {
+        background-color: #f8f9fa;
+        border: 1px solid transparent;
+    }
+    .form-control:focus {
+        background-color: #fff;
+        border-color: #8c52ff;
+        box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.1);
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center flex-grow-1 my-5">
+    <div class="card shadow-lg p-4 p-md-5" style="max-width: 500px; width: 100%; border-radius: 20px; border: none;">
+        
+        <h2 class="text-center fw-bold mb-1" style="color: #8c52ff;">Nouveau mot de passe</h2>
+        <p class="text-center fw-bold text-dark mb-4">Compte : {$nom_user|default:'Utilisateur'}</p>
         
         {if isset($error)}
-            <div class="alert alert-danger">{$error}</div>
+            <div class="alert alert-danger text-center rounded-3 mb-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>{$error}
+            </div>
         {/if}
 
         <form action="/sae-covoiturage/public/mot-de-passe-oublie/save" method="POST">
             
-            <div class="mb-3 position-relative">
-                <label class="form-label fw-bold">Nouveau mot de passe</label>
-                <input type="password" name="mdp" class="form-control rounded-pill pe-5" required minlength="8" placeholder="8 caractères minimum">
-                <i class="bi bi-eye-slash toggle-password position-absolute top-50 end-0 translate-middle-y me-3 pt-4" 
-                   style="cursor: pointer; color: #8c52ff;"></i>
+            <div class="mb-3">
+                <label class="form-label fw-bold text-dark">Nouveau mot de passe</label>
+                
+                <div class="position-relative">
+                    <input type="password" name="mdp" class="form-control rounded-pill py-2 pe-5" required minlength="8" placeholder="••••••••">
+                    <i class="bi bi-eye-slash toggle-password position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" 
+                       style="cursor: pointer; z-index: 5;"></i>
+                </div>
+
+                <div class="form-text text-muted mt-2 ps-2" style="font-size: 0.85rem;">
+                    <i class="bi bi-shield-lock me-1"></i> Min. 8 caractères, 1 chiffre, 1 caractère spécial (@$!%*#?&).
+                </div>
             </div>
 
-            <div class="mb-4 position-relative">
-                <label class="form-label fw-bold">Confirmer le mot de passe</label>
-                <input type="password" name="confirm_mdp" class="form-control rounded-pill pe-5" required placeholder="Répétez le mot de passe">
-                <i class="bi bi-eye-slash toggle-password position-absolute top-50 end-0 translate-middle-y me-3 pt-4" 
-                   style="cursor: pointer; color: #8c52ff;"></i>
+            <div class="mb-4">
+                <label class="form-label fw-bold text-dark">Confirmer le mot de passe</label>
+                
+                <div class="position-relative">
+                    <input type="password" name="confirm_mdp" class="form-control rounded-pill py-2 pe-5" required placeholder="••••••••">
+                    <i class="bi bi-eye-slash toggle-password position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" 
+                       style="cursor: pointer; z-index: 5;"></i>
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-purple w-100 py-2">Enregistrer</button>
+            <button type="submit" class="btn btn-purple w-100 py-2 rounded-pill fw-bold shadow-sm">
+                Enregistrer le mot de passe
+            </button>
         </form>
     </div>
 </div>
 
 <script>
-    // On sélectionne toutes les icônes qui ont la classe "toggle-password"
+    // Gestion de l'affichage du mot de passe (Eye Icon)
     const toggles = document.querySelectorAll('.toggle-password');
 
     toggles.forEach(icon => {
         icon.addEventListener('click', function() {
-            // On trouve le champ input juste avant l'icône
-            const input = this.previousElementSibling;
+            // On cherche l'input dans le même conteneur parent (le div.position-relative)
+            const input = this.parentElement.querySelector('input');
             
-            // On bascule entre 'password' et 'text'
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            
-            // On change l'icône (oeil barré ou ouvert)
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
+            if (input) {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                
+                this.classList.toggle('bi-eye');
+                this.classList.toggle('bi-eye-slash');
+                
+                if (type === 'text') {
+                    this.style.color = '#8c52ff';
+                    this.classList.remove('text-secondary');
+                } else {
+                    this.style.color = '';
+                    this.classList.add('text-secondary');
+                }
+            }
         });
     });
 </script>

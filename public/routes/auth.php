@@ -233,47 +233,53 @@ Flight::route('POST /mot-de-passe-oublie', function(){
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // 2. Générer un code à 6 chiffres
+        // 2. Génération du code
         $code = rand(100000, 999999);
-        $expiration = date('Y-m-d H:i:s', strtotime('+15 minutes')); // Valide 15 min
+        $expiration = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-        // 3. Sauvegarder dans la BDD
+        // 3. Mise à jour BDD
         $update = $db->prepare("UPDATE UTILISATEURS SET token_recuperation = :code, date_expiration_token = :exp WHERE email = :email");
         $update->execute([':code' => $code, ':exp' => $expiration, ':email' => $email]);
 
-        // 4. SIMULATION D'ENVOI D'EMAIL (Pour le dev local)
-        // On écrit le code dans un fichier 'code_mail.txt' à la racine pour que tu puisses le lire
+        // 4. Simulation LOG (Fichier texte)
         file_put_contents('../code_mail.txt', "Le code pour $email est : $code");
-
-        // On stocke l'email en session pour l'étape d'après
+        
+        // 5. Mise en session et redirection
         $_SESSION['reset_email'] = $email;
         Flight::redirect('/mot-de-passe-oublie/code');
     } else {
-        // Pour la sécurité, on peut dire "Si le compte existe, un email a été envoyé"
-        // Mais pour le dev, on affiche une erreur
-        Flight::render('mdp/etape1_email.tpl', ['error' => 'Aucun compte associé à cet email.']);
+        // CORRECTION : Si l'email n'existe pas, on affiche l'erreur ici et on ne redirige PAS.
+        Flight::render('mdp/etape1_email.tpl', [
+            'titre' => 'Mot de passe oublié',
+            'error' => 'Aucun compte associé à cet email.'
+        ]);
     }
 });
 
 // ÉTAPE 2 : SAISIR LE CODE
 Flight::route('GET /mot-de-passe-oublie/code', function(){
-    if(!isset($_SESSION['reset_email'])) Flight::redirect('/mot-de-passe-oublie');
-    Flight::render('mdp/etape2_code.tpl', ['titre' => 'Vérification du code']);
+    // Si on n'a pas fait l'étape 1 (pas d'email en session), on redirige au début
+    if(!isset($_SESSION['reset_email'])) {
+        Flight::redirect('/mot-de-passe-oublie');
+        return;
+    }
+    
+    Flight::render('mdp/etape2_code.tpl', ['titre' => 'Vérification']);
 });
 
 Flight::route('POST /mot-de-passe-oublie/verify', function(){
     $code = Flight::request()->data->code;
-    $email = $_SESSION['reset_email'];
+    $email = $_SESSION['reset_email'] ?? '';
     $db = Flight::get('db');
 
-    // Vérifier le code et l'expiration
-    $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE email = :email AND token_recuperation = :code AND date_expiration_token > NOW()");
+    $stmt = $db->prepare("SELECT nom, prenom FROM UTILISATEURS WHERE email = :email AND token_recuperation = :code AND date_expiration_token > NOW()");
     $stmt->execute([':email' => $email, ':code' => $code]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // Code bon ! On autorise le changement
         $_SESSION['reset_authorized'] = true;
+        // On stocke le nom/prénom pour l'afficher à l'étape d'après (rassurant)
+        $_SESSION['reset_user_name'] = $user['prenom'] . ' ' . substr($user['nom'], 0, 1) . '.';
         Flight::redirect('/mot-de-passe-oublie/nouveau');
     } else {
         Flight::render('mdp/etape2_code.tpl', ['error' => 'Code invalide ou expiré.']);
@@ -282,8 +288,15 @@ Flight::route('POST /mot-de-passe-oublie/verify', function(){
 
 // ÉTAPE 3 : NOUVEAU MOT DE PASSE
 Flight::route('GET /mot-de-passe-oublie/nouveau', function(){
-    if(!isset($_SESSION['reset_authorized']) || !$_SESSION['reset_authorized']) Flight::redirect('/mot-de-passe-oublie');
-    Flight::render('mdp/etape3_nouveau.tpl', ['titre' => 'Nouveau mot de passe']);
+    if(!isset($_SESSION['reset_authorized'])) {
+        Flight::redirect('/mot-de-passe-oublie');
+        return;
+    }
+    
+    // On passe le nom censuré à la vue
+    $nomAffiche = $_SESSION['reset_user_name'] ?? 'Utilisateur';
+    
+    Flight::render('mdp/etape3_nouveau.tpl', ['titre' => 'Nouveau mot de passe', 'nom_user' => $nomAffiche]);
 });
 
 Flight::route('POST /mot-de-passe-oublie/save', function(){
@@ -296,26 +309,27 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
         return;
     }
 
-    // Hashage et sauvegarde
+    // VERIFICATION COMPLEXITE
+    $regexMdp = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/';
+    if (!preg_match($regexMdp, $mdp)) {
+        Flight::render('mdp/etape3_nouveau.tpl', ['error' => 'Le mot de passe doit contenir 8 caractères, 1 chiffre et 1 caractère spécial (@$!%*#?&).']);
+        return;
+    }
+
     $hash = password_hash($mdp, PASSWORD_BCRYPT);
     $db = Flight::get('db');
 
-    // On met à jour le MDP et on vide le token pour qu'il ne soit plus réutilisable
     $stmt = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :hash, token_recuperation = NULL, date_expiration_token = NULL WHERE email = :email");
     $stmt->execute([':hash' => $hash, ':email' => $email]);
 
-    // Nettoyage session
+    // Nettoyage complet
     unset($_SESSION['reset_email']);
     unset($_SESSION['reset_authorized']);
+    unset($_SESSION['reset_user_name']);
+    if (file_exists('../code_mail.txt')) unlink('../code_mail.txt');
 
-    if (file_exists('../code_mail.txt')) {
-        unlink('../code_mail.txt');
-    }
-
-    // Redirection vers connexion avec succès (tu peux ajouter un paramètre GET pour afficher un message)
-    Flight::redirect('/connexion');
+    Flight::redirect('/connexion?msg=mdp_updated');
 });
-
 
 
 

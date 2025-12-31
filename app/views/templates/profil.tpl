@@ -284,7 +284,7 @@
                                     <div>
                                         <h5 class="fw-bold mb-3">Informations véhicule</h5>
                                         <div class="fs-6">
-                                            <div>{$trajet.vehicule_places|default:'--'} place{if $trajet.vehicule_places > 1}s{/if} disponible{if $trajet.vehicule_places > 1}s{/if}</div>
+                                            <div>{$trajet.vehicule_places|default:'--'} places disponibles</div>
                                             <div class="mt-1">
                                                 {if !empty($trajet.vehicule_marque) || !empty($trajet.vehicule_modele)}
                                                     {$trajet.vehicule_marque|default:''} {$trajet.vehicule_modele|default:''}
@@ -299,8 +299,8 @@
                                     </div>
 
                                     <div class="mt-4 text-end">
-                                        <a href="/sae-covoiturage/public/messagerie/{$trajet.id_trajet}" 
-                                           class="btn btn-purple w-100 py-2 rounded-pill text-decoration-none">
+                                        <a href="/sae-covoiturage/public/messagerie/conversation/{$trajet.id_trajet}" 
+                                           class="btn btn-purple w-100 py-2 rounded-pill text-decoration-none" style="display:inline-block; text-align:center;">
                                            Discussion de groupe
                                         </a>
                                     </div>

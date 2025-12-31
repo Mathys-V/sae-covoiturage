@@ -5,85 +5,207 @@
     :root {
         --bg-dark-purple: #422875;
         --accent-light: #8C52FF;
-        --green-check: #00e676; 
+        --green-check: #00e676;
     }
 
-    body { background-color: var(--bg-dark-purple) !important; }
+    body {
+        background-color: var(--bg-dark-purple) !important;
+    }
 
     main.pref-main {
         background-color: var(--bg-dark-purple);
         flex-grow: 1;
-        display: flex; flex-direction: column; align-items: center; 
-        padding: 40px 20px; color: white; width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+        color: white;
+        width: 100%;
         min-height: 80vh;
     }
 
     .header-top {
-        width: 100%; max-width: 600px; display: flex; align-items: center; 
-        margin-bottom: 30px; position: relative;
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        position: relative;
     }
+
     .back-btn {
-        text-decoration: none; color: white; 
-        border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; 
-        width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; 
-        transition: background 0.3s; margin-right: 15px;
+        text-decoration: none;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background 0.3s;
+        margin-right: 15px;
     }
-    .back-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
 
     h1.pref-title {
-        flex-grow: 1; text-align: center; margin: 0; font-size: 2rem; padding-right: 40px; color: white; font-weight: bold;
+        flex-grow: 1;
+        text-align: center;
+        margin: 0;
+        font-size: 2rem;
+        padding-right: 40px;
+        color: white;
+        font-weight: bold;
     }
 
-    form.pref-form { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 30px; }
-    
+    form.pref-form {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
     /* --- STYLE CHECKBOX --- */
     .option-row {
-        display: flex; gap: 20px; align-items: flex-start;
-        padding-bottom: 20px; border-bottom: 1px solid var(--accent-light);
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--accent-light);
         cursor: pointer;
     }
-    .option-row input[type="checkbox"] { display: none; }
-    
+
+    .option-row input[type="checkbox"] {
+        display: none;
+    }
+
     .custom-check {
-        width: 24px; height: 24px; border: 2px solid white; border-radius: 6px;
-        display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        border: 2px solid white;
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
         transition: background 0.2s, border-color 0.2s;
     }
-    
+
     /* État coché */
-    .option-row input:checked + .custom-check { background-color: transparent; }
-    .option-row input:checked + .custom-check::after {
-        content: '✓'; color: white; font-size: 16px;
+    .option-row input:checked+.custom-check {
+        background-color: transparent;
     }
 
-    .text-content { display: flex; flex-direction: column; }
-    .label-title { font-size: 1.1rem; font-weight: normal; margin-bottom: 5px; }
-    .label-desc { font-size: 0.8rem; color: #ccc; line-height: 1.3; }
+    .option-row input:checked+.custom-check::after {
+        content: '✓';
+        color: white;
+        font-size: 16px;
+    }
+
+    .text-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .label-title {
+        font-size: 1.1rem;
+        font-weight: normal;
+        margin-bottom: 5px;
+    }
+
+    .label-desc {
+        font-size: 0.8rem;
+        color: #ccc;
+        line-height: 1.3;
+    }
 
     .btn-save {
-        background: var(--accent-light); color: white; border: none; padding: 15px 40px;
-        border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
-        align-self: center; margin-top: 20px; transition: background 0.3s;
+        background: var(--accent-light);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        align-self: center;
+        margin-top: 20px;
+        transition: background 0.3s;
     }
-    .btn-save:hover { background: #7a42ea; }
+
+    .btn-save:hover {
+        background: #7a42ea;
+    }
 
     /* --- POPUPS --- */
-    .custom-overlay { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.6); display: none; 
-        justify-content: center; align-items: center; z-index: 99999; 
+    .custom-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
     }
-    .custom-box { 
-        background: #E6DFF0; padding: 30px; border-radius: 20px; 
-        text-align: center; width: 90%; max-width: 400px; color: black; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .custom-box h2 { color: var(--bg-dark-purple); margin-top: 0; font-weight: bold; margin-bottom: 15px; }
-    .custom-box p { font-size: 1.1rem; margin-bottom: 25px; color: #333; }
 
-    .btns { display: flex; justify-content: center; gap: 15px; }
-    .btn-ok { background: var(--accent-light); color: white; padding: 10px 30px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; }
-    .btn-cancel { background: #aaa; color: #333; padding: 10px 30px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; }
+    .custom-box {
+        background: #E6DFF0;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        color: black;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-box h2 {
+        color: var(--bg-dark-purple);
+        margin-top: 0;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .custom-box p {
+        font-size: 1.1rem;
+        margin-bottom: 25px;
+        color: #333;
+    }
+
+    .btns {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .btn-ok {
+        background: var(--accent-light);
+        color: white;
+        padding: 10px 30px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-cancel {
+        background: #aaa;
+        color: #333;
+        padding: 10px 30px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
 </style>
 
 <main class="pref-main">
@@ -111,7 +233,7 @@
             </div>
         </label>
 
-         <label class="option-row">
+        <label class="option-row">
             <input type="checkbox" id="email_sondages">
             <div class="custom-check"></div>
             <div class="text-content">
@@ -144,30 +266,32 @@
 </div>
 
 <script>
-{literal}
-    window.openConfirm = function() {
-        document.getElementById('confirmModal').style.display = 'flex';
-    };
+    {literal}
+        window.openConfirm = function() {
+            document.getElementById('confirmModal').style.display = 'flex';
+        };
 
-    window.closeAll = function() { 
-        document.querySelectorAll('.custom-overlay').forEach(el => el.style.display = 'none'); 
-    };
+        window.closeAll = function() {
+            document.querySelectorAll('.custom-overlay').forEach(el => el.style.display = 'none');
+        };
 
-    window.saveData = function() {
-        localStorage.setItem('email_messages', document.getElementById('email_messages').checked);
-        localStorage.setItem('email_news', document.getElementById('email_news').checked);
-        localStorage.setItem('email_sondages', document.getElementById('email_sondages').checked);
-        
-        document.getElementById('confirmModal').style.display = 'none';
-        document.getElementById('successModal').style.display = 'flex';
-    };
+        window.saveData = function() {
+            localStorage.setItem('email_messages', document.getElementById('email_messages').checked);
+            localStorage.setItem('email_news', document.getElementById('email_news').checked);
+            localStorage.setItem('email_sondages', document.getElementById('email_sondages').checked);
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if(localStorage.getItem('email_messages') === 'true') document.getElementById('email_messages').checked = true;
-        if(localStorage.getItem('email_news') === 'true') document.getElementById('email_news').checked = true;
-        if(localStorage.getItem('email_sondages') === 'true') document.getElementById('email_sondages').checked = true;
-    });
-{/literal}
+            document.getElementById('confirmModal').style.display = 'none';
+            document.getElementById('successModal').style.display = 'flex';
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('email_messages') === 'true') document.getElementById('email_messages')
+                .checked = true;
+            if (localStorage.getItem('email_news') === 'true') document.getElementById('email_news').checked = true;
+            if (localStorage.getItem('email_sondages') === 'true') document.getElementById('email_sondages')
+                .checked = true;
+        });
+    {/literal}
 </script>
 
 {include file='includes/footer.tpl'}

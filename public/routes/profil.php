@@ -74,8 +74,10 @@ Flight::route('POST /profil/update-vehicule', function(){
     $db = Flight::get('db');
 
     // 1. Nettoyage et Validation Whitelist
-    $marqueInput = ucfirst(strtolower(trim($data->marque)));
-    $couleurInput = ucfirst(strtolower(trim($data->couleur)));
+    // CORRECTION MAJUSCULES : On garde la valeur exacte (ex: "BMW") pour la whitelist
+    $marqueInput = trim($data->marque); 
+    $couleurInput = trim($data->couleur);
+    
     $modele = strip_tags(trim($data->modele));
     $nb_places = (int)$data->nb_places;
     
@@ -95,7 +97,9 @@ Flight::route('POST /profil/update-vehicule', function(){
     if (strlen($modele) > 30) { 
         $_SESSION['flash_error'] = "Modèle trop long."; Flight::redirect('/profil'); return; 
     }
-    if ($nb_places < 1 || $nb_places > 9) $nb_places = 5;
+    
+    //  Max 8 places (Minibus)
+    if ($nb_places < 1 || $nb_places > 8) $nb_places = 5;
 
     // SÉCURITÉ : Format Plaque
     if (!preg_match('/^([A-Z]{2}\d{3}[A-Z]{2}|\d{1,4}[A-Z]{2,3}\d{2})$/', $immatClean)) {
@@ -132,7 +136,7 @@ Flight::route('POST /profil/update-vehicule', function(){
                 ':modele' => $modele,
                 ':couleur' => $couleurInput,
                 ':places' => $nb_places,
-                ':immat' => $immatFinale, // On envoie la version avec tirets
+                ':immat' => $immatFinale,
                 ':id' => $possede['id_vehicule']
             ]);
             $_SESSION['flash_success'] = "Véhicule modifié avec succès !";
@@ -417,7 +421,7 @@ Flight::route('POST /profil/modifier_mdp', function(){
 
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
-    $data = Flight::request()->data;
+    $data = Flight::request()->data;POST
 
     $stmt = $db->prepare("SELECT mot_de_passe FROM UTILISATEURS WHERE id_utilisateur = :id");
     $stmt->execute([':id' => $idUser]);

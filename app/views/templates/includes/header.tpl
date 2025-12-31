@@ -115,7 +115,7 @@
         
         {if isset($user) && $user.admin_flag == 'Y'}
             <a href="/sae-covoiturage/public/moderation" class="btn btn-danger fw-bold">
-                <i class="bi bi-shield-lock-fill"></i> Modération
+                <i class="bi bi-shield-lock-fill"></i> Espace Admin
             </a>
             <div class="vr mx-2 d-none d-lg-block"></div>
         {/if}
@@ -219,7 +219,7 @@
             
             {if isset($user) && $user.admin_flag == 'Y'}
                 <a href="/sae-covoiturage/public/moderation" class="mobile-link text-danger fw-bold">
-                    <i class="bi bi-shield-lock-fill me-2"></i> Administration
+                    <i class="bi bi-shield-lock-fill me-2"></i> Espace Admin
                 </a>
             {/if}
 

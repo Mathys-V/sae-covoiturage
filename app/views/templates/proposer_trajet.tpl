@@ -2,7 +2,7 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_proposer_trajet.css">
 
-{* --- SÉCURITÉ : Dates limites --- *}
+{* --- VARIABLES DATES --- *}
 {$today = $smarty.now|date_format:'%Y-%m-%d'}
 {$maxDate = ($smarty.now + 63072000)|date_format:'%Y-%m-%d'}
 
@@ -18,7 +18,7 @@
             {/if}
 
             <div id="js-error-message" class="alert alert-warning text-center rounded-4 mb-4 d-none">
-                <i class="bi bi-exclamation-circle me-2"></i> Veuillez sélectionner une adresse valide dans la liste déroulante.
+                <i class="bi bi-exclamation-circle me-2"></i> Veuillez sélectionner une adresse valide.
             </div>
 
             <form id="trajetForm" action="/sae-covoiturage/public/trajet/nouveau" method="POST" autocomplete="off">
@@ -52,12 +52,11 @@
                     <label class="custom-label">Date et Heure du (premier) départ ?<span class="required-star">*</span></label>
                     <div class="row g-2">
                         <div class="col-7">
-                            {* AJOUT : ID, min/max, onchange *}
+                            {* AJOUT : onchange pour mettre à jour le résumé *}
                             <input type="date" id="date_depart" name="date" class="form-control form-control-rounded" 
                                    value="{$today}" min="{$today}" max="{$maxDate}" onchange="updateSummary()" required>
                         </div>
                         <div class="col-5">
-                            {* AJOUT : ID, onchange *}
                             <input type="time" id="heure_depart" name="heure" class="form-control form-control-rounded" onchange="updateSummary()" required>
                         </div>
                     </div>
@@ -70,7 +69,6 @@
                     </p>
                     
                     <div class="toggle-container">
-                        {* On garde tes onclick qui marchent *}
                         <input type="radio" class="toggle-radio" name="regulier" id="regulier_non" value="N" checked onclick="toggleDateFin(false)">
                         <label for="regulier_non" class="toggle-label">Non</label>
 
@@ -82,11 +80,11 @@
                         <div class="p-3 mt-3 rounded-4 border border-2 border-white" style="background-color: rgba(255,255,255,0.5);">
                             <label class="custom-label mb-2">Jusqu'à quelle date répéter ce trajet ?</label>
                             
-                            {* AJOUT : ID, min/max, onchange *}
+                            {* AJOUT : onchange pour le résumé *}
                             <input type="date" id="date_fin" name="date_fin" class="form-control form-control-rounded" 
                                    min="{$today}" max="{$maxDate}" onchange="updateSummary()">
                             
-                            {* AJOUT : ZONE DE RÉSUMÉ *}
+                            {* ZONE DE RÉSUMÉ (Feedback) *}
                             <div id="summary-card" class="alert alert-info mt-3 mb-0 d-none text-start" style="font-size: 0.9rem;">
                                 <i class="bi bi-info-circle-fill me-2"></i> <span id="summary-text"></span>
                             </div>

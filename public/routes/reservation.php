@@ -146,6 +146,7 @@ Flight::route('GET /mes_reservations', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
+    // CORRECTION ICI : ORDER BY DESC (Plus récent en haut)
     $sql = "SELECT r.*, t.*, 
             u.prenom as conducteur_prenom, u.nom as conducteur_nom, u.photo_profil as conducteur_photo,
             v.marque, v.modele, v.nb_places_totales
@@ -155,7 +156,7 @@ Flight::route('GET /mes_reservations', function(){
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
             WHERE r.id_passager = :user
             AND r.statut_code = 'V'
-            ORDER BY t.date_heure_depart ASC";
+            ORDER BY t.date_heure_depart DESC"; // C'est ici que ça change
     
     $stmt = $db->prepare($sql);
     $stmt->execute([':user' => $userId]);
@@ -173,7 +174,6 @@ Flight::route('GET /mes_reservations', function(){
         $r['heure_fmt'] = $dateObj->format('H\hi');
 
         // --- Statut du trajet ---
-        // Assure que duree_estimee est numérique
         $duree = isset($r['duree_estimee']) && is_numeric($r['duree_estimee']) ? (int)$r['duree_estimee'] : 0;
         $end = (clone $dateObj)->add(new DateInterval('PT'.$duree.'M'));
 

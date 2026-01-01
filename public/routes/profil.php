@@ -52,6 +52,7 @@ Flight::route('GET /profil', function(){
     if ($vehicule === false) $vehicule = null;
 
     // --- C. RÉCUPÉRATION HISTORIQUE (Avec Couleur) ---
+    // J'ai ajouté v.couleur AS vehicule_couleur ici
     $sqlHistory = "
         SELECT 
             t.id_trajet, 
@@ -123,6 +124,37 @@ Flight::route('POST /profil/update-description', function(){
     $stmt = $db->prepare("UPDATE UTILISATEURS SET description = ? WHERE id_utilisateur = ?");
     $stmt->execute([$desc, $_SESSION['user']['id_utilisateur']]);
     $_SESSION['flash_success'] = "Description mise à jour !";
+    Flight::redirect('/profil');
+});
+
+// 3. MODIFIER L'IDENTITÉ (PRÉNOM + NOM)
+Flight::route('POST /profil/update-identity', function(){
+    if(!isset($_SESSION['user'])) return;
+
+    $db = Flight::get('db');
+    $idUser = $_SESSION['user']['id_utilisateur'];
+    $data = Flight::request()->data;
+
+    // Nettoyage
+    $prenom = trim(strip_tags($data->prenom));
+    $nom = trim(strip_tags($data->nom));
+
+    // Validation basique
+    if (empty($prenom) || empty($nom)) {
+        $_SESSION['flash_error'] = "Le prénom et le nom ne peuvent pas être vides.";
+        Flight::redirect('/profil');
+        return;
+    }
+
+    // Mise à jour BDD
+    $stmt = $db->prepare("UPDATE UTILISATEURS SET prenom = :prenom, nom = :nom WHERE id_utilisateur = :id");
+    $stmt->execute([':prenom' => $prenom, ':nom' => $nom, ':id' => $idUser]);
+
+    // Mise à jour immédiate de la session (pour l'affichage)
+    $_SESSION['user']['prenom'] = $prenom;
+    $_SESSION['user']['nom'] = $nom;
+
+    $_SESSION['flash_success'] = "Identité modifiée avec succès !";
     Flight::redirect('/profil');
 });
 

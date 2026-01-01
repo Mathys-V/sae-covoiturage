@@ -2,6 +2,10 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_proposer_trajet.css">
 
+{* --- VARIABLES DATES --- *}
+{$today = $smarty.now|date_format:'%Y-%m-%d'}
+{$maxDate = ($smarty.now + 63072000)|date_format:'%Y-%m-%d'}
+
 <div class="main-wrapper">
     <div class="propose-section">
         <div class="form-card">
@@ -14,7 +18,7 @@
             {/if}
 
             <div id="js-error-message" class="alert alert-warning text-center rounded-4 mb-4 d-none">
-                <i class="bi bi-exclamation-circle me-2"></i> Veuillez sélectionner une adresse valide dans la liste déroulante.
+                <i class="bi bi-exclamation-circle me-2"></i> Veuillez sélectionner une adresse valide.
             </div>
 
             <form id="trajetForm" action="/sae-covoiturage/public/trajet/nouveau" method="POST" autocomplete="off">
@@ -61,9 +65,12 @@
                         <div class="col-7">
                             <input type="date" name="date" class="form-control form-control-rounded" 
                                 value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
+                            <input type="date" id="date_depart" name="date" class="form-control form-control-rounded" 
+                                   value="{$today}" min="{$today}" max="{$maxDate}" onchange="updateSummary()" required>
+
                         </div>
                         <div class="col-5">
-                            <input type="time" name="heure" class="form-control form-control-rounded" required>
+                            <input type="time" id="heure_depart" name="heure" class="form-control form-control-rounded" onchange="updateSummary()" required>
                         </div>
                     </div>
                 </div>
@@ -85,7 +92,15 @@
                     <div id="date_fin_wrapper">
                         <div class="p-3 mt-3 rounded-4 border border-2 border-white" style="background-color: rgba(255,255,255,0.5);">
                             <label class="custom-label mb-2">Jusqu'à quelle date répéter ce trajet ?</label>
-                            <input type="date" name="date_fin" class="form-control form-control-rounded">
+                            
+                            {* AJOUT : onchange pour le résumé *}
+                            <input type="date" id="date_fin" name="date_fin" class="form-control form-control-rounded" 
+                                   min="{$today}" max="{$maxDate}" onchange="updateSummary()">
+                            
+                            {* ZONE DE RÉSUMÉ (Feedback) *}
+                            <div id="summary-card" class="alert alert-info mt-3 mb-0 d-none text-start" style="font-size: 0.9rem;">
+                                <i class="bi bi-info-circle-fill me-2"></i> <span id="summary-text"></span>
+                            </div>
                         </div>
                     </div>
                 </div>

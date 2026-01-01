@@ -2,6 +2,10 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_proposer_trajet.css">
 
+{* --- AJOUT SÉCURITÉ : Dates limites (Aujourd'hui et +2 ans) --- *}
+{$today = $smarty.now|date_format:'%Y-%m-%d'}
+{$maxDate = ($smarty.now + 63072000)|date_format:'%Y-%m-%d'}
+
 <div class="main-wrapper">
     <div class="propose-section">
         <div class="form-card">
@@ -48,8 +52,9 @@
                     <label class="custom-label">Date et Heure du (premier) départ ?<span class="required-star">*</span></label>
                     <div class="row g-2">
                         <div class="col-7">
+                            {* AJOUT ICI : min et max pour bloquer le passé et limiter à 2 ans *}
                             <input type="date" name="date" class="form-control form-control-rounded" 
-                                   value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
+                                   value="{$today}" min="{$today}" max="{$maxDate}" required>
                         </div>
                         <div class="col-5">
                             <input type="time" name="heure" class="form-control form-control-rounded" required>
@@ -74,7 +79,8 @@
                     <div id="date_fin_wrapper">
                         <div class="p-3 mt-3 rounded-4 border border-2 border-white" style="background-color: rgba(255,255,255,0.5);">
                             <label class="custom-label mb-2">Jusqu'à quelle date répéter ce trajet ?</label>
-                            <input type="date" name="date_fin" class="form-control form-control-rounded">
+                            {* AJOUT ICI : min et max *}
+                            <input type="date" name="date_fin" class="form-control form-control-rounded" min="{$today}" max="{$maxDate}">
                         </div>
                     </div>
                 </div>

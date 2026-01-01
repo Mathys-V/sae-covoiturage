@@ -69,24 +69,31 @@ Flight::route('POST /trajet/nouveau', function(){
                         places_proposees, commentaires, statut_flag
                     ) VALUES (
                         :conducteur, :vehicule, 
-                        :depart, '00000', '', 
-                        :arrivee, '00000', '', 
+                        :ville_dep, :cp_dep, :rue_dep, 
+                        :ville_arr, :cp_arr, :rue_arr, 
                         :dateheure, :duree,
                         :places, :desc, 'A'
                     )";
-            
+
             $stmt = $db->prepare($sql);
             $stmt->execute([
                 ':conducteur' => $userId,
                 ':vehicule'   => $vehicule['id_vehicule'],
-                ':depart'     => $data->depart,
-                ':arrivee'    => $data->arrivee,
+                
+                // MODIFICATION ICI : On utilise les données envoyées par les inputs cachés
+                ':ville_dep'  => $data->ville_depart,
+                ':cp_dep'     => $data->cp_depart,
+                ':rue_dep'    => $data->rue_depart, // Peut contenir le nom de la rue ou le nom du lieu
+                
+                ':ville_arr'  => $data->ville_arrivee,
+                ':cp_arr'     => $data->cp_arrivee,
+                ':rue_arr'    => $data->rue_arrivee,
+
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
                 ':duree'      => $data->duree_calc,
                 ':places'     => (int)$data->places,
                 ':desc'       => $data->description
             ]);
-
             $compteur++;
 
             if ($data->regulier === 'Y') {

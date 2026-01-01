@@ -26,7 +26,7 @@ Flight::route('GET /recherche/resultats', function(){
     $depart = Flight::request()->query->depart;
     $arrivee = Flight::request()->query->arrivee;
     $date = Flight::request()->query->date;
-
+    
     // GESTION COOKIES HISTORIQUE
     $consent = ['performance' => 1]; 
     if (isset($_COOKIE['cookie_consent'])) {
@@ -46,65 +46,115 @@ Flight::route('GET /recherche/resultats', function(){
         setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
     } 
 
-    // FONCTION DE NETTOYAGE
+// --- 2. FONCTIONS INTELLIGENTES AMÉLIORÉES ---
+
+    function extraireCP($str) {
+        if (preg_match('/(\d{5})/', $str, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
     function nettoyerInput($str) {
-        $str = strtolower($str);
-        $str = preg_replace('/\s*\(.*?\)/', '', $str);
+        $str = mb_strtolower($str, 'UTF-8');
+        // Gestion des apostrophes courbes (copier-coller Word/Web)
+        $str = str_replace(['’', '‘'], "'", $str);
+        
         $str = preg_replace('/\d{5}/', '', $str);
-        $mots = ['gare de ', 'gare d\'', 'iut ', 'campus ', 'ville de ', 'mairie de ', 'place ', 'rue '];
-        $str = str_replace($mots, '', $str);
+        $str = preg_replace('/\s*\(.*?\)/', '', $str);
+        
+        // LISTE COMPLÉTÉE (Ajout de "du", "de", "des")
+        $mots = [
+            'gare de ', 'gare d\'', 'gare du ', 
+            'iut ', 'campus ', 'faculté ', 'univ ',
+            'ville de ', 'mairie de ', 'centre-ville',
+            'place ', 'rue ', 'avenue ', 'boulevard ', 'allée ', 'chemin ', 'route ',
+            ' le ', ' la ', ' les ', ' aux ', ' du ', ' des ', ' de ', ' en '
+        ];
+        $str = str_replace($mots, ' ', $str);
+
+        // Nettoyage final des apostrophes résiduelles (d'Amiens -> Amiens)
+        $str = preg_replace("/\b(d|l|qu)'/u", '', $str); 
+        $str = preg_replace('/\d+/', '', $str);
+
         return trim($str);
     }
 
-    $depClean = nettoyerInput($depart);
-    $arrClean = nettoyerInput($arrivee);
+    // --- 3. PRÉPARATION DES VARIABLES ---
+    
+    $cpDep = extraireCP($depart);      // ex: "80330"
+    $villeDepClean = nettoyerInput($depart); // ex: "longueau"
+
+    $cpArr = extraireCP($arrivee);      // ex: "80000" (ou null)
+    $villeArrClean = nettoyerInput($arrivee); // ex: "amiens"
 
     $db = Flight::get('db');
     
-    // REQUÊTE PRINCIPALE
-    $sql = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+    // --- 4. REQUÊTE SQL PRINCIPALE ---
+    
+    $sql = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
             FROM TRAJETS t
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
             WHERE 
-                (t.ville_depart LIKE :depClean OR :depRaw LIKE CONCAT('%', t.ville_depart, '%'))
+                (
+                    (:cpDep IS NOT NULL AND t.code_postal_depart = :cpDep)
+                    OR t.ville_depart LIKE :depClean
+                    OR t.rue_depart LIKE :depClean
+                    OR :depRaw LIKE CONCAT('%', t.ville_depart, '%')
+                )
             AND 
-                (t.ville_arrivee LIKE :arrClean OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%'))
+                (
+                    (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr)
+                    OR t.ville_arrivee LIKE :arrClean 
+                    OR t.rue_arrivee LIKE :arrClean
+                    OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%')
+                )
             AND t.date_heure_depart >= :date
+            AND t.date_heure_depart > NOW()
             AND t.statut_flag = 'A'
             ORDER BY t.date_heure_depart ASC";
             
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        ':depClean' => "%$depClean%",
+        ':cpDep'    => $cpDep,
+        ':depClean' => "%$villeDepClean%",
         ':depRaw'   => $depart,
-        ':arrClean' => "%$arrClean%",
+        ':cpArr'    => $cpArr,
+        ':arrClean' => "%$villeArrClean%",
         ':arrRaw'   => $arrivee,
         ':date'     => $date . ' 00:00:00'
     ]);
     
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // GESTION ALTERNATIVES
+    // --- 5. GESTION ALTERNATIVES (Si vide) ---
     $message = null;
     $typeResultat = 'exact';
 
     if (empty($trajets)) {
         $typeResultat = 'alternatif';
 
-        // Tentative 2 : Recherche par destination uniquement
-        $sqlAlt = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+        // Alternative : On cherche juste par Destination
+        $sqlAlt = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
                    FROM TRAJETS t
                    JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
                    JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
-                   WHERE (t.ville_arrivee LIKE :arrClean OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%'))
+                   WHERE 
+                   (
+                        (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr)
+                        OR t.ville_arrivee LIKE :arrClean 
+                        OR :arrRaw LIKE CONCAT('%', t.ville_arrivee, '%')
+                   )
                    AND t.date_heure_depart >= :date
+                   AND t.date_heure_depart > NOW()
                    AND t.statut_flag = 'A'
                    ORDER BY t.date_heure_depart ASC LIMIT 5";
                    
         $stmtAlt = $db->prepare($sqlAlt);
         $stmtAlt->execute([
-            ':arrClean' => "%$arrClean%",
+            ':cpArr'    => $cpArr,
+            ':arrClean' => "%$villeArrClean%",
             ':arrRaw'   => $arrivee,
             ':date'     => $date . ' 00:00:00'
         ]);
@@ -113,8 +163,17 @@ Flight::route('GET /recherche/resultats', function(){
         if (!empty($trajets)) {
             $message = "Trajet exact indisponible. Voici des <strong>alternatives</strong> vers votre destination :";
         } else {
-            // Tentative 3 : Tous les prochains départs
-            $trajets = $db->query("SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele FROM TRAJETS t JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule WHERE t.date_heure_depart >= '$date 00:00:00' AND t.statut_flag = 'A' ORDER BY t.date_heure_depart ASC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+            // Dernier recours : Prochains départs globaux
+            $sqlDernier = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+                           FROM TRAJETS t 
+                           JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur 
+                           JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule 
+                           WHERE t.date_heure_depart >= '$date 00:00:00' 
+                           AND t.date_heure_depart > NOW()
+                           AND t.statut_flag = 'A' 
+                           ORDER BY t.date_heure_depart ASC LIMIT 5";
+
+            $trajets = $db->query($sqlDernier)->fetchAll(PDO::FETCH_ASSOC);
             $message = "Aucun trajet correspondant. Voici les <strong>prochains départs</strong> disponibles sur la plateforme :";
         }
     }

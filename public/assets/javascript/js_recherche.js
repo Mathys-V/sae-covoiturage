@@ -1,9 +1,9 @@
-// --- AUTOCOMPLÉTION ---
+// --- AUTOCOMPLÉTION POUR LA RECHERCHE ---
 function setupAutocomplete(inputId, resultsId) {
     const input = document.getElementById(inputId);
     const results = document.getElementById(resultsId);
     
-    // Sécurité si les éléments n'existent pas
+    // Sécurité si les éléments n'existent pas sur la page
     if (!input || !results) return;
 
     let timeout = null;
@@ -11,13 +11,13 @@ function setupAutocomplete(inputId, resultsId) {
     input.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
         results.innerHTML = ''; 
+        
         if (query.length < 2) return;
 
-        // Récupération de la variable globale définie dans le TPL
-        // On utilise un tableau vide par défaut si la variable n'existe pas
+        // 1. RECHERCHE LOCALE (Lieux Fréquents)
+        // Récupération de la variable globale définie dans le TPL par Smarty
         const localData = window.lieuxFrequents || [];
 
-        // A. Locale (Lieux Fréquents)
         const matchesLocal = localData.filter(lieu => 
             lieu.nom_lieu.toLowerCase().includes(query) || 
             lieu.ville.toLowerCase().includes(query)
@@ -28,17 +28,22 @@ function setupAutocomplete(inputId, resultsId) {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-suggestion is-frequent';
                 div.innerHTML = `
-                    <div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
+                    <div class="sugg-icon"><i class="bi bi-star-fill text-warning"></i></div>
                     <div class="sugg-text">
                         <span class="sugg-main">${lieu.nom_lieu}</span>
                         <span class="sugg-sub">${lieu.ville}</span>
                     </div>`;
-                div.addEventListener('click', function() { input.value = lieu.nom_lieu; results.innerHTML = ''; });
+                
+                div.addEventListener('click', function() { 
+                    // Pour la recherche, on met juste le nom du lieu, le PHP se débrouille
+                    input.value = lieu.nom_lieu; 
+                    results.innerHTML = ''; 
+                });
                 results.appendChild(div);
             });
         }
 
-        // B. API Gouv
+        // 2. RECHERCHE API GOUV
         if (query.length > 3) {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
@@ -49,13 +54,21 @@ function setupAutocomplete(inputId, resultsId) {
                             data.features.forEach(feature => {
                                 const div = document.createElement('div');
                                 div.className = 'autocomplete-suggestion is-api';
+                                
+                                // On affiche Label (ex: "Gare d'Amiens") + Ville
                                 div.innerHTML = `
-                                    <div class="sugg-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                                    <div class="sugg-icon"><i class="bi bi-geo-alt-fill text-muted"></i></div>
                                     <div class="sugg-text">
                                         <span class="sugg-main">${feature.properties.name}</span>
-                                        <span class="sugg-sub">${feature.properties.city || ''}</span>
+                                        <span class="sugg-sub">${feature.properties.city || ''} (${feature.properties.postcode || ''})</span>
                                     </div>`;
-                                div.addEventListener('click', function() { input.value = feature.properties.label; results.innerHTML = ''; });
+                                
+                                div.addEventListener('click', function() { 
+                                    // On remplit l'input avec le libellé complet pour que le PHP ait un max d'infos
+                                    // Ex: "Gare d'Amiens"
+                                    input.value = feature.properties.name + ' ' + (feature.properties.city || ''); 
+                                    results.innerHTML = ''; 
+                                });
                                 results.appendChild(div);
                             });
                         }

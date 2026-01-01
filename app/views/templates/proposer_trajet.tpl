@@ -18,6 +18,7 @@
             </div>
 
             <form id="trajetForm" action="/sae-covoiturage/public/trajet/nouveau" method="POST" autocomplete="off">
+                
                 <input type="hidden" name="duree_calc" id="duree_calc" value="01:00:00">
                 <input type="hidden" name="distance_calc" id="distance_calc" value="0">
                 
@@ -25,6 +26,11 @@
                     <label class="custom-label">Lieu de départ ?<span class="required-star">*</span></label>
                     <div class="autocomplete-wrapper">
                         <input type="text" id="depart" name="depart" class="form-control form-control-rounded" placeholder="Ex: Gare d'Amiens, Dury..." required data-valid="false">
+                        
+                        <input type="hidden" name="ville_depart" id="val_ville_depart">
+                        <input type="hidden" name="cp_depart" id="val_cp_depart">
+                        <input type="hidden" name="rue_depart" id="val_rue_depart">
+
                         <div id="suggestions-depart" class="autocomplete-suggestions"></div>
                     </div>
                 </div>
@@ -33,6 +39,11 @@
                     <label class="custom-label">Destination ?<span class="required-star">*</span></label>
                     <div class="autocomplete-wrapper">
                         <input type="text" id="arrivee" name="arrivee" class="form-control form-control-rounded" placeholder="Ex: IUT Amiens" required data-valid="false">
+
+                        <input type="hidden" name="ville_arrivee" id="val_ville_arrivee">
+                        <input type="hidden" name="cp_arrivee" id="val_cp_arrivee">
+                        <input type="hidden" name="rue_arrivee" id="val_rue_arrivee">
+
                         <div id="suggestions-arrivee" class="autocomplete-suggestions"></div>
                     </div>
                 </div>
@@ -49,7 +60,7 @@
                     <div class="row g-2">
                         <div class="col-7">
                             <input type="date" name="date" class="form-control form-control-rounded" 
-                                   value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
+                                value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
                         </div>
                         <div class="col-5">
                             <input type="time" name="heure" class="form-control form-control-rounded" required>

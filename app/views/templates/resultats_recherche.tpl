@@ -13,7 +13,7 @@
                 <input type="text" name="arrivee" value="{$recherche.arrivee}" class="form-control rounded-pill text-center search-input-fixed" readonly>
                 
                 {if isset($recherche.date)}
-                    <span class="badge bg-white text-dark rounded-pill px-3 py-2 fs-6">{$recherche.date}</span>
+                    <span class="badge bg-white text-dark rounded-pill px-3 py-2 fs-6">{$recherche.date|date_format:"%d/%m/%Y"}</span>
                 {/if}
                 
                 <a href="/sae-covoiturage/public/recherche" class="btn btn-sm text-white fw-bold px-4 btn-modify">
@@ -47,7 +47,7 @@
                             <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark group-hover">
                                 <div class="d-flex align-items-center mb-3 p-2 rounded hover-profile transition">
                                     <div class="me-3">
-                                        <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm avatar-img">
+                                        <img src="/sae-covoiturage/public/assets/img/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm avatar-img">
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="fw-bold fs-5 text-purple-primary">{$trajet.prenom} {$trajet.nom|upper}</div>
@@ -57,10 +57,29 @@
                                     <i class="bi bi-chevron-right ms-auto text-muted"></i>
                                 </div>
                             </a>
+
                             <div class="bg-white rounded-3 p-3 mt-3 shadow-sm">
                                 <h6 class="fw-bold mb-2 text-purple-primary">Trajet prévu</h6>
+                                
                                 <p class="mb-1"><i class="bi bi-calendar-event me-2"></i> Le {$trajet.date_heure_depart|date_format:"%d/%m/%Y"}</p>
-                                <p class="mb-1 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> {$trajet.ville_depart} <i class="bi bi-arrow-right mx-1"></i> {$trajet.ville_arrivee}</p>
+                                
+                                <div class="mb-1 lh-sm">
+                                    <i class="bi bi-geo-alt-fill me-2 text-dark"></i>
+                                    
+                                    {if !empty($trajet.rue_depart)}
+                                        <strong>{$trajet.rue_depart}</strong> <small class="text-muted">({$trajet.ville_depart})</small>
+                                    {else}
+                                        <strong>{$trajet.ville_depart}</strong>
+                                    {/if}
+                                    
+                                    <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                    
+                                    {if !empty($trajet.rue_arrivee)}
+                                        <strong>{$trajet.rue_arrivee}</strong> <small class="text-muted">({$trajet.ville_arrivee})</small>
+                                    {else}
+                                        <strong>{$trajet.ville_arrivee}</strong>
+                                    {/if}
+                                </div>
                                 <p class="mb-0 text-success fw-bold"><i class="bi bi-clock-fill me-2"></i> Départ : {$trajet.date_heure_depart|date_format:"%H:%M"}</p>
                             </div>
                         </div>
@@ -162,6 +181,5 @@
 </div>
 
 <script src="/sae-covoiturage/public/assets/javascript/js_resultats_recherche.js"></script>
-
 
 {include file='includes/footer.tpl'}

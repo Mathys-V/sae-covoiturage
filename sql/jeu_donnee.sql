@@ -47,3 +47,6 @@ INSERT INTO UTILISATEURS (
     NOW()
 );
 
+UPDATE LIEUX_FREQUENTS 
+SET rue = 'Rue du 8 Mai 1945' 
+WHERE nom_lieu = 'Gare de Longueau';

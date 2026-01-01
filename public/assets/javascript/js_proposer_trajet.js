@@ -2,58 +2,127 @@
 let departCoords = null; // [long, lat]
 let arriveeCoords = null; // [long, lat]
 
-// --- FONCTION DATE DE FIN ---
+// --- FONCTION DATE DE FIN (Mise à jour pour le résumé) ---
 function toggleDateFin(show) {
   const wrapper = document.getElementById("date_fin_wrapper");
   const input = wrapper.querySelector("input");
+
   if (show) {
+    // Utilisation de la classe CSS pour l'animation
     wrapper.classList.add("visible");
     input.required = true;
+    updateSummary(); // Calculer le résumé immédiatement
   } else {
     wrapper.classList.remove("visible");
     input.required = false;
     input.value = "";
+
+    // Cacher le résumé
+    const summaryCard = document.getElementById("summary-card");
+    if (summaryCard) summaryCard.classList.add("d-none");
+  }
+}
+
+// --- FONCTION RÉSUMÉ DYNAMIQUE (Nouvelle fonction) ---
+function updateSummary() {
+  const dateDepartInput = document.getElementById("date_depart");
+  const dateFinInput = document.getElementById("date_fin");
+  const heureInput = document.getElementById("heure_depart");
+  const summaryCard = document.getElementById("summary-card");
+  const summaryText = document.getElementById("summary-text");
+  const radioOui = document.getElementById("regulier_oui");
+
+  // Sécurité anti-bug
+  if (
+    !dateDepartInput ||
+    !dateFinInput ||
+    !heureInput ||
+    !summaryCard ||
+    !radioOui
+  )
+    return;
+
+  // Si pas régulier, on cache
+  if (!radioOui.checked) {
+    summaryCard.classList.add("d-none");
+    return;
+  }
+
+  const startStr = dateDepartInput.value;
+  const endStr = dateFinInput.value;
+  const heureStr = heureInput.value;
+
+  if (startStr && endStr && heureStr) {
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    // Vérification cohérence
+    if (endDate <= startDate) {
+      summaryCard.classList.remove("d-none", "alert-info");
+      summaryCard.classList.add("alert-danger");
+      summaryText.innerHTML = "La date de fin doit être après le début.";
+      return;
+    }
+
+    // Calcul du nombre de trajets (1 par semaine)
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const nbTrajets = Math.floor(diffDays / 7) + 1;
+
+    // Formatage Date
+    const options = { weekday: "long" };
+    const jourSemaine = new Intl.DateTimeFormat("fr-FR", options).format(
+      startDate
+    );
+    const optionsDate = { day: "2-digit", month: "2-digit", year: "numeric" };
+    const startDisplay = startDate.toLocaleDateString("fr-FR", optionsDate);
+    const endDisplay = endDate.toLocaleDateString("fr-FR", optionsDate);
+
+    // Message
+    const message = `Il y aura <strong>${nbTrajets} trajets</strong> du ${startDisplay} au ${endDisplay}, chaque <strong>${jourSemaine} à ${heureStr}</strong>.`;
+
+    summaryCard.classList.remove("d-none", "alert-danger");
+    summaryCard.classList.add("alert-info");
+    summaryText.innerHTML = message;
+  } else {
+    // Données incomplètes
+    summaryCard.classList.add("d-none");
   }
 }
 
 // --- FONCTION CALCUL ITINÉRAIRE (OSRM) ---
+// (Inchangée par rapport à ta version fonctionnelle)
 function calculateRoute() {
-  // On ne calcule que si on a les deux coordonnées
   if (departCoords && arriveeCoords) {
-    // Format OSRM : long,lat;long,lat
     const url = `https://router.project-osrm.org/route/v1/driving/${departCoords[0]},${departCoords[1]};${arriveeCoords[0]},${arriveeCoords[1]}?overview=false`;
 
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (data.routes && data.routes.length > 0) {
-          const durationSeconds = data.routes[0].duration; // Durée en secondes
-          const distanceMeters = data.routes[0].distance; // Distance en mètres
+          const durationSeconds = data.routes[0].duration;
+          const distanceMeters = data.routes[0].distance;
 
-          // 1. Convertir en HH:MM:SS pour MySQL
           const date = new Date(0);
           date.setSeconds(durationSeconds);
           const timeString = date.toISOString().substr(11, 8);
 
-          // 2. Remplir les champs cachés
           const dureeInput = document.getElementById("duree_calc");
           const distanceInput = document.getElementById("distance_calc");
 
           if (dureeInput) dureeInput.value = timeString;
           if (distanceInput)
-            distanceInput.value = Math.round(distanceMeters / 1000); // km
+            distanceInput.value = Math.round(distanceMeters / 1000);
 
           console.log(
-            `Itinéraire calculé : ${timeString} (${Math.round(
+            `Itinéraire : ${timeString} (${Math.round(
               distanceMeters / 1000
             )} km)`
           );
 
-          // 3. Feedback visuel sur le bouton
           const btn = document.querySelector(".btn-submit-trajet");
           const originalText = "Poster le(s) trajet(s)";
 
-          // Convertir en minutes pour l'affichage
           const minutes = Math.round(durationSeconds / 60);
           const heures = Math.floor(minutes / 60);
           const minutesRestantes = minutes % 60;
@@ -64,7 +133,6 @@ function calculateRoute() {
           btn.innerHTML = `<i class="bi bi-check-circle"></i> Durée estimée : ${dureeTexte}`;
           btn.classList.add("btn-success");
 
-          // Remettre le texte normal après 4 secondes
           setTimeout(() => {
             btn.innerHTML = originalText;
             btn.classList.remove("btn-success");
@@ -78,18 +146,20 @@ function calculateRoute() {
 }
 
 // --- FONCTION POUR RÉCUPÉRER COORDS SI LIEU FRÉQUENT ---
+// (Inchangée)
 function getCoordsFromName(ville, callback) {
   fetch("https://api-adresse.data.gouv.fr/search/?q=" + ville + "&limit=1")
     .then((res) => res.json())
     .then((data) => {
       if (data.features && data.features.length > 0) {
         callback(data.features[0].geometry.coordinates);
-        calculateRoute(); // Lancer le calcul une fois les coords obtenues
+        calculateRoute();
       }
     });
 }
 
 // --- FONCTION AUTOCOMPLETE ---
+// (Inchangée)
 function setupAutocomplete(inputId, resultsId, type) {
   const input = document.getElementById(inputId);
   const results = document.getElementById(resultsId);
@@ -99,11 +169,9 @@ function setupAutocomplete(inputId, resultsId, type) {
   let timeout = null;
 
   input.addEventListener("input", function () {
-    // Reset validation
     this.setAttribute("data-valid", "false");
     this.classList.remove("is-valid");
 
-    // Si on change le texte, on reset les coordonnées correspondantes
     if (type === "depart") departCoords = null;
     if (type === "arrivee") arriveeCoords = null;
 
@@ -112,7 +180,6 @@ function setupAutocomplete(inputId, resultsId, type) {
 
     if (query.length < 2) return;
 
-    // 1. Lieux Fréquents (Variable globale injectée par Smarty)
     const localData = window.lieuxFrequents || [];
     const matchesLocal = localData.filter(
       (lieu) =>
@@ -132,14 +199,12 @@ function setupAutocomplete(inputId, resultsId, type) {
           ")</small>";
 
         div.addEventListener("click", function () {
-          let adresseComplete = lieu.nom_lieu; // On affiche le nom du lieu
+          let adresseComplete = lieu.nom_lieu;
           input.value = adresseComplete;
           input.setAttribute("data-valid", "true");
           input.classList.remove("input-error");
           results.innerHTML = "";
 
-          // Pour les lieux fréquents, on doit chercher les coordonnées de la ville
-          // car elles ne sont pas stockées dans la variable JS locale
           const callback = (coords) => {
             if (type === "depart") departCoords = coords;
             else arriveeCoords = coords;
@@ -150,7 +215,6 @@ function setupAutocomplete(inputId, resultsId, type) {
       });
     }
 
-    // 2. API Adresse Gouv
     if (query.length > 3) {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -173,12 +237,10 @@ function setupAutocomplete(inputId, resultsId, type) {
                   input.classList.remove("input-error");
                   results.innerHTML = "";
 
-                  // Sauvegarde des coordonnées [long, lat]
                   const coords = feature.geometry.coordinates;
                   if (type === "depart") departCoords = coords;
                   else arriveeCoords = coords;
 
-                  // Tenter le calcul
                   calculateRoute();
                 });
                 results.appendChild(div);
@@ -189,7 +251,6 @@ function setupAutocomplete(inputId, resultsId, type) {
     }
   });
 
-  // Fermer si clic ailleurs
   document.addEventListener("click", function (e) {
     if (e.target !== input && e.target !== results) {
       results.innerHTML = "";
@@ -199,11 +260,9 @@ function setupAutocomplete(inputId, resultsId, type) {
 
 // --- INITIALISATION ---
 document.addEventListener("DOMContentLoaded", function () {
-  // Configurer l'autocomplétion avec le type (depart ou arrivee)
   setupAutocomplete("depart", "suggestions-depart", "depart");
   setupAutocomplete("arrivee", "suggestions-arrivee", "arrivee");
 
-  // Validation formulaire
   const form = document.getElementById("trajetForm");
   if (form) {
     form.addEventListener("submit", function (e) {

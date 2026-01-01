@@ -46,8 +46,7 @@ Flight::route('GET /recherche/resultats', function(){
         setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
     } 
 
-// --- 2. FONCTIONS INTELLIGENTES AMÉLIORÉES ---
-
+    // --- FONCTIONS UTILITAIRES ---
     function extraireCP($str) {
         if (preg_match('/(\d{5})/', $str, $matches)) {
             return $matches[1];
@@ -57,45 +56,37 @@ Flight::route('GET /recherche/resultats', function(){
 
     function nettoyerInput($str) {
         $str = mb_strtolower($str, 'UTF-8');
-        // Gestion des apostrophes courbes (copier-coller Word/Web)
         $str = str_replace(['’', '‘'], "'", $str);
-        
         $str = preg_replace('/\d{5}/', '', $str);
         $str = preg_replace('/\s*\(.*?\)/', '', $str);
-        
-        // LISTE COMPLÉTÉE (Ajout de "du", "de", "des")
-        $mots = [
-            'gare de ', 'gare d\'', 'gare du ', 
-            'iut ', 'campus ', 'faculté ', 'univ ',
-            'ville de ', 'mairie de ', 'centre-ville',
-            'place ', 'rue ', 'avenue ', 'boulevard ', 'allée ', 'chemin ', 'route ',
-            ' le ', ' la ', ' les ', ' aux ', ' du ', ' des ', ' de ', ' en '
-        ];
+        $mots = ['gare de ', 'gare d\'', 'gare du ', 'iut ', 'campus ', 'faculté ', 'univ ', 'ville de ', 'mairie de ', 'centre-ville', 'place ', 'rue ', 'avenue ', 'boulevard ', 'allée ', 'chemin ', 'route ', ' le ', ' la ', ' les ', ' aux ', ' du ', ' des ', ' de ', ' en '];
         $str = str_replace($mots, ' ', $str);
-
-        // Nettoyage final des apostrophes résiduelles (d'Amiens -> Amiens)
         $str = preg_replace("/\b(d|l|qu)'/u", '', $str); 
         $str = preg_replace('/\d+/', '', $str);
-
         return trim($str);
     }
 
-    // --- 3. PRÉPARATION DES VARIABLES ---
-    
-    $cpDep = extraireCP($depart);      // ex: "80330"
-    $villeDepClean = nettoyerInput($depart); // ex: "longueau"
-
-    $cpArr = extraireCP($arrivee);      // ex: "80000" (ou null)
-    $villeArrClean = nettoyerInput($arrivee); // ex: "amiens"
+    // --- VARIABLES ---
+    $cpDep = extraireCP($depart);
+    $villeDepClean = nettoyerInput($depart);
+    $cpArr = extraireCP($arrivee);
+    $villeArrClean = nettoyerInput($arrivee);
 
     $db = Flight::get('db');
     
-    // --- 4. REQUÊTE SQL PRINCIPALE ---
+    // --- REQUÊTE SQL PRINCIPALE (Avec JOIN Lieux Fréquents) ---
+    // On ajoute lf_dep.nom_lieu et lf_arr.nom_lieu
     
-    $sql = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+    $sql = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
+                   u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
+                   lf_dep.nom_lieu AS nom_lieu_depart,
+                   lf_arr.nom_lieu AS nom_lieu_arrivee
             FROM TRAJETS t
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
+            -- JOINTURES OPTIONNELLES POUR LES LIEUX --
+            LEFT JOIN LIEUX_FREQUENTS lf_dep ON (t.rue_depart = lf_dep.rue AND t.ville_depart = lf_dep.ville)
+            LEFT JOIN LIEUX_FREQUENTS lf_arr ON (t.rue_arrivee = lf_arr.rue AND t.ville_arrivee = lf_arr.ville)
             WHERE 
                 (
                     (:cpDep IS NOT NULL AND t.code_postal_depart = :cpDep)
@@ -128,18 +119,23 @@ Flight::route('GET /recherche/resultats', function(){
     
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- 5. GESTION ALTERNATIVES (Si vide) ---
+    // --- GESTION ALTERNATIVES ---
     $message = null;
     $typeResultat = 'exact';
 
     if (empty($trajets)) {
         $typeResultat = 'alternatif';
 
-        // Alternative : On cherche juste par Destination
-        $sqlAlt = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+        // Alternative : Destination uniquement
+        $sqlAlt = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
+                          u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
+                          lf_dep.nom_lieu AS nom_lieu_depart,
+                          lf_arr.nom_lieu AS nom_lieu_arrivee
                    FROM TRAJETS t
                    JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
                    JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
+                   LEFT JOIN LIEUX_FREQUENTS lf_dep ON (t.rue_depart = lf_dep.rue AND t.ville_depart = lf_dep.ville)
+                   LEFT JOIN LIEUX_FREQUENTS lf_arr ON (t.rue_arrivee = lf_arr.rue AND t.ville_arrivee = lf_arr.ville)
                    WHERE 
                    (
                         (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr)
@@ -163,11 +159,16 @@ Flight::route('GET /recherche/resultats', function(){
         if (!empty($trajets)) {
             $message = "Trajet exact indisponible. Voici des <strong>alternatives</strong> vers votre destination :";
         } else {
-            // Dernier recours : Prochains départs globaux
-            $sqlDernier = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, u.prenom, u.nom, u.photo_profil, v.marque, v.modele
+            // Dernier recours : Tout le monde
+            $sqlDernier = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
+                                  u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
+                                  lf_dep.nom_lieu AS nom_lieu_depart,
+                                  lf_arr.nom_lieu AS nom_lieu_arrivee
                            FROM TRAJETS t 
                            JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur 
                            JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule 
+                           LEFT JOIN LIEUX_FREQUENTS lf_dep ON (t.rue_depart = lf_dep.rue AND t.ville_depart = lf_dep.ville)
+                           LEFT JOIN LIEUX_FREQUENTS lf_arr ON (t.rue_arrivee = lf_arr.rue AND t.ville_arrivee = lf_arr.ville)
                            WHERE t.date_heure_depart >= '$date 00:00:00' 
                            AND t.date_heure_depart > NOW()
                            AND t.statut_flag = 'A' 

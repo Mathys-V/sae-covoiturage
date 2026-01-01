@@ -63,8 +63,6 @@
                     <label class="custom-label">Date et Heure du (premier) départ ?<span class="required-star">*</span></label>
                     <div class="row g-2">
                         <div class="col-7">
-                            <input type="date" name="date" class="form-control form-control-rounded" 
-                                value="{$smarty.now|date_format:'%Y-%m-%d'}" required>
                             <input type="date" id="date_depart" name="date" class="form-control form-control-rounded" 
                                    value="{$today}" min="{$today}" max="{$maxDate}" onchange="updateSummary()" required>
 

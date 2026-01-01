@@ -47,6 +47,7 @@
                             <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark group-hover">
                                 <div class="d-flex align-items-center mb-3 p-2 rounded hover-profile transition">
                                     <div class="me-3">
+                                        {* Note: chemin assets/img/ comme demandé dans ton dernier code *}
                                         <img src="/sae-covoiturage/public/assets/img/{$trajet.photo_profil|default:'default.png'}" alt="Avatar" class="rounded-circle shadow-sm avatar-img">
                                     </div>
                                     <div class="flex-grow-1">
@@ -66,7 +67,9 @@
                                 <div class="mb-1 lh-sm">
                                     <i class="bi bi-geo-alt-fill me-2 text-dark"></i>
                                     
-                                    {if !empty($trajet.rue_depart)}
+                                    {if !empty($trajet.nom_lieu_depart)}
+                                        <strong>{$trajet.nom_lieu_depart}</strong> <small class="text-muted">({$trajet.ville_depart})</small>
+                                    {elseif !empty($trajet.rue_depart)}
                                         <strong>{$trajet.rue_depart}</strong> <small class="text-muted">({$trajet.ville_depart})</small>
                                     {else}
                                         <strong>{$trajet.ville_depart}</strong>
@@ -74,7 +77,9 @@
                                     
                                     <i class="bi bi-arrow-right mx-1 text-muted"></i>
                                     
-                                    {if !empty($trajet.rue_arrivee)}
+                                    {if !empty($trajet.nom_lieu_arrivee)}
+                                        <strong>{$trajet.nom_lieu_arrivee}</strong> <small class="text-muted">({$trajet.ville_arrivee})</small>
+                                    {elseif !empty($trajet.rue_arrivee)}
                                         <strong>{$trajet.rue_arrivee}</strong> <small class="text-muted">({$trajet.ville_arrivee})</small>
                                     {else}
                                         <strong>{$trajet.ville_arrivee}</strong>

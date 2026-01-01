@@ -2,13 +2,25 @@
 let departCoords = null; // [long, lat]
 let arriveeCoords = null; // [long, lat]
 
-// --- FONCTION DATE DE FIN (Mise à jour pour le résumé) ---
+// --- CORRECTION BUG 0KM (Dictionnaire) ---
+const KNOWN_LOCATIONS = {
+  "IUT d'Amiens": [2.264032, 49.870683],
+  "Gare d'Amiens": [2.306739, 49.890583],
+  "Gare de Longueau": [2.353159, 49.864238],
+  "Mairie de Dury": [2.268248, 49.846271],
+  "Centre-ville": [2.3089, 49.8872],
+};
+
+// ============================================================
+// 1. FONCTIONS GLOBALES (Interface Utilisateur)
+// ============================================================
+
+// AFFICHER/MASQUER LE BLOC DATE DE FIN
 function toggleDateFin(show) {
   const wrapper = document.getElementById("date_fin_wrapper");
   const input = wrapper.querySelector("input");
 
   if (show) {
-    // Utilisation de la classe CSS pour l'animation
     wrapper.classList.add("visible");
     input.required = true;
     updateSummary(); // Calculer le résumé immédiatement
@@ -23,7 +35,7 @@ function toggleDateFin(show) {
   }
 }
 
-// --- FONCTION RÉSUMÉ DYNAMIQUE (Nouvelle fonction) ---
+// METTRE A JOUR LE TEXTE DU RÉSUMÉ
 function updateSummary() {
   const dateDepartInput = document.getElementById("date_depart");
   const dateFinInput = document.getElementById("date_fin");
@@ -32,7 +44,7 @@ function updateSummary() {
   const summaryText = document.getElementById("summary-text");
   const radioOui = document.getElementById("regulier_oui");
 
-  // Sécurité anti-bug
+  // Sécurité
   if (
     !dateDepartInput ||
     !dateFinInput ||
@@ -42,7 +54,7 @@ function updateSummary() {
   )
     return;
 
-  // Si pas régulier, on cache
+  // Si pas en mode régulier, on cache tout
   if (!radioOui.checked) {
     summaryCard.classList.add("d-none");
     return;
@@ -52,6 +64,7 @@ function updateSummary() {
   const endStr = dateFinInput.value;
   const heureStr = heureInput.value;
 
+  // On affiche seulement si tout est rempli
   if (startStr && endStr && heureStr) {
     const startDate = new Date(startStr);
     const endDate = new Date(endStr);
@@ -60,16 +73,16 @@ function updateSummary() {
     if (endDate <= startDate) {
       summaryCard.classList.remove("d-none", "alert-info");
       summaryCard.classList.add("alert-danger");
-      summaryText.innerHTML = "La date de fin doit être après le début.";
+      summaryText.innerHTML = "La date de fin doit être après le départ.";
       return;
     }
 
-    // Calcul du nombre de trajets (1 par semaine)
+    // Calcul du nombre de semaines
     const diffTime = Math.abs(endDate - startDate);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const nbTrajets = Math.floor(diffDays / 7) + 1;
 
-    // Formatage Date
+    // Affichage texte
     const options = { weekday: "long" };
     const jourSemaine = new Intl.DateTimeFormat("fr-FR", options).format(
       startDate
@@ -78,22 +91,31 @@ function updateSummary() {
     const startDisplay = startDate.toLocaleDateString("fr-FR", optionsDate);
     const endDisplay = endDate.toLocaleDateString("fr-FR", optionsDate);
 
-    // Message
     const message = `Il y aura <strong>${nbTrajets} trajets</strong> du ${startDisplay} au ${endDisplay}, chaque <strong>${jourSemaine} à ${heureStr}</strong>.`;
 
     summaryCard.classList.remove("d-none", "alert-danger");
     summaryCard.classList.add("alert-info");
     summaryText.innerHTML = message;
   } else {
-    // Données incomplètes
     summaryCard.classList.add("d-none");
   }
 }
 
-// --- FONCTION CALCUL ITINÉRAIRE (OSRM) ---
-// (Inchangée par rapport à ta version fonctionnelle)
+// ============================================================
+// 2. FONCTIONS TECHNIQUES (Calcul & API)
+// ============================================================
+
 function calculateRoute() {
   if (departCoords && arriveeCoords) {
+    // Sécurité 0km (même point)
+    if (
+      departCoords[0] === arriveeCoords[0] &&
+      departCoords[1] === arriveeCoords[1]
+    ) {
+      console.warn("Points identiques.");
+      return;
+    }
+
     const url = `https://router.project-osrm.org/route/v1/driving/${departCoords[0]},${departCoords[1]};${arriveeCoords[0]},${arriveeCoords[1]}?overview=false`;
 
     fetch(url)
@@ -122,15 +144,17 @@ function calculateRoute() {
 
           const btn = document.querySelector(".btn-submit-trajet");
           const originalText = "Poster le(s) trajet(s)";
-
           const minutes = Math.round(durationSeconds / 60);
-          const heures = Math.floor(minutes / 60);
-          const minutesRestantes = minutes % 60;
-
           let dureeTexte = `${minutes} min`;
-          if (heures > 0) dureeTexte = `${heures}h${minutesRestantes}`;
+          if (minutes > 60) {
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            dureeTexte = `${h}h${m}`;
+          }
 
-          btn.innerHTML = `<i class="bi bi-check-circle"></i> Durée estimée : ${dureeTexte}`;
+          btn.innerHTML = `<i class="bi bi-check-circle"></i> Durée : ${dureeTexte} (${Math.round(
+            distanceMeters / 1000
+          )}km)`;
           btn.classList.add("btn-success");
 
           setTimeout(() => {
@@ -139,16 +163,16 @@ function calculateRoute() {
           }, 4000);
         }
       })
-      .catch((err) => {
-        console.error("Erreur calcul OSRM", err);
-      });
+      .catch((err) => console.error("Erreur OSRM", err));
   }
 }
 
-// --- FONCTION POUR RÉCUPÉRER COORDS SI LIEU FRÉQUENT ---
-// (Inchangée)
 function getCoordsFromName(ville, callback) {
-  fetch("https://api-adresse.data.gouv.fr/search/?q=" + ville + "&limit=1")
+  fetch(
+    "https://api-adresse.data.gouv.fr/search/?q=" +
+      encodeURIComponent(ville) +
+      "&limit=1"
+  )
     .then((res) => res.json())
     .then((data) => {
       if (data.features && data.features.length > 0) {
@@ -158,14 +182,10 @@ function getCoordsFromName(ville, callback) {
     });
 }
 
-// --- FONCTION AUTOCOMPLETE ---
-// (Inchangée)
 function setupAutocomplete(inputId, resultsId, type) {
   const input = document.getElementById(inputId);
   const results = document.getElementById(resultsId);
-
   if (!input || !results) return;
-
   let timeout = null;
 
   input.addEventListener("input", function () {
@@ -175,9 +195,8 @@ function setupAutocomplete(inputId, resultsId, type) {
     if (type === "depart") departCoords = null;
     if (type === "arrivee") arriveeCoords = null;
 
-    const query = this.value.toLowerCase().trim();
+    const query = this.value.trim().toLowerCase();
     results.innerHTML = "";
-
     if (query.length < 2) return;
 
     const localData = window.lieuxFrequents || [];
@@ -191,25 +210,27 @@ function setupAutocomplete(inputId, resultsId, type) {
       matchesLocal.forEach((lieu) => {
         const div = document.createElement("div");
         div.className = "autocomplete-suggestion is-frequent";
-        div.innerHTML =
-          '<i class="bi bi-star-fill suggestion-icon text-warning"></i>' +
-          lieu.nom_lieu +
-          ' <small class="text-muted">(' +
-          lieu.ville +
-          ")</small>";
+        div.innerHTML = `<i class="bi bi-star-fill suggestion-icon text-warning"></i> ${lieu.nom_lieu} <small class="text-muted">(${lieu.ville})</small>`;
 
         div.addEventListener("click", function () {
-          let adresseComplete = lieu.nom_lieu;
-          input.value = adresseComplete;
+          input.value = lieu.nom_lieu;
           input.setAttribute("data-valid", "true");
           input.classList.remove("input-error");
           results.innerHTML = "";
 
-          const callback = (coords) => {
+          // --- FIX 0KM : Utilisation des coordonnées hardcodées ---
+          if (KNOWN_LOCATIONS[lieu.nom_lieu]) {
+            const coords = KNOWN_LOCATIONS[lieu.nom_lieu];
             if (type === "depart") departCoords = coords;
             else arriveeCoords = coords;
-          };
-          getCoordsFromName(lieu.ville, callback);
+            calculateRoute();
+          } else {
+            const callback = (coords) => {
+              if (type === "depart") departCoords = coords;
+              else arriveeCoords = coords;
+            };
+            getCoordsFromName(lieu.ville, callback);
+          }
         });
         results.appendChild(div);
       });
@@ -219,16 +240,18 @@ function setupAutocomplete(inputId, resultsId, type) {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         fetch(
-          "https://api-adresse.data.gouv.fr/search/?q=" + query + "&limit=5"
+          "https://api-adresse.data.gouv.fr/search/?q=" +
+            encodeURIComponent(query) +
+            "&limit=5"
         )
-          .then((response) => response.json())
+          .then((res) => res.json())
           .then((data) => {
-            if (data.features && data.features.length > 0) {
+            if (data.features) {
               data.features.forEach((feature) => {
                 const div = document.createElement("div");
                 div.className = "autocomplete-suggestion";
                 div.innerHTML =
-                  '<i class="bi bi-geo-alt suggestion-icon text-muted"></i>' +
+                  '<i class="bi bi-geo-alt suggestion-icon text-muted"></i> ' +
                   feature.properties.label;
 
                 div.addEventListener("click", function () {

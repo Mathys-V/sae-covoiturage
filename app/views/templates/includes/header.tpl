@@ -138,7 +138,12 @@
 
         <div class="vr mx-2 d-none d-lg-block"></div>
 
-        <div class="d-none d-lg-flex align-items-center gap-1">
+        <div class="d-none d-lg-flex align-items-center gap-2">
+            {if !isset($user)}
+                <a href="/sae-covoiturage/public/inscription" class="btn btn-outline-purple me-2">
+                    S'inscrire
+                </a>
+            {/if}
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
             title="{if isset($user)}Mon Profil{else}Se connecter{/if}"
             {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}
@@ -247,7 +252,13 @@
             {if isset($user)}
                 <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
             {else}
-                <a href="/sae-covoiturage/public/connexion" class="mobile-link text-purple fw-bold"><i class="bi bi-box-arrow-in-right me-2"></i> Se connecter</a>
+                {* NOUVEAU : Lien S'inscrire mobile *}
+                <a href="/sae-covoiturage/public/inscription" class="mobile-link text-purple">
+                    <i class="bi bi-person-plus-fill me-2"></i> S'inscrire
+                </a>
+                <a href="/sae-covoiturage/public/connexion" class="mobile-link text-purple fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+                </a>
             {/if}
         </div>
 

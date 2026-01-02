@@ -76,6 +76,7 @@ Flight::route('POST /trajet/nouveau', function(){
         $compteur = 0;
         
         while ($dateDebut <= $dateFin) {
+            // 1. CRÉATION DU TRAJET
             $sql = "INSERT INTO TRAJETS (
                         id_conducteur, id_vehicule, 
                         ville_depart, code_postal_depart, rue_depart,
@@ -105,6 +106,25 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':places'     => (int)$data->places,
                 ':desc'       => $data->description
             ]);
+            
+            // --- AJOUT IMPORTANT : RÉCUPÉRATION DE L'ID ET CRÉATION MESSAGE ---
+            $id_trajet_cree = $db->lastInsertId();
+
+            // 2. CRÉATION AUTOMATIQUE DU MESSAGE SYSTÈME / CONVERSATION
+            // On insère un premier message pour "initialiser" la conversation du trajet
+            $msgContent = "::sys_create:: Trajet publié.";
+            
+            // Si tu utilises un code spécial pour les messages système (ex: ::sys_create::) :
+            // $msgContent = "::sys_create:: Trajet publié.";
+
+            $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
+            $stmtMsg->execute([
+                ':id_t'    => $id_trajet_cree,
+                ':id_u'    => $userId,
+                ':contenu' => $msgContent
+            ]);
+            // ------------------------------------------------------------------
+
             $compteur++;
 
             if ($data->regulier === 'Y') {

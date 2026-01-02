@@ -83,11 +83,24 @@
                                 </div>
                             </div>
                         </div>
+                    {* --- AJOUTER CE BLOC DANS LA SECTION TYPE == 'SYSTEM' --- *}
 
-                    {* CAS 3 : Autres messages système (Join/Leave) *}
-                    {else}
-                        <div class="system-msg"><span>{$msg.text_affiche}</span></div>
-                    {/if}
+
+{* CAS 3 : Trajet Créé (Logique replace) *}
+                    {elseif $msg.contenu|replace:'::sys_create::':'' != $msg.contenu}
+                        <div class="system-msg my-3 text-center">
+                            <span class="badge bg-purple bg-opacity-10 text-purple border border-purple px-3 py-2 rounded-pill shadow-sm">
+                                <i class="bi bi-stars me-1"></i> 
+                                {* On affiche le message sans le tag ::sys_create:: *}
+                                {$msg.contenu|replace:'::sys_create::':''}
+                            </span>
+                        </div>
+                    {* CAS 4 : Autres messages système (Join/Leave) *}
+
+{else}
+    {* On utilise 'contenu' car 'text_affiche' n'existe pas *}
+    <div class="system-msg"><span>{$msg.contenu}</span></div>
+{/if}
 
                 {else}
                     <div class="msg-row {if $msg.type == 'self'}self{else}other{/if}">

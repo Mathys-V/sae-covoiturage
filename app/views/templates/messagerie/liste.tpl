@@ -131,7 +131,7 @@
                                         {if $conv.conducteur_prenom}
                                             <span class="fw-semibold">{$conv.conducteur_prenom}</span> : 
                                         {/if}
-                                        {$conv.dernier_message|truncate:50:"..."}
+                                        {$conv.dernier_message|replace:'::sys_create::':''|truncate:50:"..."}
                                     {/if}
                                     
                                     <span class="text-muted ms-1 small">• {$conv.date_tri|date_format:"%d/%m %H:%M"}</span>

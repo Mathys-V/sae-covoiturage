@@ -27,7 +27,7 @@ Flight::route('GET /recherche/resultats', function(){
     $arrivee = Flight::request()->query->arrivee;
     $date = Flight::request()->query->date;
     
-    // ID de l'utilisateur connecté (pour vérifier "déjà réservé")
+    // ID de l'utilisateur connecté (pour vérifier "déjà réservé" et filtrer ses propres trajets)
     $userId = isset($_SESSION['user']) ? $_SESSION['user']['id_utilisateur'] : 0;
 
     // GESTION COOKIES HISTORIQUE
@@ -78,7 +78,7 @@ Flight::route('GET /recherche/resultats', function(){
     $db = Flight::get('db');
     
     // --- REQUÊTE SQL PRINCIPALE ---
-    // Modification : Calcul des places restantes et vérification "Déjà réservé"
+    // Modification : Calcul des places restantes, vérification "Déjà réservé" et filtre "propre trajet"
     
     $sql = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
                    u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
@@ -120,6 +120,7 @@ Flight::route('GET /recherche/resultats', function(){
             AND t.date_heure_depart >= :date
             AND t.date_heure_depart > NOW()
             AND t.statut_flag = 'A'
+            AND t.id_conducteur != :userId -- EXCLUSION DE SES PROPRES TRAJETS
             
             -- On ne filtre pas ici les places pour pouvoir afficher 'Complet' ou 'Déjà réservé' si besoin
             ORDER BY t.date_heure_depart ASC";
@@ -145,7 +146,7 @@ Flight::route('GET /recherche/resultats', function(){
     if (empty($trajets)) {
         $typeResultat = 'alternatif';
 
-        // Alternative : Destination uniquement (+ Calcul places)
+        // Alternative : Destination uniquement (+ Calcul places + Filtre propre trajet)
         $sqlAlt = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
                           u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
                           lf_dep.nom_lieu AS nom_lieu_depart,
@@ -176,6 +177,7 @@ Flight::route('GET /recherche/resultats', function(){
                    AND t.date_heure_depart >= :date
                    AND t.date_heure_depart > NOW()
                    AND t.statut_flag = 'A'
+                   AND t.id_conducteur != :userId -- EXCLUSION ICI AUSSI
                    ORDER BY t.date_heure_depart ASC LIMIT 5";
                    
         $stmtAlt = $db->prepare($sqlAlt);
@@ -191,7 +193,7 @@ Flight::route('GET /recherche/resultats', function(){
         if (!empty($trajets)) {
             $message = "Trajet exact indisponible. Voici des <strong>alternatives</strong> vers votre destination :";
         } else {
-            // Dernier recours : Tout le monde (+ Calcul places)
+            // Dernier recours : Tout le monde (+ Calcul places + Filtre propre trajet)
             $sqlDernier = "SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
                                   u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
                                   lf_dep.nom_lieu AS nom_lieu_depart,
@@ -216,6 +218,7 @@ Flight::route('GET /recherche/resultats', function(){
                            WHERE t.date_heure_depart >= :date 
                            AND t.date_heure_depart > NOW()
                            AND t.statut_flag = 'A' 
+                           AND t.id_conducteur != :userId -- ET ENCORE ICI
                            ORDER BY t.date_heure_depart ASC LIMIT 5";
 
             $stmtDernier = $db->prepare($sqlDernier);

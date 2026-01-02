@@ -1,0 +1,198 @@
+/* --- CONFIGURATION GLOBALE --- */
+body {
+    background-color: #452b85 !important; /* FOND VIOLET */
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Important pour le positionnement absolu du bouton */
+}
+
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 100px; /* Espace pour la navbar */
+    padding-bottom: 50px;
+}
+
+/* --- CARTE DU FORMULAIRE --- */
+.form-card {
+    background-color: #e9e4f5;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 90%;
+    padding: 40px;
+    border: 2px solid #fff;
+    position: relative;
+    margin-top: 20px;
+}
+
+/* --- TYPOGRAPHIE --- */
+.form-title {
+    color: #000;
+    font-weight: 800;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.custom-label {
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 8px;
+    display: block;
+    text-align: center;
+}
+
+.required-star {
+    color: #dc3545;
+    margin-left: 3px;
+}
+
+/* --- CHAMPS DE SAISIE --- */
+.form-control-rounded {
+    border-radius: 12px;
+    border: 2px solid #8c52ff;
+    padding: 12px 15px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: white;
+    transition: all 0.3s;
+}
+
+.form-control-rounded:focus {
+    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2);
+    border-color: #452b85;
+    outline: none;
+}
+
+.input-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Input nombre de places */
+.input-number-group {
+    display: flex;
+    justify-content: center;
+}
+.input-number-group input {
+    width: 80px;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* --- BOUTON DE SOUMISSION --- */
+.btn-submit-trajet {
+    background-color: #8c52ff;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 15px;
+    width: 100%;
+    border-radius: 15px;
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+    margin-top: 30px;
+    cursor: pointer;
+}
+
+.btn-submit-trajet:hover {
+    background-color: #703ccf;
+    transform: translateY(-3px);
+}
+
+/* --- AUTOCOMPLÉTION --- */
+.autocomplete-wrapper {
+    position: relative;
+}
+
+.autocomplete-suggestions {
+    text-align: left;
+    border: 1px solid #ddd;
+    background: #fff;
+    overflow: auto;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    z-index: 9999;
+    width: 100%;
+    max-height: 200px;
+    left: 0;
+    top: 100%;
+}
+
+.autocomplete-suggestion {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+}
+
+.autocomplete-suggestion:hover {
+    background-color: #f0f0f0;
+    color: #8c52ff;
+}
+.suggestion-icon {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+.is-frequent {
+    background-color: #fff9e6;
+    font-weight: 600;
+    color: #b8860b;
+}
+
+/* =========================================================
+   BOUTON RETOUR : ABSOLU (Reste en haut de la page)
+   ========================================================= */
+.btn-retour-top {
+    /* 1. Changement crucial : ABSOLU au lieu de FIXED */
+    position: absolute !important;
+
+    /* 2. Position par rapport au haut de la PAGE (pas de l'écran) */
+    top: 120px !important;
+    left: 30px !important;
+
+    z-index: 999;
+
+    /* Style identique */
+    background-color: #ffffff !important;
+    color: #8c52ff !important;
+    border: 2px solid #8c52ff !important;
+    border-radius: 50px !important;
+    font-weight: bold !important;
+    font-size: 1rem !important;
+    text-transform: capitalize !important;
+    text-decoration: none !important;
+    font-family: inherit !important;
+    padding: 10px 30px !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.2s ease !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-retour-top:hover {
+    transform: scale(1.05) !important;
+    background-color: #f3efff !important;
+    color: #452b85 !important;
+}
+
+@media (max-width: 768px) {
+    .btn-retour-top {
+        top: 90px !important;
+        left: 10px !important;
+        padding: 8px 20px !important;
+        font-size: 0.9rem !important;
+    }
+    .form-card {
+        padding: 25px;
+    }
+}

@@ -365,5 +365,96 @@ Flight::route('POST /trajet/annuler', function(){
     Flight::redirect('/mes_trajets');
 });
 
+// AFFICHER LE FORMULAIRE DE MODIFICATION
+Flight::route('GET /trajet/modifier/@id', function($id){
+    if(!isset($_SESSION['user'])) {
+        Flight::redirect('/connexion');
+        return;
+    }
+
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Récupérer le trajet et vérifier qu'il appartient à l'utilisateur
+    $stmt = $db->prepare("SELECT * FROM TRAJETS WHERE id_trajet = :id");
+    $stmt->execute([':id' => $id]);
+    $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$trajet || $trajet['id_conducteur'] != $userId) {
+        $_SESSION['flash_error'] = "Vous n'avez pas le droit de modifier ce trajet.";
+        Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    // 2. Formater la date et l'heure pour les inputs HTML
+    $dateObj = new DateTime($trajet['date_heure_depart']);
+    $trajet['date_seule'] = $dateObj->format('Y-m-d');
+    $trajet['heure_seule'] = $dateObj->format('H:i');
+
+    // 3. Récupérer les lieux fréquents pour l'autocomplétion (comme sur proposer)
+    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+    $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
+
+    Flight::render('modifier_trajet.tpl', [
+        'titre' => 'Modifier un trajet',
+        'trajet' => $trajet,
+        'lieux_frequents' => $lieux
+    ]);
+});
+
+// TRAITEMENT DE LA MODIFICATION (POST)
+Flight::route('POST /trajet/modifier/@id', function($id){
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+
+    $data = Flight::request()->data;
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Vérification sécurité
+    $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
+    $stmtVerif->execute([':id' => $id]);
+    $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
+
+    if (!$trajet || $trajet['id_conducteur'] != $userId) {
+        $_SESSION['flash_error'] = "Action non autorisée.";
+        Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    try {
+        // 2. Préparation des données
+        $dateHeure = $data->date . ' ' . $data->heure . ':00'; // YYYY-MM-DD HH:MM:SS
+
+        // 3. Mise à jour
+        $sql = "UPDATE TRAJETS SET 
+                ville_depart = :ville_dep, code_postal_depart = :cp_dep, rue_depart = :rue_dep,
+                ville_arrivee = :ville_arr, code_postal_arrivee = :cp_arr, rue_arrivee = :rue_arr,
+                date_heure_depart = :dateheure,
+                places_proposees = :places,
+                commentaires = :desc
+                WHERE id_trajet = :id";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':ville_dep' => $data->ville_depart,
+            ':cp_dep'    => $data->cp_depart,
+            ':rue_dep'   => $data->rue_depart, // contient l'adresse complète ou le nom du lieu
+            ':ville_arr' => $data->ville_arrivee,
+            ':cp_arr'    => $data->cp_arrivee,
+            ':rue_arr'   => $data->rue_arrivee,
+            ':dateheure' => $dateHeure,
+            ':places'    => (int)$data->places,
+            ':desc'      => $data->description,
+            ':id'        => $id
+        ]);
+
+        $_SESSION['flash_success'] = "Trajet modifié avec succès !";
+        Flight::redirect('/mes_trajets');
+
+    } catch (PDOException $e) {
+        $_SESSION['flash_error'] = "Erreur lors de la modification : " . $e->getMessage();
+        Flight::redirect("/trajet/modifier/$id");
+    }
+});
 
 ?>

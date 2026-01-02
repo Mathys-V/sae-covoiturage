@@ -2,7 +2,7 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_recherche.css">
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5 flex-grow-1">
     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: visible;">
         <div class="card-header text-center py-4" style="background-color: #3b2875; color: white; border-radius: 20px 20px 0 0;">
             <h2 class="fw-bold mb-0">Rechercher un trajet</h2>

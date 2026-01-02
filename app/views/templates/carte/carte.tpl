@@ -13,6 +13,14 @@
 
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_carte.css">
 
+    <style>
+        .autocomplete-suggestions:empty {
+            display: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    </style>
+
 </head>
 <body>
 
@@ -162,7 +170,6 @@
 
         // --- 4. GÉOCODAGE HYBRIDE ---
         async function geocodeVille(nomVille) {
-            // A. Vérification locale (Check si nom ou rue match)
             const lieuConnu = lieuxFrequents.find(l => {
                 let dbName = l.nom_lieu.toLowerCase().trim();
                 let dbStreet = (l.rue || '').toLowerCase().trim();
@@ -174,7 +181,6 @@
                 return L.latLng(lieuConnu.latitude, lieuConnu.longitude);
             }
 
-            // B. API ADRESSE GOUV
             let cleanQuery = nomVille.split('(')[0].trim();
             try {
                 const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cleanQuery)}&limit=1`;
@@ -202,7 +208,6 @@
 
             statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
             
-            // 1. Recherche STRICTE
             var resultats = tousLesTrajets.filter(function(trajet) {
                 var dbDepart = trajet.ville_depart.toLowerCase();
                 var dbArrivee = trajet.ville_arrivee.toLowerCase();
@@ -219,10 +224,8 @@
                 return matchDepart && matchArrivee;
             });
 
-            // 2. Recherche ALTERNATIVE
             var modeAlternatif = false;
             
-            // Si vide, on tente par destination
             if (resultats.length === 0 && arriveeTxt !== "") {
                 modeAlternatif = true;
                 resultats = tousLesTrajets.filter(t => {
@@ -231,7 +234,6 @@
                 });
             }
 
-            // Si encore vide, on tente par départ
             if (resultats.length === 0 && departTxt !== "") {
                 modeAlternatif = true;
                 resultats = tousLesTrajets.filter(t => {
@@ -240,20 +242,17 @@
                 });
             }
 
-            // Si TOUJOURS vide, on prend tout
             if (resultats.length === 0) {
                 modeAlternatif = true;
                 resultats = tousLesTrajets.slice(0, 10);
             }
 
-            // Nettoyage carte
             if (currentRoutingControl) {
                 map.removeControl(currentRoutingControl);
                 currentRoutingControl = null;
             }
             routeMarkersLayer.clearLayers();
             
-            // Affichage
             if (resultats.length > 0) {
                 if (modeAlternatif) {
                     statusDiv.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</span>';

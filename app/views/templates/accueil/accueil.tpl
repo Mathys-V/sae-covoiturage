@@ -10,6 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_accueil.css">
+
+    <style>
+        .autocomplete-suggestions:empty {
+            display: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    </style>
 </head>
 <body>
 

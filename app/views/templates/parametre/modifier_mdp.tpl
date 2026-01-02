@@ -6,6 +6,7 @@
     <title>{$titre}</title>
     
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/parametre/style_modifier_mdp.css">
+    
 </head>
 <body>
 

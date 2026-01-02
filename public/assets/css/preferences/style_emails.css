@@ -1,0 +1,103 @@
+/* Mêmes styles de base */
+:root {
+  --bg-dark: #422875;
+  --accent: #8c52ff;
+}
+body {
+  background-color: var(--bg-dark) !important;
+  color: white;
+}
+.pref-main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.back-btn {
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  text-decoration: none;
+}
+.title {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+  margin: 0;
+  padding-right: 40px;
+}
+
+.sae-info {
+  background: rgba(140, 82, 255, 0.15);
+  border: 1px solid var(--accent);
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.checkbox-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+.checkbox-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Checkbox cachée mais fonctionnelle */
+.checkbox-card input {
+  display: none;
+}
+
+/* Indicateur visuel */
+.indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #b0a4c5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+.checkbox-card input:checked + .indicator {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.checkbox-card input:checked + .indicator::after {
+  content: "✔";
+  font-size: 14px;
+  color: white;
+}
+
+.btn-save {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 15px;
+  border-radius: 30px;
+  background: var(--accent);
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-top: 30px;
+}

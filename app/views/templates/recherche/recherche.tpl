@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_recherche.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/recherche/style_recherche.css">
 
 <div class="container mt-5 mb-5 flex-grow-1">
     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: visible;">

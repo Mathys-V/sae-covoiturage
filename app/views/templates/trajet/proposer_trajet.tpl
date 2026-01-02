@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_proposer_trajet.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/trajet/style_proposer_trajet.css">
 
 {* --- VARIABLES DATES --- *}
 {$today = $smarty.now|date_format:'%Y-%m-%d'}

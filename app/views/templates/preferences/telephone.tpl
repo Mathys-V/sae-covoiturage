@@ -1,53 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    :root { --bg-dark: #422875; --accent: #8C52FF; }
-    body { background-color: var(--bg-dark) !important; color: white; }
-    .pref-main { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    
-    .header-top { display: flex; align-items: center; margin-bottom: 30px; }
-    .back-btn { color: white; border: 1px solid rgba(255,255,255,0.3); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; }
-    .title { flex-grow: 1; text-align: center; font-weight: bold; margin: 0; padding-right: 40px; }
-
-    /* BANDEAU INFO SAE */
-    .sae-info {
-        background: rgba(140, 82, 255, 0.15); border: 1px solid var(--accent);
-        border-radius: 15px; padding: 15px; margin-bottom: 30px; font-size: 0.9rem;
-        display: flex; gap: 15px; align-items: center;
-    }
-
-    .input-group-custom {
-        background: white; border-radius: 15px; padding: 5px;
-        display: flex; align-items: center; margin-bottom: 10px;
-    }
-    .input-group-custom input {
-        border: none; flex-grow: 1; padding: 15px; font-size: 1.1rem;
-        outline: none; background: transparent; color: #333;
-    }
-    .clear-icon { color: #999; padding: 0 15px; cursor: pointer; }
-
-    .section-title {
-        color: #b0a4c5; font-size: 0.9rem; text-transform: uppercase;
-        margin-top: 30px; margin-bottom: 10px; letter-spacing: 1px;
-    }
-
-    /* Switch CSS */
-    .option-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #553a85; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(22px); }
-
-    .btn-save {
-        display: block; width: 100%; border: none; padding: 15px;
-        border-radius: 30px; background: var(--accent); color: white;
-        font-weight: bold; font-size: 1.1rem; margin-top: 40px;
-        opacity: 1; transition: 0.3s;
-    }
-    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; background: #666; }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/preferences/style_telephone.css">
 
 <div class="pref-main">
     <div class="header-top">

@@ -1,43 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* Zone de texte plus claire et "cliquable" */
-    .custom-textarea {
-        background-color: #f8f9fa;       /* Fond gris très léger */
-        border: 2px solid #e9ecef;       /* Bordure visible mais douce */
-        border-radius: 12px;             /* Coins arrondis */
-        padding: 15px;                   /* Espace interne confortable */
-        font-size: 0.95rem;
-        color: #333;
-        resize: none;                    /* Empêche de déformer la modale */
-        transition: all 0.3s ease;       /* Animation fluide au clic */
-        width: 100%;
-    }
-
-    /* Quand on clique dedans */
-    .custom-textarea:focus {
-        background-color: #ffffff;       /* Devient blanc */
-        border-color: #8c52ff;           /* Bordure violette */
-        box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet */
-        outline: none;
-    }
-
-    /* Label au-dessus */
-    .form-label-bold {
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 8px;
-        display: block;
-    }
-/* Effet au survol du profil */
-    .hover-bg-light:hover {
-        background-color: #e2e6ea;
-        cursor: pointer;
-    }
-    .transition {
-        transition: background-color 0.2s;
-    }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/reservation/style_mes_reservations.css">
 
 <div class="container my-5 flex-grow-1">
 

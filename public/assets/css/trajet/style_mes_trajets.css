@@ -6,9 +6,9 @@ body {
 
 /* Style de la carte (Violet clair) */
 .card-trajet {
-    background-color: #E6E0F8; 
+    background-color: #e6e0f8;
     color: #2c2c2c;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Couleur violette pour les titres et éléments forts */
@@ -19,7 +19,7 @@ body {
 /* Trait de séparation vertical (visible seulement sur PC) */
 @media (min-width: 768px) {
     .border-end-md {
-        border-right: 1px solid rgba(0,0,0,0.1); 
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
     }
 }
 
@@ -48,4 +48,9 @@ body {
 .btn-dark-purple:hover {
     background-color: #2a1a5e; /* Plus foncé au survol */
     color: white;
+}
+
+.btn-outline-danger {
+    border-radius: 50px;
+    border-width: 2.5px;
 }

@@ -79,16 +79,12 @@ Flight::route('POST /trajet/nouveau', function(){
             $stmt->execute([
                 ':conducteur' => $userId,
                 ':vehicule'   => $vehicule['id_vehicule'],
-                
-                // MODIFICATION ICI : On utilise les données envoyées par les inputs cachés
                 ':ville_dep'  => $data->ville_depart,
                 ':cp_dep'     => $data->cp_depart,
-                ':rue_dep'    => $data->rue_depart, // Peut contenir le nom de la rue ou le nom du lieu
-                
+                ':rue_dep'    => $data->rue_depart,
                 ':ville_arr'  => $data->ville_arrivee,
                 ':cp_arr'     => $data->cp_arrivee,
                 ':rue_arr'    => $data->rue_arrivee,
-
                 ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
                 ':duree'      => $data->duree_calc,
                 ':places'     => (int)$data->places,
@@ -122,84 +118,14 @@ Flight::route('POST /trajet/nouveau', function(){
     }
 });
 
-// SUPPRIMER / ANNULER UN TRAJET
-Flight::route('POST /trajet/supprimer', function(){
-    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
-
-    $db = Flight::get('db');
-    $idUser = $_SESSION['user']['id_utilisateur'];
-    $idTrajet = Flight::request()->data->id_trajet;
-
-    // 1. Vérification : Est-ce bien mon trajet ?
-    $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
-    $stmtVerif->execute([':id' => $idTrajet]);
-    $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
-
-    if (!$trajet || $trajet['id_conducteur'] != $idUser) {
-        $_SESSION['flash_error'] = "Action non autorisée.";
-        Flight::redirect('/mes_trajets');
-        return;
-    }
-
-    try {
-        $db->beginTransaction();
-
-        // 2. Vérifier s'il y a des réservations actives
-        $stmtCheck = $db->prepare("SELECT COUNT(*) FROM RESERVATIONS WHERE id_trajet = :id AND statut_code IN ('V', 'A')");
-        $stmtCheck->execute([':id' => $idTrajet]);
-        $nbReservations = $stmtCheck->fetchColumn();
-
-        if ($nbReservations > 0) {
-            // --- CAS A : PASSAGERS PRÉSENTS -> ANNULATION (Soft Delete) ---
-
-            // Envoyer le message système
-            $msgSysteme = "::sys_cancel::";
-            $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
-            $stmtMsg->execute([
-                ':tid' => $idTrajet, 
-                ':uid' => $idUser,
-                ':msg' => $msgSysteme
-            ]);
-            
-            // Passer le trajet en 'C' (Annulé)
-            $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id");
-            $updTrajet->execute([':id' => $idTrajet]);
-
-            // Passer les réservations en 'R' (Rejeté)
-            $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'R' WHERE id_trajet = :id");
-            $updRes->execute([':id' => $idTrajet]);
-
-            $_SESSION['flash_success'] = "Le trajet a été annulé et les passagers notifiés.";
-
-        } else {
-            // --- CAS B : AUCUN PASSAGER -> SUPPRESSION DÉFINITIVE ---
-            
-            $db->prepare("DELETE FROM MESSAGES WHERE id_trajet = :id")->execute([':id' => $idTrajet]);
-            $db->prepare("DELETE FROM RESERVATIONS WHERE id_trajet = :id")->execute([':id' => $idTrajet]);
-            $del = $db->prepare("DELETE FROM TRAJETS WHERE id_trajet = :id");
-            $del->execute([':id' => $idTrajet]);
-
-            $_SESSION['flash_success'] = "Le trajet a été supprimé.";
-        }
-
-        $db->commit();
-
-    } catch (PDOException $e) {
-        $db->rollBack();
-        $_SESSION['flash_error'] = "Erreur technique : " . $e->getMessage();
-    }
-
-    Flight::redirect('/mes_trajets');
-});
-
-// MES TRAJETS (Affichage et Tris)
-Flight::route('/mes_trajets', function(){
+// AFFICHER MES TRAJETS
+Flight::route('GET /mes_trajets', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupération des données brutes
+    // 1. Récupération des trajets du conducteur
     $sql = "SELECT t.*, v.marque, v.modele, v.immatriculation, v.nb_places_totales 
             FROM TRAJETS t
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
@@ -211,25 +137,27 @@ Flight::route('/mes_trajets', function(){
 
     $now = new DateTime();
 
-    // 2. Calculs et Enrichissement
+    // 2. Enrichissement des données
     foreach ($trajets as &$trajet) {
-        // Passagers
-        $sqlPass = "SELECT u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
+        
+        // --- RECUPERATION PASSAGERS AVEC ID (POUR SIGNALEMENT) ---
+        $sqlPass = "SELECT u.id_utilisateur, u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
                     FROM RESERVATIONS r
                     JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
                     WHERE r.id_trajet = :id_trajet 
                     AND r.statut_code = 'V'";
+        
         $stmtPass = $db->prepare($sqlPass);
         $stmtPass->execute([':id_trajet' => $trajet['id_trajet']]);
         $trajet['passagers'] = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
 
-        // Calcul places
+        // Calcul des places
         $nb_occupes = 0;
         foreach($trajet['passagers'] as $p) { $nb_occupes += $p['nb_places_reservees']; }
         $trajet['places_prises'] = $nb_occupes;
         $trajet['places_restantes'] = $trajet['places_proposees'] - $nb_occupes;
         
-        // Dates
+        // Formatage Dates
         $depart = new DateTime($trajet['date_heure_depart']);
         $trajet['date_fmt'] = $depart->format('d / m / Y');
         $trajet['heure_fmt'] = $depart->format('H\hi');
@@ -242,43 +170,34 @@ Flight::route('/mes_trajets', function(){
         $arrivee = clone $depart;
         $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
 
-        // 1. Priorité au statut ANNULÉ
         if ($trajet['statut_flag'] == 'C') {
             $trajet['statut_visuel'] = 'annule';
             $trajet['statut_libelle'] = 'Annulé';
-            $trajet['statut_couleur'] = 'danger'; // Rouge
-        } 
-        // 2. Sinon, est-ce TERMINÉ ?
-        elseif ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
+            $trajet['statut_couleur'] = 'danger';
+        } elseif ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
             $trajet['statut_visuel'] = 'termine';
             $trajet['statut_libelle'] = 'Terminé';
-            $trajet['statut_couleur'] = 'secondary'; // Gris
-        } 
-        // 3. Sinon, est-ce EN COURS ?
-        elseif ($now >= $depart && $now <= $arrivee) {
+            $trajet['statut_couleur'] = 'secondary';
+        } elseif ($now >= $depart && $now <= $arrivee) {
             $trajet['statut_visuel'] = 'encours';
             $trajet['statut_libelle'] = 'En cours';
-            $trajet['statut_couleur'] = 'success'; // Vert
+            $trajet['statut_couleur'] = 'success';
             
             $diff = $now->diff($arrivee);
             if ($diff->h > 0) $trajet['temps_restant'] = $diff->format('%hh %Im');
             else $trajet['temps_restant'] = $diff->format('%I min');
-
-        } 
-        // 4. Sinon, c'est À VENIR
-        else {
+        } else {
             $trajet['statut_visuel'] = 'avenir';
             $trajet['statut_libelle'] = 'À venir';
-            $trajet['statut_couleur'] = 'primary'; // Violet
+            $trajet['statut_couleur'] = 'primary';
         }
     }
 
-    // 3. SÉPARATION DES LISTES
+    // 3. Séparation Actifs / Archives
     $trajets_actifs = [];
     $trajets_archives = [];
 
     foreach ($trajets as $t) {
-        // On met les trajets ANNULÉS et TERMINÉS dans l'historique
         if ($t['statut_visuel'] === 'termine' || $t['statut_visuel'] === 'annule') {
             $trajets_archives[] = $t;
         } else {
@@ -286,16 +205,13 @@ Flight::route('/mes_trajets', function(){
         }
     }
 
-    // 4. TRIS
-
-    // A. Actifs : En cours d'abord, puis chronologique (Demain avant la semaine pro)
+    // 4. Tris
     usort($trajets_actifs, function($a, $b) {
         if ($a['statut_visuel'] === 'encours' && $b['statut_visuel'] !== 'encours') return -1;
         if ($b['statut_visuel'] === 'encours' && $a['statut_visuel'] !== 'encours') return 1;
         return strtotime($a['date_heure_depart']) - strtotime($b['date_heure_depart']);
     });
 
-    // B. Archives : Décroissant (Le plus récent en haut)
     usort($trajets_archives, function($a, $b) {
         return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
     });
@@ -305,64 +221,6 @@ Flight::route('/mes_trajets', function(){
         'trajets_actifs' => $trajets_actifs,
         'trajets_archives' => $trajets_archives
     ]);
-});
-
-
-
-
-
-Flight::route('POST /trajet/annuler', function(){
-    if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
-    
-    $db = Flight::get('db');
-    $id_trajet = Flight::request()->data->id_trajet;
-    $id_user = $_SESSION['user']['id_utilisateur'];
-
-    // 1. Vérifier que le trajet appartient bien à l'utilisateur connecté
-    $stmt = $db->prepare("SELECT id_conducteur, statut_flag FROM TRAJETS WHERE id_trajet = ?");
-    $stmt->execute([$id_trajet]);
-    $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$trajet || $trajet['id_conducteur'] != $id_user) {
-        $_SESSION['flash_error'] = "Vous n'avez pas le droit d'annuler ce trajet.";
-        Flight::redirect('/mes-trajets');
-        return;
-    }
-
-    if ($trajet['statut_flag'] === 'C') {
-        $_SESSION['flash_error'] = "Ce trajet est déjà annulé.";
-        Flight::redirect('/mes-trajets'); // Correction ici aussi par sécurité
-        return;
-    }
-
-    try {
-        $db->beginTransaction();
-
-        // 2. Passer le TRAJET en 'C' (Cancelled)
-        $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = ?");
-        $updTrajet->execute([$id_trajet]);
-
-        // 3. Passer les RESERVATIONS en 'A' (Annulée)
-        $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_trajet = ? AND statut_code = 'V'");
-        $updRes->execute([$id_trajet]);
-
-        // 4. INJECTION MESSAGE SYSTÈME
-        $msgContent = "::sys_cancel:: Le conducteur a annulé ce trajet.";
-        $insMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
-        $insMsg->execute([$id_trajet, $id_user, $msgContent]);
-
-        $db->commit();
-        
-        $_SESSION['flash_success'] = "Trajet annulé. Les passagers seront notifiés.";
-        
-    } catch (Exception $e) {
-        $db->rollBack();
-        $_SESSION['flash_error'] = "Erreur lors de l'annulation.";
-    }
-
-    // --- CORRECTION MAJEURE ICI ---
-    // On retourne sur la liste "Mes Trajets" car la page "consulter" n'existe pas.
-    Flight::redirect('/mes_trajets');
 });
 
 // AFFICHER LE FORMULAIRE DE MODIFICATION
@@ -375,7 +233,7 @@ Flight::route('GET /trajet/modifier/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupérer le trajet et vérifier qu'il appartient à l'utilisateur
+    // Récupérer le trajet
     $stmt = $db->prepare("SELECT * FROM TRAJETS WHERE id_trajet = :id");
     $stmt->execute([':id' => $id]);
     $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -386,12 +244,11 @@ Flight::route('GET /trajet/modifier/@id', function($id){
         return;
     }
 
-    // 2. Formater la date et l'heure pour les inputs HTML
+    // Formater date/heure
     $dateObj = new DateTime($trajet['date_heure_depart']);
     $trajet['date_seule'] = $dateObj->format('Y-m-d');
     $trajet['heure_seule'] = $dateObj->format('H:i');
 
-    // 3. Récupérer les lieux fréquents pour l'autocomplétion (comme sur proposer)
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
@@ -402,7 +259,7 @@ Flight::route('GET /trajet/modifier/@id', function($id){
     ]);
 });
 
-// TRAITEMENT DE LA MODIFICATION (POST)
+// TRAITEMENT MODIFICATION (POST)
 Flight::route('POST /trajet/modifier/@id', function($id){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -410,7 +267,6 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Vérification sécurité
     $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
     $stmtVerif->execute([':id' => $id]);
     $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
@@ -422,10 +278,8 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     }
 
     try {
-        // 2. Préparation des données
-        $dateHeure = $data->date . ' ' . $data->heure . ':00'; // YYYY-MM-DD HH:MM:SS
+        $dateHeure = $data->date . ' ' . $data->heure . ':00';
 
-        // 3. Mise à jour
         $sql = "UPDATE TRAJETS SET 
                 ville_depart = :ville_dep, code_postal_depart = :cp_dep, rue_depart = :rue_dep,
                 ville_arrivee = :ville_arr, code_postal_arrivee = :cp_arr, rue_arrivee = :rue_arr,
@@ -438,7 +292,7 @@ Flight::route('POST /trajet/modifier/@id', function($id){
         $stmt->execute([
             ':ville_dep' => $data->ville_depart,
             ':cp_dep'    => $data->cp_depart,
-            ':rue_dep'   => $data->rue_depart, // contient l'adresse complète ou le nom du lieu
+            ':rue_dep'   => $data->rue_depart,
             ':ville_arr' => $data->ville_arrivee,
             ':cp_arr'    => $data->cp_arrivee,
             ':rue_arr'   => $data->rue_arrivee,
@@ -455,6 +309,57 @@ Flight::route('POST /trajet/modifier/@id', function($id){
         $_SESSION['flash_error'] = "Erreur lors de la modification : " . $e->getMessage();
         Flight::redirect("/trajet/modifier/$id");
     }
+});
+
+// ANNULER UN TRAJET
+Flight::route('POST /trajet/annuler', function(){
+    if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+    
+    $db = Flight::get('db');
+    $id_trajet = Flight::request()->data->id_trajet;
+    $id_user = $_SESSION['user']['id_utilisateur'];
+
+    $stmt = $db->prepare("SELECT id_conducteur, statut_flag FROM TRAJETS WHERE id_trajet = ?");
+    $stmt->execute([$id_trajet]);
+    $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$trajet || $trajet['id_conducteur'] != $id_user) {
+        $_SESSION['flash_error'] = "Vous n'avez pas le droit d'annuler ce trajet.";
+        Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    if ($trajet['statut_flag'] === 'C') {
+        $_SESSION['flash_error'] = "Ce trajet est déjà annulé.";
+        Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        // 1. Update Trajet
+        $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = ?");
+        $updTrajet->execute([$id_trajet]);
+
+        // 2. Update Reservations
+        $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'R' WHERE id_trajet = ? AND statut_code = 'V'");
+        $updRes->execute([$id_trajet]);
+
+        // 3. Message système
+        $msgContent = "::sys_cancel:: Le conducteur a annulé ce trajet.";
+        $insMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
+        $insMsg->execute([$id_trajet, $id_user, $msgContent]);
+
+        $db->commit();
+        $_SESSION['flash_success'] = "Trajet annulé.";
+        
+    } catch (Exception $e) {
+        $db->rollBack();
+        $_SESSION['flash_error'] = "Erreur lors de l'annulation.";
+    }
+
+    Flight::redirect('/mes_trajets');
 });
 
 ?>

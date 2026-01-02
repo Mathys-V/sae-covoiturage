@@ -79,7 +79,7 @@
         {include file='includes/footer.tpl'}
 
     </div>
-    <script src="/sae-covoiturage/public/assets/javascript/js_faq.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/pages_footer/js_faq.js"></script>
     
 </body>
 </html>

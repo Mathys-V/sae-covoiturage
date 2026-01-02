@@ -70,7 +70,7 @@
 
     {include file='includes/footer.tpl'}
 
-    <script src="/sae-covoiturage/public/assets/javascript/js_modifier_adresse.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/parametre/js_modifier_adresse.js"></script>
 
 </body>
 </html>

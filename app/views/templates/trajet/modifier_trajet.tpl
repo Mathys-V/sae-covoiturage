@@ -105,6 +105,6 @@
     </div>
 </div>
 
-<script src="/sae-covoiturage/public/assets/javascript/js_modifier_trajet.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/trajet/js_modifier_trajet.js"></script>
 
 {include file='includes/footer.tpl'}

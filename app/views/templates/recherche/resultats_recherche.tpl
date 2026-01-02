@@ -157,5 +157,5 @@
     </div>
 </div>
 
-<script src="/sae-covoiturage/public/assets/javascript/js_resultats_recherche.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/recherche/js_resultats_recherche.js"></script>
 {include file='includes/footer.tpl'}

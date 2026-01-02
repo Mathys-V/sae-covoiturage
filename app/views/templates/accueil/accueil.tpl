@@ -143,6 +143,6 @@
         } catch(e) { console.warn("Pas de lieux fréquents chargés"); }
     </script>
 
-    <script src="/sae-covoiturage/public/assets/javascript/js_accueil.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/accueil/js_accueil.js"></script>
 </body>
 </html>

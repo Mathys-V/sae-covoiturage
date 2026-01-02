@@ -76,7 +76,7 @@
 
     {include file='includes/footer.tpl'}
 
-    <script src="/sae-covoiturage/public/assets/javascript/js_modif_mdp.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/parametre/js_modif_mdp.js"></script>
 
 </body>
 </html>

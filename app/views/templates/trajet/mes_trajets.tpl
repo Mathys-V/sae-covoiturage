@@ -217,6 +217,6 @@
 </div>
 
 {* --- APPEL JS EXTERNE --- *}
-<script src="/sae-covoiturage/public/assets/javascript/js_mes_trajets.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/trajet/js_mes_trajets.js"></script>
 
 {include file='includes/footer.tpl'}

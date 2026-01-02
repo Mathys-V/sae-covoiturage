@@ -272,6 +272,6 @@
     </div>
 </section>
 
-<script src="/sae-covoiturage/public/assets/javascript/js_inscription.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/inscription/js_inscription.js"></script>
 
 {include file='includes/footer.tpl'}    

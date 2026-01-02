@@ -128,6 +128,6 @@
     }
 </script>
 
-<script src="/sae-covoiturage/public/assets/javascript/js_proposer_trajet.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/trajet/js_proposer_trajet.js"></script>
 
 {include file='includes/footer.tpl'}

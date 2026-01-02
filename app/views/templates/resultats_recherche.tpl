@@ -47,7 +47,10 @@
                             <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark group-hover">
                                 <div class="d-flex align-items-center mb-3 p-2 rounded hover-profile transition">
                                     <div class="me-3">
-                                        <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}" class="avatar-img rounded-circle">
+                                        <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" 
+                                            class="avatar-img rounded-circle" 
+                                            alt="Photo de {$trajet.prenom}"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="fw-bold fs-5 text-purple-primary">{$trajet.prenom} {$trajet.nom|upper}</div>

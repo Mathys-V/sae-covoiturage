@@ -78,6 +78,10 @@ Flight::route('POST /trajet/reserver/@id', function($id){
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
+    
+    // Récupération du nombre de places demandé (1 par défaut)
+    $nbPlacesDemandees = isset(Flight::request()->data->nb_places) ? (int)Flight::request()->data->nb_places : 1;
+    if ($nbPlacesDemandees < 1) $nbPlacesDemandees = 1;
 
     try {
         $db->beginTransaction();
@@ -99,37 +103,43 @@ Flight::route('POST /trajet/reserver/@id', function($id){
 
         $placesDisponibles = $trajet['places_proposees'] - $placesData['places_prises'];
 
-        if ($placesDisponibles <= 0) {
-            throw new Exception("Plus de places disponibles !");
+        if ($placesDisponibles < $nbPlacesDemandees) {
+            throw new Exception("Pas assez de places disponibles !");
         }
 
-        // Réservation automatique 1 place
+        // Réservation avec le bon nombre de places
         $stmtReserve = $db->prepare("
             INSERT INTO RESERVATIONS 
             (id_trajet, id_passager, nb_places_reservees, statut_code, date_reservation)
-            VALUES (:trajet, :passager, 1, 'V', NOW())
+            VALUES (:trajet, :passager, :nb, 'V', NOW())
         ");
         $stmtReserve->execute([
             ':trajet' => $id,
-            ':passager' => $userId
+            ':passager' => $userId,
+            ':nb' => $nbPlacesDemandees
         ]);
 
         // Si le trajet est maintenant complet, changer statut
-        if ($placesDisponibles - 1 == 0) {
+        if (($placesDisponibles - $nbPlacesDemandees) == 0) {
             $stmtUpdate = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id");
             $stmtUpdate->execute([':id' => $id]);
         }
 
-        // Message système "A rejoint"
+        // Message système "A rejoint" avec le nombre de places (ex: ::sys_join::2)
+        $contenuMsg = "::sys_join::" . $nbPlacesDemandees;
+        
         $stmtMsg = $db->prepare("
             INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi)
-            VALUES (:tid, :uid, '::sys_join::', NOW())
+            VALUES (:tid, :uid, :contenu, NOW())
         ");
-        $stmtMsg->execute([':tid' => $id, ':uid' => $userId]);
-
+        $stmtMsg->execute([
+            ':tid' => $id, 
+            ':uid' => $userId, 
+            ':contenu' => $contenuMsg
+        ]);
 
         $db->commit();
-        $_SESSION['flash_success'] = "Réservation confirmée, bon voyage !";
+        $_SESSION['flash_success'] = "Réservation confirmée pour " . $nbPlacesDemandees . " place(s) !";
         Flight::redirect('/mes_reservations');
 
     } catch (Exception $e) {
@@ -139,7 +149,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
     }
 });
 
-// LISTE DES RÉSERVATIONS
+// LISTE DES RÉSERVATIONS (TRIÉE INTELLIGEMMENT)
 Flight::route('GET /mes_reservations', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
@@ -232,7 +242,6 @@ Flight::route('GET /mes_reservations', function(){
 
         if ($a['statut_visuel'] === 'avenir' || $a['statut_visuel'] === 'encours') {
             // Pour 'À venir' : CROISSANT (Le plus proche en haut)
-            // Exemple : Le 04/01 sera avant le 11/01
             return $timeA - $timeB;
         } else {
             // Pour 'Terminé' : DÉCROISSANT (Le plus récent en haut de l'historique)
@@ -240,7 +249,7 @@ Flight::route('GET /mes_reservations', function(){
         }
     });
 
-    // 4. Envoi à la vue (Il manquait cette partie dans ton copier-coller)
+    // 4. Envoi à la vue
     Flight::render('mes_reservations.tpl', [
         'titre'=>'Mes réservations',
         'reservations'=>$reservations,

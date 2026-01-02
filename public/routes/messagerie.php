@@ -1,6 +1,6 @@
 <?php
 
-// 1. LISTE DES CONVERSATIONS (SEPARÉE EN ONGLETS)
+// 1. LISTE DES CONVERSATIONS
 Flight::route('GET /messagerie', function(){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
@@ -47,7 +47,7 @@ Flight::route('GET /messagerie', function(){
             $stmtCheckEnd->execute([$id]);
             if ($stmtCheckEnd->fetchColumn() == 0) {
                 $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())")
-                   ->execute([$id, $conv['id_conducteur']]);
+                    ->execute([$id, $conv['id_conducteur']]);
             }
         }
 
@@ -68,8 +68,7 @@ Flight::route('GET /messagerie', function(){
 
         } else {
             $statutKey = 'avenir';
-            $conv['statut_visuel'] = 'avenir'; // Important pour éviter erreur 500
-            
+            $conv['statut_visuel'] = 'avenir';
             $conv['statut_libelle'] = ($conv['statut_flag'] == 'C') ? 'Complet' : 'À venir';
             $conv['statut_couleur'] = ($conv['statut_flag'] == 'C') ? 'warning' : 'primary';
         }
@@ -82,8 +81,7 @@ Flight::route('GET /messagerie', function(){
         $conv['dernier_message'] = $lastMsg ? $lastMsg['contenu'] : null;
         $conv['date_tri'] = ($lastMsg && !empty($lastMsg['date_envoi'])) ? $lastMsg['date_envoi'] : null;
 
-        // --- NON LUS (LA CORRECTION EST ICI) ---
-        // On compte si : (Expediteur != moi) OU (C'est un message système ::sys_)
+        // --- NON LUS ---
         $cookieName = 'last_read_' . $userId . '_' . $id;
         $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
         
@@ -132,14 +130,23 @@ Flight::route('GET /messagerie', function(){
     ]);
 });
 
+// =========================================================================
 // 2. AFFICHER UNE CONVERSATION
+// =========================================================================
 Flight::route('GET /messagerie/conversation/@id', function($id){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
     // Infos Trajet
-    $sqlCheck = "SELECT t.*, u.prenom as cond_prenom, u.nom as cond_nom, u.id_utilisateur as cond_id FROM TRAJETS t LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur WHERE t.id_trajet = :tid AND (t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V')) LIMIT 1";
+    $sqlCheck = "SELECT t.*, u.prenom as cond_prenom, u.nom as cond_nom, u.id_utilisateur as cond_id 
+                 FROM TRAJETS t 
+                 LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet 
+                 JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur 
+                 WHERE t.id_trajet = :tid 
+                 AND (t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V')) 
+                 LIMIT 1";
+                 
     $stmtCheck = $db->prepare($sqlCheck);
     $stmtCheck->execute([':tid' => $id, ':uid' => $userId]);
     $trajet = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -149,9 +156,12 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     // Participants
     $participants = [];
     if ($trajet['cond_id'] != $userId) $participants[] = ['id' => $trajet['cond_id'], 'nom' => $trajet['cond_prenom'] . ' ' . $trajet['cond_nom'], 'role' => 'Conducteur'];
+    
     $passagers = $db->prepare("SELECT u.id_utilisateur, u.prenom, u.nom FROM RESERVATIONS r JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur WHERE r.id_trajet = ? AND r.statut_code = 'V'");
     $passagers->execute([$id]);
-    foreach($passagers->fetchAll(PDO::FETCH_ASSOC) as $p) { if ($p['id_utilisateur'] != $userId) $participants[] = ['id' => $p['id_utilisateur'], 'nom' => $p['prenom'] . ' ' . $p['nom'], 'role' => 'Passager']; }
+    foreach($passagers->fetchAll(PDO::FETCH_ASSOC) as $p) { 
+        if ($p['id_utilisateur'] != $userId) $participants[] = ['id' => $p['id_utilisateur'], 'nom' => $p['prenom'] . ' ' . $p['nom'], 'role' => 'Passager']; 
+    }
 
     // Statut
     $now = new DateTime();
@@ -189,10 +199,30 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         $dateObj = new DateTime($msg['date_envoi']);
         $dateJour = $dateObj->format('d/m/Y');
         if ($dateJour !== $lastDate) { $messages[] = ['type' => 'separator', 'date' => $dateJour]; $lastDate = $dateJour; }
+        
+        // --- MODIFICATION ICI : Gestion des messages système avec nombre de places ---
         if (strpos($msg['contenu'], '::sys_') === 0) {
             $msg['type'] = 'system';
-            if ($msg['contenu'] == '::sys_join::') $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet.';
-            elseif ($msg['contenu'] == '::sys_leave::') $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.';
+            
+            // Si c'est un message de jointure (::sys_join::) ou (::sys_join::2)
+            if (strpos($msg['contenu'], '::sys_join::') === 0) {
+                // On extrait le nombre s'il existe
+                $parts = explode('::', $msg['contenu']);
+                $nbPlaces = isset($parts[2]) && is_numeric($parts[2]) ? (int)$parts[2] : 1;
+                
+                $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet';
+                if ($nbPlaces > 1) {
+                    $msg['text_affiche'] .= ' (et a réservé ' . $nbPlaces . ' places)';
+                } else {
+                    $msg['text_affiche'] .= '.';
+                }
+            }
+            elseif ($msg['contenu'] == '::sys_leave::') {
+                $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.';
+            }
+            elseif ($msg['contenu'] == '::sys_end::') {
+                $msg['text_affiche'] = 'Le trajet est terminé.';
+            }
         } else {
             $msg['type'] = ($msg['id_expediteur'] == $userId) ? 'self' : 'other';
             $msg['nom_affiche'] = ($msg['type'] == 'self') ? 'Moi' : $msg['prenom'] . ' ' . substr($msg['nom'], 0, 1) . '.';
@@ -202,10 +232,11 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     }
     $dateTrajet = new DateTime($trajet['date_heure_depart']);
     $trajet['date_fmt'] = $dateTrajet->format('d/m/Y à H\hi');
+    
     Flight::render('messagerie/conversation.tpl', ['titre' => 'Conversation', 'trajet' => $trajet, 'messages' => $messages, 'participants' => $participants]);
 });
 
-// 3. API : ENVOYER
+// 3. API : ENVOYER (Inchangé)
 Flight::route('POST /api/messagerie/send', function(){
     if(!isset($_SESSION['user'])) Flight::json(['success' => false], 401);
     $data = json_decode(file_get_contents('php://input'), true);

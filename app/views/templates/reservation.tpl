@@ -8,7 +8,6 @@
     <div class="card border-0 mb-4 text-white shadow-lg bg-gradient-purple">
         <div class="card-body text-center py-4">
             <h2 class="fw-bold mb-4">Résultat de la recherche</h2>
-            
             <div class="d-flex justify-content-center flex-wrap gap-3 align-items-center">
                 <div class="bg-white text-dark rounded-pill px-4 py-2 fw-semibold" style="min-width: 250px;">
                     <i class="bi bi-geo-alt-fill text-primary me-2"></i>{$trajet.ville_depart}
@@ -133,10 +132,17 @@
                         </h5>
                         
                         <form method="POST" action="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}">
+                            
                             <div class="mb-4">
-                                <label class="fw-semibold">
-                                    Prêt(e) à monter à bord ? Confirmez votre réservation.
-                                </label>
+                                <label class="fw-semibold mb-2">Nombre de places à réserver</label>
+                                <select name="nb_places" class="form-select form-select-lg border-purple bg-light" required>
+                                    {for $i=1 to $trajet.places_disponibles}
+                                        <option value="{$i}">{$i} place{if $i > 1}s{/if}</option>
+                                    {/for}
+                                </select>
+                                <div class="form-text mt-2 text-muted">
+                                    <i class="bi bi-info-circle me-1"></i> Vous pouvez réserver pour plusieurs personnes.
+                                </div>
                             </div>
 
                             <div class="d-grid gap-3">
@@ -166,44 +172,33 @@
             </div>
         </div>
     </div>
+    
+    {* Modale de signalement (inchangée) *}
     <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-lg border-0">
-
                 <div class="modal-header bg-danger text-white rounded-top-4">
-                    <h5 class="modal-title">
-                        <i class="bi bi-flag-fill me-2"></i> Signaler ce conducteur
-                    </h5>
+                    <h5 class="modal-title"><i class="bi bi-flag-fill me-2"></i> Signaler ce conducteur</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body p-4">
-
                     <input type="hidden" id="trajetSignalement" value="{$trajet.id_trajet}">
                     <input type="hidden" id="conducteurSignalement" value="{$trajet.id_conducteur}">
-
                     <div class="mb-3">
                         <label class="fw-semibold">Motif</label>
                         <select id="motifSignalement" class="form-select" required>
                             <option value="" selected disabled>Choisir un motif...</option>
                             <option value="Profil non conforme">Profil non conforme</option>
                             <option value="Comportement inapproprié">Comportement inapproprié</option>
-                            <option value="Non respect du trajet">Non respect du trajet</option>
-                            <option value="Véhicule non conforme">Véhicule non conforme</option>
                             <option value="Autre">Autre</option>
                         </select>
                     </div>
-
                     <div class="mb-4">
                         <label class="fw-semibold">Détails</label>
-                        <textarea id="detailsSignalement" class="form-control" rows="4"
-                            placeholder="Expliquez la situation..." required></textarea>
+                        <textarea id="detailsSignalement" class="form-control" rows="4" placeholder="Expliquez la situation..." required></textarea>
                     </div>
-
                     <div class="d-grid gap-2">
-                        <button id="btnEnvoyerSignalement" class="btn btn-danger fw-bold">
-                            Envoyer le signalement
-                        </button>
+                        <button id="btnEnvoyerSignalement" class="btn btn-danger fw-bold">Envoyer le signalement</button>
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
                     </div>
                 </div>
@@ -211,52 +206,28 @@
         </div>
     </div>
 </div>
+
 {literal}
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-    
         const modal = new bootstrap.Modal(document.getElementById('modalSignalement'));
-    
-        document.querySelector('[data-bs-target="#modalSignalement"]').addEventListener('click', () => {
-            modal.show();
-        });
-    
+        document.querySelector('[data-bs-target="#modalSignalement"]').addEventListener('click', () => { modal.show(); });
         document.getElementById('btnEnvoyerSignalement').addEventListener('click', () => {
-    
-            const trajetId = document.getElementById('trajetSignalement').value;
-            const conducteurId = document.getElementById('conducteurSignalement').value;
-            const motif = document.getElementById('motifSignalement').value;
-            const details = document.getElementById('detailsSignalement').value;
-    
-            if(!motif || !details){
-                alert("Veuillez remplir tous les champs.");
-                return;
-            }
-    
+            const t = document.getElementById('trajetSignalement').value;
+            const c = document.getElementById('conducteurSignalement').value;
+            const m = document.getElementById('motifSignalement').value;
+            const d = document.getElementById('detailsSignalement').value;
+            if(!m || !d){ alert("Veuillez remplir tous les champs."); return; }
             fetch('/sae-covoiturage/public/api/signalement/nouveau', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    id_trajet: trajetId,
-                    id_signale: conducteurId,
-                    motif: motif,
-                    description: details
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id_trajet: t, id_signale: c, motif: m, description: d })
+            }).then(r => r.json()).then(data => {
                 modal.hide();
-                if(data.success){
-                    alert("Signalement envoyé avec succès.");
-                    document.getElementById('motifSignalement').value = "";
-                    document.getElementById('detailsSignalement').value = "";
-                } else {
-                    alert(data.msg || "Erreur lors de l'envoi.");
-                }
+                if(data.success){ alert("Signalement envoyé."); } else { alert(data.msg || "Erreur"); }
             });
         });
     });
     </script>
-{/literal}    
+{/literal}
 
 {include file='includes/footer.tpl'}

@@ -1,14 +1,14 @@
 <?php
 // Accueil
 Flight::route('/', function(){
-    Flight::render('accueil.tpl', ['nom' => 'Equipe W']);
+    Flight::render('accueil/accueil.tpl', ['nom' => 'Equipe W']);
 });
 
 // Connexion (Affichage)
 Flight::route('GET /connexion', function(){
     // Si déjà connecté, on redirige vers l'accueil
     if(isset($_SESSION['user'])) Flight::redirect('/');
-    Flight::render('connexion.tpl', ['titre' => 'Se connecter']);
+    Flight::render('connexion/connexion.tpl', ['titre' => 'Se connecter']);
 });
 
 
@@ -76,7 +76,7 @@ Flight::route('/deconnexion', function(){
 
 // Inscription
 Flight::route('/inscription', function(){
-    Flight::render('inscription.tpl', ['titre' => 'S\'inscrire']);
+    Flight::render('inscription/inscription.tpl', ['titre' => 'S\'inscrire']);
 });
 
 // TRAITEMENT DE L'INSCRIPTION
@@ -86,7 +86,7 @@ Flight::route('POST /inscription', function(){
 
     // 1. Vérification Mots de passe
     if ($data->mdp !== $data->{'conf-mdp'}) {
-        Flight::render('inscription.tpl', [
+        Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
             'error' => 'Les mots de passe ne correspondent pas.',
             'formData' => $data
@@ -99,7 +99,7 @@ Flight::route('POST /inscription', function(){
     $dateLimite13ans = new DateTime('-13 years');
 
     if ($dateNaiss > $dateLimite13ans) {
-        Flight::render('inscription.tpl', [
+        Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
             'error' => 'Vous devez avoir au moins 13 ans pour vous inscrire.',
             'formData' => $data
@@ -108,7 +108,7 @@ Flight::route('POST /inscription', function(){
     }
 
     if ($dateNaiss < $dateMin1900) {
-        Flight::render('inscription.tpl', [
+        Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
             'error' => 'Date de naissance invalide.',
             'formData' => $data
@@ -162,7 +162,7 @@ Flight::route('POST /inscription', function(){
 
             if (!preg_match($regexImmat, $immat)) {
                 $db->rollBack();
-                Flight::render('inscription.tpl', [
+                Flight::render('inscription/inscription.tpl', [
                     'titre' => 'S\'inscrire',
                     'error' => 'Format de plaque invalide. Ex: AA-123-AA',
                     'formData' => $data
@@ -205,8 +205,8 @@ Flight::route('POST /inscription', function(){
         if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
             $errorMsg = "Cette adresse email ou ce numéro de téléphone existe déjà.";
         }
-        
-        Flight::render('inscription.tpl', [
+
+        Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
             'error' => $errorMsg, // Le message s'affichera dans le TPL
             'formData' => $data

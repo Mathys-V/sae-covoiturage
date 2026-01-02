@@ -14,7 +14,7 @@ Flight::route('GET /recherche', function(){
     $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    Flight::render('recherche.tpl', [
+    Flight::render('recherche/recherche.tpl', [
         'titre' => 'Rechercher un trajet',
         'historique' => array_reverse($historique),
         'lieux_frequents' => $lieux
@@ -179,7 +179,7 @@ Flight::route('GET /recherche/resultats', function(){
         }
     }
 
-    Flight::render('resultats_recherche.tpl', [
+    Flight::render('recherche/resultats_recherche.tpl', [
         'titre' => 'Résultats',
         'trajets' => $trajets,
         'recherche' => ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date],

@@ -1,12 +1,12 @@
 <?php
 // FAQ
 Flight::route('/faq', function(){
-    Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
+    Flight::render('pages_footer/faq.tpl', ['titre' => 'FAQ Covoiturage']);
 });
 
 // Afficher la page de contact
 Flight::route('GET /contact', function(){
-    Flight::render('contact.tpl', [
+    Flight::render('pages_footer/contact.tpl', [
         'titre' => 'Nous contacter'
     ]);
 });
@@ -103,7 +103,7 @@ Flight::route('/carte', function(){
         }
     }
 
-    Flight::render('carte.tpl', [
+    Flight::render('carte/carte.tpl', [
         'titre' => 'Carte',
         'lieux_frequents' => $lieux,
         'trajets' => $trajets
@@ -130,7 +130,7 @@ Flight::route('GET /cookies', function(){
     }
 
     // 3. On envoie la variable $consent à la vue Smarty
-    Flight::render('cookies.tpl', [
+    Flight::render('pages_footer/cookies.tpl', [
         'titre' => 'Gestion des cookies',
         'consent' => $consent
     ]);
@@ -160,7 +160,7 @@ Flight::route('POST /cookies/save', function(){
 
 // Mentions légales
 Flight::route('/mentions_legales', function(){
-    Flight::render('mentions_legales.tpl', ['titre' => 'Mentions_Legales']);
+    Flight::render('pages_footer/mentions_legales.tpl', ['titre' => 'Mentions_Legales']);
 });
 
 

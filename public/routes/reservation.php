@@ -66,7 +66,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $trajet['date_fmt'] = $dateObj->format('d/m/Y');
     $trajet['heure_fmt'] = $dateObj->format('H:i');
 
-    Flight::render('reservation.tpl', [
+    Flight::render('reservation/reservation.tpl', [
         'titre' => 'Réserver un trajet',
         'trajet' => $trajet
     ]);
@@ -250,7 +250,7 @@ Flight::route('GET /mes_reservations', function(){
     });
 
     // 4. Envoi à la vue
-    Flight::render('mes_reservations.tpl', [
+    Flight::render('reservation/mes_reservations.tpl', [
         'titre'=>'Mes réservations',
         'reservations'=>$reservations,
         'participants'=>$participants

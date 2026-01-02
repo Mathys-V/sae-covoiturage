@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_mes_trajets.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/trajet/style_mes_trajets.css">
 
 {* --- CSS RAPIDE POUR LE MODAL --- *}
 <style>

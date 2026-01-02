@@ -1,48 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* Fond violet global */
-    body {
-        background-color: #422875 !important;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Bouton violet */
-    .btn-purple {
-        background-color: #8c52ff;
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    .btn-purple:hover {
-        background-color: #7a46e0;
-        transform: translateY(-2px);
-        color: white;
-    }
-
-    /* Bandeau de simulation */
-    .simu-alert {
-        background-color: #fff3cd;
-        border: 1px solid #ffecb5;
-        color: #664d03;
-        border-radius: 12px;
-        padding: 15px;
-        font-size: 0.9rem;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    /* Input spécial pour le code */
-    .code-input {
-        letter-spacing: 5px;
-        font-family: monospace;
-        font-weight: bold;
-    }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/mdp/style_etape2_code.css">
 
 <div class="container d-flex justify-content-center align-items-center flex-grow-1 my-5">
     <div class="card shadow-lg p-4 p-md-5" style="max-width: 500px; width: 100%; border-radius: 20px; border: none;">

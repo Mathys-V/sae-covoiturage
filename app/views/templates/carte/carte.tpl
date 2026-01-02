@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_carte.css">
+    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/carte/style_carte.css">
 
 </head>
 <body>

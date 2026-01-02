@@ -1,5 +1,7 @@
 {include file='includes/header.tpl'}
 
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/messagerie/style_liste.css">
+
 <div class="container my-4" style="max-width: 800px;">
     <h2 class="fw-bold text-center text-purple mb-4">Mes Discussions</h2>
 
@@ -149,23 +151,7 @@
     </div>
 {/function}
 
-<style>
-.hover-shadow:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-.transition-all {
-    transition: all 0.2s ease-in-out;
-}
-.nav-pills .nav-link {
-    color: #6c757d;
-    transition: all 0.3s;
-}
-.nav-pills .nav-link.active {
-    background-color: #8c52ff;
-    color: white;
-}
-</style>
+
 
 {* --- SCRIPT POUR ACTIVER LE BON ONGLET AU RETOUR --- *}
 <script>

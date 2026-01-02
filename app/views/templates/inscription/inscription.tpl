@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_inscription.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/inscription/style_inscription.css">
 
 <section class="d-flex justify-content-center align-items-center p-3" style="min-height: 90vh;">
     

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contactez-nous - MonCovoitJV</title>
     
-    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_contact.css">
+    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_contact.css">
 
 </head>
 

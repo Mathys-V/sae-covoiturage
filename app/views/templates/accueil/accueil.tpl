@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_accueil.css">
+    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/accueil/style_accueil.css">
 </head>
 <body>
 

@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_connexion.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/connexion/style_connexion.css">
 
 <main class="login-section">
     <div class="card-login">

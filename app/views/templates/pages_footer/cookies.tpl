@@ -1,6 +1,6 @@
 {include file='includes/header.tpl'}
 
-<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_cookies.css">
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_cookies.css">
 
 <div class="container mt-5 mb-5 flex-grow-1">
     

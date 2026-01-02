@@ -1,38 +1,6 @@
 {include file='includes/header.tpl'}
 
-<style>
-    /* Fond violet global */
-    body {
-        background-color: #422875 !important;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Bouton violet */
-    .btn-purple {
-        background-color: #8c52ff;
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    .btn-purple:hover {
-        background-color: #7a46e0;
-        transform: translateY(-2px);
-        color: white;
-    }
-
-    /* Style des inputs */
-    .form-control {
-        background-color: #f8f9fa;
-        border: 1px solid transparent;
-    }
-    .form-control:focus {
-        background-color: #fff;
-        border-color: #8c52ff;
-        box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.1);
-    }
-</style>
+<link rel="stylesheet" href="/sae-covoiturage/public/assets/css/mdp/style_etape3_nouveau.css">
 
 <div class="container d-flex justify-content-center align-items-center flex-grow-1 my-5">
     <div class="card shadow-lg p-4 p-md-5" style="max-width: 500px; width: 100%; border-radius: 20px; border: none;">

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ - MonCovoitJV</title>
     
-    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_faq.css">
+    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_faq.css">
 </head>
 
 <body>

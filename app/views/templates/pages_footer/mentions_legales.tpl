@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mentions Légales - MonCovoitJV</title>
     
-    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_mentions_legales.css">
+    <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_mentions_legales.css">
 </head>
 
 <body>

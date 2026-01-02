@@ -103,6 +103,7 @@ Flight::map('render', function($template, $data){
 // 3. CHARGEMENT DES ROUTES
 // -----------------------------------------------------------
 
+require 'routes/accueil.php'; 
 require 'routes/pages.php';      
 require 'routes/auth.php';       
 require 'routes/profil.php';      // Toutes les routes profil sont ici maintenant

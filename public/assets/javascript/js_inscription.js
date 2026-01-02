@@ -27,6 +27,12 @@ function changerEtape(numeroEtape) {
             footerText.parentElement.classList.remove("d-none");
         }
     }
+
+    // Scroll vers le haut de l'étape
+    const cardScrollable = document.querySelector(".card-scrollable");
+    if (cardScrollable) {
+        cardScrollable.scrollTop = 0;
+    }
 }
 
 /* ==========================================
@@ -38,19 +44,16 @@ async function verifierEmail() {
     const errorFormat = document.getElementById("error-email");
     const errorDoublon = document.getElementById("error-email-doublon");
 
-    // 1. Reset des erreurs visuelles
     errorFormat.classList.add("d-none");
     errorDoublon.classList.add("d-none");
     emailInput.classList.remove("is-invalid");
 
-    // 2. Vérification du format HTML5 (le @, etc.)
     if (!emailInput.checkValidity()) {
         errorFormat.classList.remove("d-none");
         emailInput.classList.add("is-invalid");
-        return; // On arrête tout si le format est mauvais
+        return;
     }
 
-    // 3. Vérification en base de données via AJAX
     try {
         const emailValue = emailInput.value;
         const response = await fetch(
@@ -60,11 +63,9 @@ async function verifierEmail() {
         const data = await response.json();
 
         if (data.exists) {
-            // L'email existe déjà en BDD
             errorDoublon.classList.remove("d-none");
             emailInput.classList.add("is-invalid");
         } else {
-            // L'email est libre, on passe à l'étape 2
             changerEtape(2);
         }
     } catch (error) {
@@ -87,26 +88,22 @@ function verifierMDP() {
     const mdp = mdpInput.value;
     const confMdp = confMdpInput.value;
 
-    // 1. Vérifier la correspondance
     if (mdp !== confMdp) {
         afficherErreur("Les mots de passe ne correspondent pas.");
         return;
     }
 
-    // 2. Vérifier la longueur (min 8)
     if (mdp.length < 8) {
         afficherErreur("Le mot de passe doit faire au moins 8 caractères.");
         return;
     }
 
-    // 3. Vérifier le contenu sans Regex
     let aUneLettre = false;
     let aUnChiffre = false;
     let aUnSpecial = false;
 
     for (let i = 0; i < mdp.length; i++) {
         let char = mdp[i];
-
         if (char >= "0" && char <= "9") {
             aUnChiffre = true;
         } else if (char.toLowerCase() !== char.toUpperCase()) {
@@ -123,7 +120,6 @@ function verifierMDP() {
         return;
     }
 
-    // Tout est bon
     errorMsg.classList.add("d-none");
     mdpInput.classList.remove("is-invalid");
     confMdpInput.classList.remove("is-invalid");
@@ -178,23 +174,19 @@ function validerEtape4() {
     const tel = document.getElementById("telInput").value;
 
     const dateSaisie = new Date(dateInput.value);
-
     const dateLimite13ans = new Date();
     dateLimite13ans.setFullYear(dateLimite13ans.getFullYear() - 13);
     dateLimite13ans.setHours(0, 0, 0, 0);
-
     const dateMin = new Date("1900-01-01");
 
     if (!dateInput.value) {
         alert("Veuillez entrer une date.");
         return;
     }
-
     if (dateSaisie > dateLimite13ans) {
         alert("Vous devez avoir au moins 13 ans pour vous inscrire.");
         return;
     }
-
     if (dateSaisie < dateMin) {
         alert("Veuillez entrer une année de naissance valide.");
         return;
@@ -232,7 +224,6 @@ function validerEtape5() {
     }
 
     const regexCP = /^[0-9]{5}$/;
-
     if (!regexCP.test(post)) {
         errorPost.classList.remove("d-none");
         postInput.classList.add("is-invalid");
@@ -301,13 +292,10 @@ function soumettreAvecVoiture() {
     const modele = document.getElementById("modelInput").value.trim();
     const immat = document.getElementById("immatInput").value.trim();
 
-    // 1. Vérifier que les champs sont remplis
     if (!marque || !modele || !immat) {
         alert("Veuillez remplir tous les champs obligatoires de la voiture.");
         return;
     }
-
-    // 2. IMPORTANT : Vérifier que la plaque est valide (format)
     if (!validerImmatriculation()) {
         alert("Le format de la plaque d'immatriculation est incorrect.");
         document.getElementById("immatInput").focus();
@@ -315,21 +303,15 @@ function soumettreAvecVoiture() {
     }
 
     let form = document.querySelector("form");
-
-    // 3. Nettoyage : Supprimer l'input caché s'il existe déjà
     let ancienInput = form.querySelector('input[name="voiture"]');
     if (ancienInput) {
         ancienInput.remove();
     }
-
-    // 4. Création de l'input caché pour dire "J'ai une voiture"
     let hiddenInput = document.createElement("input");
     hiddenInput.type = "hidden";
     hiddenInput.name = "voiture";
     hiddenInput.value = "oui";
     form.appendChild(hiddenInput);
-
-    // 5. Soumission finale
     form.submit();
 }
 
@@ -338,23 +320,19 @@ function soumettreAvecVoiture() {
    ========================================== */
 
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. Initialisation des dates min/max
     const dateInput = document.getElementById("dateInput");
     if (dateInput) {
         const today = new Date();
         today.setFullYear(today.getFullYear() - 13);
-
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
-
         const maxDate = `${year}-${month}-${day}`;
         dateInput.setAttribute("max", maxDate);
         dateInput.setAttribute("min", "1900-01-01");
     }
 
-    // 2. IMPORTANT : Empêcher le formulaire de s'envoyer via Entrée standard
-    // (Cela permet au code "keydown" ci-dessous de prendre le relais)
+    // Sécurité anti-envoi classique
     const form = document.querySelector("form");
     if (form) {
         form.addEventListener("submit", function (e) {
@@ -363,33 +341,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// 3. Gestion intelligente de la touche "Entrée"
+// GESTION CORRIGÉE DE LA TOUCHE ENTRÉE (Simulation de clic)
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
-        // Empêche le comportement par défaut (rechargement/envoi)
         event.preventDefault();
 
-        // Détection de l'étape active
-        const step1 = document.getElementById("step-1");
-        const step2 = document.getElementById("step-2");
-        const step3 = document.getElementById("step-3");
-        const step4 = document.getElementById("step-4");
-        const step5 = document.getElementById("step-5");
-        const step7 = document.getElementById("step-7");
+        const etapeActive = document.querySelector(".bloc-etape:not(.d-none)");
 
-        // Action selon l'étape
-        if (step1 && !step1.classList.contains("d-none")) {
-            verifierEmail();
-        } else if (step2 && !step2.classList.contains("d-none")) {
-            verifierMDP();
-        } else if (step3 && !step3.classList.contains("d-none")) {
-            validerEtape3();
-        } else if (step4 && !step4.classList.contains("d-none")) {
-            validerEtape4();
-        } else if (step5 && !step5.classList.contains("d-none")) {
-            validerEtape5();
-        } else if (step7 && !step7.classList.contains("d-none")) {
-            soumettreAvecVoiture();
+        if (etapeActive) {
+            const bouton = etapeActive.querySelector(".btn-inscription");
+
+            if (bouton) {
+                bouton.click();
+            }
         }
     }
 });

@@ -25,7 +25,6 @@
                         <div id="error-email" class="text-danger mt-2 small d-none">
                             Veuillez entrer une adresse email valide (avec un @).
                         </div>
-
                         <div id="error-email-doublon" class="text-danger mt-2 small d-none">
                             Cette adresse email possède déjà un compte. <a href="/sae-covoiturage/public/connexion">Connectez-vous ici</a>.
                         </div>
@@ -39,6 +38,7 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-2">
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(1)">Retour</button>
     
                     <div class="mb-4">
                         <label for="mdpInput" class="form-label mdp-texte fw-bold mb-3">
@@ -62,7 +62,6 @@
                                 <i class="bi bi-eye" id="icon-conf" style="color: #8c52ff;"></i>
                             </span>
                         </div>
-        
                         <div id="error-mdp" class="text-danger mt-2 small d-none">
                             Les mots de passe ne correspondent pas ou sont vides.
                         </div>
@@ -77,6 +76,8 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-3">
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(2)">Retour</button>
+
                     <div class="mb-4">
                         <label for="nomInput" class="form-label nom-texte fw-bold mb-3">
                             Quel est votre nom ? <span class="asterisque">*</span>
@@ -98,6 +99,8 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-4">
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(3)">Retour</button>
+
                     <div class="mb-4">
                         <label for="dateInput" class="form-label date-texte fw-bold mb-3">
                             Quelle est votre date de naissance ? <span class="asterisque">*</span>
@@ -119,6 +122,8 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-5">
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(4)">Retour</button>
+
                     <div class="mb-4">
                         <label for="rueInput" class="form-label rue-texte fw-bold mb-3">Votre rue ? <span class="asterisque">*</span></label>
                         <input type="text" id="rueInput" name="rue" class="form-control" placeholder="1 Rue Albert Catoire" required>
@@ -149,6 +154,8 @@
                 <div class="d-none bloc-etape" id="step-6">
                     <input type="hidden" id="voitureInput" name="voiture" value="">
                     
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(5)">Retour</button>
+                    
                     <div class="mb-5 text-center">
                         <h3 style="color: #8c52ff;">Avez-vous une voiture ?</h3>
                     </div>
@@ -159,6 +166,8 @@
                 </div>
 
                 <div class="d-none bloc-etape" id="step-7">
+                    <button type="button" class="btn-retour-top" onclick="changerEtape(6)">Retour</button>
+
                     <div class="mb-5 text-center">
                         <h3 style="color: #8c52ff;">Parlez-nous de votre voiture</h3>
                     </div>
@@ -265,4 +274,4 @@
 
 <script src="/sae-covoiturage/public/assets/javascript/js_inscription.js"></script>
 
-{include file='includes/footer.tpl'}
+{include file='includes/footer.tpl'}    

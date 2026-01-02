@@ -23,24 +23,31 @@
                     <p class="hero-subtitle">Le covoiturage gratuit pour les étudiants de l'IUT d'Amiens.</p>
                 </div>
 
-                <form action="/sae-covoiturage/public/recherche/resultats" method="GET"> 
+                <form action="/sae-covoiturage/public/recherche/resultats" method="GET" autocomplete="off"> 
                     
-                    <div class="form-group-modern">
-                        <label for="depart">D'où partez-vous ?</label>
+                    <div class="form-group-modern autocomplete-wrapper"> <label for="depart">D'où partez-vous ?</label>
                         <i class="bi bi-geo-alt-fill input-icon"></i>
-                        <input type="text" id="depart" name="depart" class="input-modern" placeholder="Ex: Gare d'Amiens, Dury..." required>
+                        <input type="text" id="depart" name="depart" class="input-modern" 
+                            placeholder="Ex: Gare d'Amiens..." 
+                            value="{$recherche_precedente.depart|default:''}" required>
+                        
+                        <div id="depart-list" class="autocomplete-suggestions"></div>
                     </div>
 
-                    <div class="form-group-modern">
+                    <div class="form-group-modern autocomplete-wrapper">
                         <label for="arrivee">Où allez-vous ?</label>
                         <i class="bi bi-pin-map-fill input-icon"></i>
-                        <input type="text" id="arrivee" name="arrivee" class="input-modern" placeholder="Ex: IUT Amiens" required>
+                        <input type="text" id="arrivee" name="arrivee" class="input-modern" 
+                            placeholder="Ex: IUT Amiens" 
+                            value="{$recherche_precedente.arrivee|default:''}" required>
+                        
+                        <div id="arrivee-list" class="autocomplete-suggestions"></div>
                     </div>
 
                     <input type="hidden" name="date" value="{$smarty.now|date_format:'%Y-%m-%d'}">
 
                     <button type="submit" class="btn-search">
-                        <i class="bi bi-search me-2"></i> Rechercher un trajet
+                        <i class="bi bi-search me-2"></i> Rechercher
                     </button>
                 </form>
             </div>
@@ -126,5 +133,14 @@
     </section>
 
     {include file='includes/footer.tpl'}
+
+    <script>
+        window.lieuxFrequents = [];
+        try {
+            window.lieuxFrequents = JSON.parse('{$lieux_frequents|default:[]|json_encode|escape:"javascript"}');
+        } catch(e) { console.warn("Pas de lieux fréquents chargés"); }
+    </script>
+
+    <script src="/sae-covoiturage/public/assets/javascript/js_accueil.js"></script>
 </body>
 </html>

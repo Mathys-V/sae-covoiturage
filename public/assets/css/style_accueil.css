@@ -335,3 +335,57 @@ body {
     margin: 0;
   }
 }
+
+.autocomplete-wrapper { 
+    position: relative; 
+}
+
+.autocomplete-suggestions {
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    width: 100%;
+    background: white; 
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    z-index: 9999; 
+    max-height: 280px; 
+    overflow-y: auto;
+    border: 1px solid #eee; 
+    border-top: none;
+    margin-top: -5px;
+}
+
+.autocomplete-suggestion { 
+    padding: 12px 15px; 
+    cursor: pointer; 
+    font-size: 0.95rem; 
+    border-bottom: 1px solid #f0f0f0; 
+    color: #333;
+    display: flex; 
+    align-items: center;
+    gap: 15px;
+}
+
+.autocomplete-suggestion:hover { 
+    background-color: #f3efff; 
+    color: #8c52ff; 
+}
+
+.autocomplete-suggestion:last-child { 
+    border-bottom: none; 
+}
+
+.autocomplete-suggestion.is-frequent { 
+    background-color: #fffbf0 !important; 
+    border-bottom: 1px solid #ffeeba;
+}
+
+.autocomplete-suggestion.is-frequent .sugg-icon { 
+    color: #ffc107 !important; 
+    font-size: 1.1rem;
+}
+
+.autocomplete-suggestion.is-frequent:hover { 
+    background-color: #fff3cd !important; 
+}

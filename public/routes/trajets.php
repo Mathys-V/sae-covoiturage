@@ -20,8 +20,23 @@ Flight::route('GET /trajet/nouveau', function(){
         return;
     }
 
-    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+    // --- CORRECTION ICI : Récupération et FORMATAGE des lieux globaux ---
+    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS ORDER BY nom_lieu ASC");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
+
+    // On prépare une chaîne 'full_address' pour que le JavaScript puisse faire la recherche dessus
+    foreach ($lieux as &$lieu) {
+        // On crée un champ 'label' (le nom du lieu)
+        $lieu['label'] = $lieu['nom_lieu']; 
+        
+        // On crée l'adresse complète pour la recherche et l'affichage
+        // Ex: "Gare du Nord Rue de Maubeuge 75010 Paris"
+        $lieu['full_address'] = $lieu['nom_lieu'] . ' ' . 
+                                ($lieu['rue'] ? $lieu['rue'] . ' ' : '') . 
+                                $lieu['code_postal'] . ' ' . 
+                                $lieu['ville'];
+    }
+    // -------------------------------------------------------------------
 
     Flight::render('trajet/proposer_trajet.tpl', [
         'titre' => 'Proposer un trajet',
@@ -244,13 +259,23 @@ Flight::route('GET /trajet/modifier/@id', function($id){
         return;
     }
 
-    // Formater date/heure
+// Formater date/heure
     $dateObj = new DateTime($trajet['date_heure_depart']);
     $trajet['date_seule'] = $dateObj->format('Y-m-d');
     $trajet['heure_seule'] = $dateObj->format('H:i');
 
-    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+    // --- CORRECTION ICI AUSSI ---
+    $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS ORDER BY nom_lieu ASC");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($lieux as &$lieu) {
+        $lieu['label'] = $lieu['nom_lieu']; 
+        $lieu['full_address'] = $lieu['nom_lieu'] . ' ' . 
+                                ($lieu['rue'] ? $lieu['rue'] . ' ' : '') . 
+                                $lieu['code_postal'] . ' ' . 
+                                $lieu['ville'];
+    }
+    // ----------------------------
 
     Flight::render('trajet/modifier_trajet.tpl', [
         'titre' => 'Modifier un trajet',

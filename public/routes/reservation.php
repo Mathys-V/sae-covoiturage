@@ -146,7 +146,7 @@ Flight::route('GET /mes_reservations', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // CORRECTION ICI : ORDER BY DESC (Plus récent en haut)
+    // 1. Récupération SQL (Sans ORDER BY, car on trie en PHP)
     $sql = "SELECT r.*, t.*, 
             u.prenom as conducteur_prenom, u.nom as conducteur_nom, u.photo_profil as conducteur_photo,
             v.marque, v.modele, v.nb_places_totales
@@ -155,17 +155,16 @@ Flight::route('GET /mes_reservations', function(){
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
             WHERE r.id_passager = :user
-            AND r.statut_code = 'V'
-            ORDER BY t.date_heure_depart DESC"; // C'est ici que ça change
+            AND r.statut_code = 'V'";
     
     $stmt = $db->prepare($sql);
     $stmt->execute([':user' => $userId]);
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $participants = [];
-
     $now = new DateTime();
 
+    // 2. Calcul des statuts et données d'affichage
     foreach ($reservations as &$r) {
         $participants[$r['id_trajet']] = [];
 
@@ -185,7 +184,6 @@ Flight::route('GET /mes_reservations', function(){
             $r['statut_visuel'] = 'encours';
             $r['statut_libelle'] = 'En cours';
             $r['statut_couleur'] = 'success';
-
             $interval = $now->diff($end);
             $r['temps_restant'] = $interval->format('%Hh %Im');
         } else {
@@ -195,18 +193,14 @@ Flight::route('GET /mes_reservations', function(){
         }
         // --- /Statut du trajet ---
 
+        // Participants (SQL)
         $participants[$r['id_trajet']][] = [
             'id'=>$r['id_conducteur'],
             'nom'=>$r['conducteur_prenom'].' '.$r['conducteur_nom'],
             'role'=>'Conducteur'
         ];
 
-        $ps = $db->prepare("
-            SELECT u.id_utilisateur, u.prenom, u.nom 
-            FROM RESERVATIONS r
-            JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
-            WHERE r.id_trajet = :t AND r.statut_code='V' AND u.id_utilisateur != :me
-        ");
+        $ps = $db->prepare("SELECT u.id_utilisateur, u.prenom, u.nom FROM RESERVATIONS r JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur WHERE r.id_trajet = :t AND r.statut_code='V' AND u.id_utilisateur != :me");
         $ps->execute([':t'=>$r['id_trajet'], ':me'=>$userId]);
 
         foreach($ps->fetchAll(PDO::FETCH_ASSOC) as $p){
@@ -218,6 +212,35 @@ Flight::route('GET /mes_reservations', function(){
         }
     }
 
+    // 3. LE TRI HYBRIDE (C'est ce qui fait ta demande spécifique)
+    usort($reservations, function($a, $b) {
+        // A. Ordre des catégories
+        // 1. En cours, 2. À venir, 3. Terminé
+        $order = ['encours' => 1, 'avenir' => 2, 'termine' => 3, 'annule' => 4];
+        
+        $weightA = $order[$a['statut_visuel']] ?? 99;
+        $weightB = $order[$b['statut_visuel']] ?? 99;
+
+        // Si catégories différentes, on trie par catégorie
+        if ($weightA !== $weightB) {
+            return $weightA - $weightB;
+        }
+
+        // B. Tri par date (différent selon la catégorie)
+        $timeA = strtotime($a['date_heure_depart']);
+        $timeB = strtotime($b['date_heure_depart']);
+
+        if ($a['statut_visuel'] === 'avenir' || $a['statut_visuel'] === 'encours') {
+            // Pour 'À venir' : CROISSANT (Le plus proche en haut)
+            // Exemple : Le 04/01 sera avant le 11/01
+            return $timeA - $timeB;
+        } else {
+            // Pour 'Terminé' : DÉCROISSANT (Le plus récent en haut de l'historique)
+            return $timeB - $timeA;
+        }
+    });
+
+    // 4. Envoi à la vue (Il manquait cette partie dans ton copier-coller)
     Flight::render('mes_reservations.tpl', [
         'titre'=>'Mes réservations',
         'reservations'=>$reservations,

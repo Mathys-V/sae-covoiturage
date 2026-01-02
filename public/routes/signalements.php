@@ -18,7 +18,7 @@ Flight::route('POST /api/signalement/nouveau', function(){
 
     try {
         $stmt = $db->prepare("INSERT INTO SIGNALEMENTS (id_signaleur, id_signale, id_trajet, motif, description, statut_code, date_signalement) 
-                              VALUES (:signaleur, :signale, :trajet, :motif, :desc, 'E', NOW())"); 
+                            VALUES (:signaleur, :signale, :trajet, :motif, :desc, 'E', NOW())"); 
         
         $stmt->execute([
             ':signaleur' => $userId,

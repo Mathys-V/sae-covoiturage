@@ -395,7 +395,7 @@ Flight::route('GET /trajet/modifier/@id', function($id){
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
-    Flight::render('modifier_trajet.tpl', [
+    Flight::render('trajet/modifier_trajet.tpl', [
         'titre' => 'Modifier un trajet',
         'trajet' => $trajet,
         'lieux_frequents' => $lieux

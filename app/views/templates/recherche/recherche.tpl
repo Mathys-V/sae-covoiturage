@@ -2,19 +2,6 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/recherche/style_recherche.css">
 
-<style>
-    .autocomplete-wrapper {
-        border: none !important;      /* Supprime la ligne blanche */
-        box-shadow: none !important;  /* Supprime d'éventuelles ombres */
-        background: transparent !important;
-    }
-    /* Sécurité pour ne pas afficher de cadre vide si la liste est vide */
-    .autocomplete-suggestions:empty {
-        display: none !important;
-        border: none !important;
-    }
-</style>
-
 <div class="container mt-5 mb-5 flex-grow-1">
     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: visible;">
         <div class="card-header text-center py-4" style="background-color: #3b2875; color: white; border-radius: 20px 20px 0 0;">
@@ -28,7 +15,12 @@
                     <div class="col-md-5">
                         <label class="form-label text-white fw-bold">Départ</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" id="depart" name="depart" class="form-control rounded-pill py-2" placeholder="Ex: Gare d'Amiens..." required>
+                            <input type="text" id="depart" name="depart" class="form-control rounded-pill py-2" placeholder="Ex: Gare d'Amiens..." style="padding-right: 45px;" required>
+                            
+                            <button type="button" id="btn-geo" class="geo-btn" title="Me géolocaliser">
+                                <i class="bi bi-geo-alt-fill fs-5"></i>
+                            </button>
+
                             <div id="suggestions-depart" class="autocomplete-suggestions"></div>
                         </div>
                     </div>
@@ -131,22 +123,81 @@
             if (cookieConsent) {
                 try {
                     const consentData = JSON.parse(cookieConsent);
-                    // Si performance = 1, alors l'historique marche, donc pas besoin du message d'erreur
                     if (consentData.performance == 1) {
                         showWarning = false;
                     }
-                } catch (e) {
-                    console.error("Erreur lecture cookie", e);
-                }
-            } else {
-                // Si pas de cookie du tout, on suppose que c'est le premier passage ou tout refusé
-                // On peut laisser le warning ou l'afficher différemment. 
-                // Ici, on part du principe que si pas de consentement explicite, pas d'historique.
+                } catch (e) { console.error("Erreur lecture cookie", e); }
             }
-
             if (showWarning) {
                 warningText.classList.remove('d-none');
             }
+        }
+
+        // --- NOUVEAU : SCRIPT DE GÉOLOCALISATION ---
+        const btnGeo = document.getElementById('btn-geo');
+        const inputDepart = document.getElementById('depart');
+        const iconGeo = btnGeo.querySelector('i');
+
+        if (btnGeo && inputDepart) {
+            btnGeo.addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert("La géolocalisation n'est pas supportée par votre navigateur.");
+                    return;
+                }
+
+                // Animation de chargement
+                iconGeo.classList.remove('bi-geo-alt-fill');
+                iconGeo.classList.add('bi-arrow-repeat', 'geo-loading');
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        // Appel API Adresse Gouv (Reverse Geocoding)
+                        fetch('https://api-adresse.data.gouv.fr/reverse/?lon=' + lon + '&lat=' + lat)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.features && data.features.length > 0) {
+                                    // On prend la meilleure correspondance
+                                    const adresseComplete = data.features[0].properties.label;
+                                    inputDepart.value = adresseComplete;
+                                } else {
+                                    alert("Adresse introuvable.");
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erreur API :', error);
+                                alert("Impossible de récupérer l'adresse.");
+                            })
+                            .finally(() => {
+                                // Remettre l'icône normale
+                                iconGeo.classList.remove('bi-arrow-repeat', 'geo-loading');
+                                iconGeo.classList.add('bi-geo-alt-fill');
+                            });
+                    },
+                    (error) => {
+                        // Gestion des erreurs
+                        iconGeo.classList.remove('bi-arrow-repeat', 'geo-loading');
+                        iconGeo.classList.add('bi-geo-alt-fill');
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                alert("Vous avez refusé la demande de géolocalisation.");
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                alert("Les informations de localisation sont indisponibles.");
+                                break;
+                            case error.TIMEOUT:
+                                alert("La demande de localisation a expiré.");
+                                break;
+                            default:
+                                alert("Une erreur inconnue est survenue.");
+                                break;
+                        }
+                    }
+                );
+            });
         }
     });
 </script>

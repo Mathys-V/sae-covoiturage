@@ -1,84 +1,140 @@
-/* --- STYLE DE L'AUTOCOMPLÉTION --- */
-.autocomplete-wrapper { 
-    position: relative; 
+/* --- 1. CONFIGURATION DU CONTENEUR (WRAPPER) --- */
+.autocomplete-wrapper {
+  position: relative !important; /* Indispensable pour que le bouton se cale par rapport à ce bloc */
+  width: 100%; /* Force le bloc à prendre toute la largeur */
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
+/* --- 2. STYLE DU BOUTON DE GÉOLOCALISATION --- */
+.geo-btn {
+  position: absolute;
+  right: 15px; /* Place le bouton à droite (à l'intérieur du champ) */
+  top: 50%; /* Centre verticalement */
+  transform: translateY(-50%); /* Ajustement précis du centrage */
+
+  border: none;
+  background: transparent; /* Fond transparent pour se fondre dans l'input */
+  color: #8c52ff; /* Couleur violette */
+  cursor: pointer;
+  z-index: 10; /* S'assure qu'il est AU-DESSUS du champ texte */
+
+  font-size: 1.2rem; /* Taille de l'icône */
+  padding: 0; /* Enlève les marges par défaut du bouton */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.geo-btn:hover {
+  color: #3b2875; /* Violet foncé au survol */
+  transform: translateY(-50%) scale(1.1); /* Léger grossissement au survol */
+}
+
+/* Animation de chargement (tourne quand on clique) */
+.geo-loading {
+  animation: spin 1s linear infinite;
+  pointer-events: none; /* Empêche de recliquer pendant le chargement */
+}
+
+@keyframes spin {
+  100% {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+/* --- 3. LISTE DES SUGGESTIONS (AUTOCOMPLÉTION) --- */
 .autocomplete-suggestions {
-    position: absolute; 
-    top: 100%; 
-    left: 0; 
-    width: 100%;
-    background: white; 
-    border-radius: 0 0 15px 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    z-index: 9999; 
-    max-height: 280px; 
-    overflow-y: auto;
-    border: 1px solid #eee; 
-    border-top: none;
-    margin-top: -5px;
+  position: absolute;
+  top: 100%; /* Juste en dessous du champ */
+  left: 0;
+  width: 100%;
+
+  background: white;
+  border: 1px solid #eee;
+  border-top: none;
+  border-radius: 0 0 15px 15px; /* Arrondi en bas seulement */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+  z-index: 9999;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 5px; /* Petit espace sous le champ */
 }
 
-.autocomplete-suggestion { 
-    padding: 12px 15px; 
-    cursor: pointer; 
-    font-size: 0.95rem; 
-    border-bottom: 1px solid #f0f0f0; 
-    color: #333;
-    display: flex; 
-    align-items: center;
-    gap: 15px;
+/* Cache la boîte si elle est vide */
+.autocomplete-suggestions:empty {
+  display: none !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
-.autocomplete-suggestion:hover { 
-    background-color: #f3efff; 
-    color: #8c52ff; 
+.autocomplete-suggestion {
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white; /* Force le fond blanc */
 }
 
-.autocomplete-suggestion:last-child { 
-    border-bottom: none; 
+.autocomplete-suggestion:hover {
+  background-color: #f3efff;
+  color: #8c52ff;
 }
 
-.is-frequent { 
-    background-color: #fffbf0; 
+.autocomplete-suggestion:last-child {
+  border-bottom: none;
 }
 
-.is-frequent .sugg-icon { 
-    color: #ffc107; /* Etoile Jaune */
+/* --- 4. TYPES DE SUGGESTIONS (ICÔNES ET TEXTES) --- */
+.is-frequent {
+  background-color: #fffbf0;
 }
 
-.is-api .sugg-icon { 
-    color: #6c757d; /* Pin Gris */
+.is-frequent .sugg-icon {
+  color: #ffc107; /* Etoile Jaune */
+}
+
+.is-api .sugg-icon {
+  color: #6c757d; /* Pin Gris */
 }
 
 .sugg-icon {
-    width: 24px; 
-    height: 24px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    font-size: 1.2rem; 
-    flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
-.sugg-text { 
-    display: flex; 
-    flex-direction: column; 
-    line-height: 1.2; 
-    overflow: hidden; 
+.sugg-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+  text-align: left; /* Force l'alignement à gauche */
 }
 
-.sugg-main { 
-    font-weight: 600; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+.sugg-main {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sugg-sub { 
-    font-size: 0.8rem; 
-    color: #888; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+.sugg-sub {
+  font-size: 0.8rem;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

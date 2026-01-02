@@ -2,6 +2,10 @@
 
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/recherche/style_recherche.css">
 
+<style>
+    .autocomplete-suggestions:empty { display: none !important; border: none !important; padding: 0 !important; }
+</style>
+
 <div class="container mt-5 mb-5 flex-grow-1">
     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: visible;">
         <div class="card-header text-center py-4" style="background-color: #3b2875; color: white; border-radius: 20px 20px 0 0;">
@@ -14,7 +18,7 @@
                     <div class="col-md-5">
                         <label class="form-label text-white fw-bold">Départ</label>
                         <div class="autocomplete-wrapper">
-                            <input type="text" id="depart" name="depart" class="form-control rounded-pill py-2" placeholder="Ex: Gare d'Amiens..." style="padding-right: 45px;" required>
+                            <input type="text" id="depart" name="depart" class="form-control rounded-pill py-2" placeholder="Ex: Gare d'Amiens..." style="padding-right: 45px;" value="{$recherche_precedente.depart}" required>
                             
                             <button type="button" id="btn-geo" class="geo-btn" title="Me géolocaliser">
                                 <i class="bi bi-geo-alt-fill fs-5"></i>
@@ -67,7 +71,7 @@
                 {if isset($historique) && $historique|@count > 0}
                     <div class="d-flex flex-column gap-3">
                         {foreach from=$historique item=h}
-                            <a href="/sae-covoiturage/public/recherche/resultats?depart={$h.depart}&arrivee={$h.arrivee}&date={$h.date}" class="text-decoration-none">
+                            <a href="/sae-covoiturage/public/recherche/resultats?depart={$h.depart}&arrivee={$h.arrivee}&date={$h.date}&heure={$smarty.now|date_format:'%H'}&minute={$smarty.now|date_format:'%M'}" class="text-decoration-none">
                                 <div class="card border-0 shadow-sm" style="background-color: rgba(255, 255, 255, 0.1); border-radius: 15px; transition: background 0.3s;">
                                     <div class="card-body d-flex align-items-center justify-content-between text-white py-3">
                                         <div class="d-flex align-items-center gap-3">

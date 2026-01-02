@@ -1,6 +1,6 @@
 <?php
 
-// IMPORTANT : On force le fuseau horaire pour avoir la bonne heure par défaut
+// On force le fuseau horaire
 date_default_timezone_set('Europe/Paris');
 
 // AFFICHER LE FORMULAIRE DE RECHERCHE
@@ -8,7 +8,6 @@ Flight::route('GET /recherche', function(){
     $db = Flight::get('db');
     $req = Flight::request();
 
-    // Gestion historique (inchangée)
     $historique = [];
     if(isset($_COOKIE['historique_recherche'])) {
         $historique = json_decode($_COOKIE['historique_recherche'], true);
@@ -17,18 +16,11 @@ Flight::route('GET /recherche', function(){
     $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- LOGIQUE DE PRÉ-REMPLISSAGE ROBUSTE ---
-    // Si des paramètres sont dans l'URL (via le bouton Modifier), on les utilise.
-    // Sinon, on injecte les valeurs par défaut (Date du jour, Heure actuelle).
-    
     $preRempli = [
         'depart'  => $req->query->depart ?? '',
         'arrivee' => $req->query->arrivee ?? '',
-        // Si pas de date, date du jour
         'date'    => !empty($req->query->date) ? $req->query->date : date('Y-m-d'),
-        // Si pas d'heure, heure actuelle (format 2 chiffres)
         'heure'   => isset($req->query->heure) && $req->query->heure !== '' ? $req->query->heure : date('H'),
-        // Si pas de minute, minute actuelle
         'minute'  => isset($req->query->minute) && $req->query->minute !== '' ? $req->query->minute : date('i')
     ];
 
@@ -42,31 +34,22 @@ Flight::route('GET /recherche', function(){
 
 // TRAITEMENT DE LA RECHERCHE (Résultats)
 Flight::route('GET /recherche/resultats', function(){
-    // On récupère les paramètres
-    $depart = Flight::request()->query->depart;
-    $arrivee = Flight::request()->query->arrivee;
-    $date = Flight::request()->query->date;
+    $req = Flight::request()->query;
+    $depart = $req->depart;
+    $arrivee = $req->arrivee;
+    $date = $req->date;
+    $heure = (isset($req->heure) && $req->heure !== '') ? $req->heure : '00';
+    $minute = (isset($req->minute) && $req->minute !== '') ? $req->minute : '00';
     
-    // Récupération de l'heure et minute (avec valeurs par défaut si vide pour éviter les erreurs SQL)
-    $heure = Flight::request()->query->heure;
-    if ($heure === null || $heure === '') $heure = '00';
-    
-    $minute = Flight::request()->query->minute;
-    if ($minute === null || $minute === '') $minute = '00';
-    
-    // Construction de la date complète pour le filtre SQL
     $dateComplete = $date . ' ' . $heure . ':' . $minute . ':00';
-
     $userId = isset($_SESSION['user']) ? $_SESSION['user']['id_utilisateur'] : 0;
 
-    // --- GESTION COOKIES (Historique) ---
+    // Cookies
     $consent = ['performance' => 1]; 
     if (isset($_COOKIE['cookie_consent'])) $consent = json_decode($_COOKIE['cookie_consent'], true);
-    
     if ($consent['performance'] == 1) {
         $nouvelleRecherche = ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date, 'timestamp' => time()];
         $historique = isset($_COOKIE['historique_recherche']) ? json_decode($_COOKIE['historique_recherche'], true) : [];
-        // Filtre doublons
         $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
             return !($h['depart'] == $nouvelleRecherche['depart'] && $h['arrivee'] == $nouvelleRecherche['arrivee']);
         });
@@ -75,8 +58,7 @@ Flight::route('GET /recherche/resultats', function(){
         setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
     } 
 
-    // --- FONCTIONS NETTOYAGE ---
-    function extraireCP($str) { return preg_match('/(\d{5})/', $str, $matches) ? $matches[1] : null; }
+    // Nettoyage
     function nettoyerInputLight($str) {
         $str = mb_strtolower($str, 'UTF-8');
         $str = str_replace(['’', '‘'], "'", $str);
@@ -84,6 +66,7 @@ Flight::route('GET /recherche/resultats', function(){
         $str = preg_replace('/\s*\(.*?\)/', '', $str);
         return trim($str);
     }
+    function extraireCP($str) { return preg_match('/(\d{5})/', $str, $matches) ? $matches[1] : null; }
 
     $cpDep = extraireCP($depart);
     $cpArr = extraireCP($arrivee);
@@ -92,7 +75,7 @@ Flight::route('GET /recherche/resultats', function(){
 
     $db = Flight::get('db');
     
-    // --- REQUÊTE DE BASE ---
+    // Requête de base
     $baseSelect = "
         SELECT t.*, ADDTIME(t.date_heure_depart, t.duree_estimee) as date_arrivee, 
                u.prenom, u.nom, u.photo_profil, v.marque, v.modele,
@@ -105,62 +88,106 @@ Flight::route('GET /recherche/resultats', function(){
         JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
         LEFT JOIN LIEUX_FREQUENTS lf_dep ON (t.rue_depart = lf_dep.rue AND t.ville_depart = lf_dep.ville)
         LEFT JOIN LIEUX_FREQUENTS lf_arr ON (t.rue_arrivee = lf_arr.rue AND t.ville_arrivee = lf_arr.ville)
-        WHERE t.date_heure_depart >= :dateComplete 
-        AND t.date_heure_depart > NOW()
-        AND t.statut_flag = 'A'
-        AND t.id_conducteur != :userId
     ";
 
-    // 1. RECHERCHE EXACTE
-    $sqlExact = $baseSelect . "
-        AND ( (:cpDep IS NOT NULL AND t.code_postal_depart = :cpDep) OR t.ville_depart LIKE :depClean OR t.rue_depart LIKE :depClean )
-        AND ( (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr) OR t.ville_arrivee LIKE :arrClean OR t.rue_arrivee LIKE :arrClean )
-        ORDER BY t.date_heure_depart ASC";
+    // Condition Lieu
+    $whereLieuExact = "
+        AND ( 
+            (:cpDep IS NOT NULL AND t.code_postal_depart = :cpDep) 
+            OR t.ville_depart LIKE :depClean 
+            OR t.rue_depart LIKE :depClean 
+            OR lf_dep.nom_lieu LIKE :depClean 
+            OR (t.ville_depart != '' AND :depClean LIKE CONCAT('%', t.ville_depart, '%'))
+            OR (t.rue_depart != '' AND :depClean LIKE CONCAT('%', t.rue_depart, '%'))
+        )
+        AND ( 
+            (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr) 
+            OR t.ville_arrivee LIKE :arrClean 
+            OR t.rue_arrivee LIKE :arrClean 
+            OR lf_arr.nom_lieu LIKE :arrClean 
+            OR (t.ville_arrivee != '' AND :arrClean LIKE CONCAT('%', t.ville_arrivee, '%'))
+            OR (t.rue_arrivee != '' AND :arrClean LIKE CONCAT('%', t.rue_arrivee, '%'))
+        )
+    ";
+
+    // 1. RECHERCHE EXACTE (Futurs)
+    $sqlExact = $baseSelect . " WHERE t.date_heure_depart >= :dateComplete AND t.statut_flag = 'A' AND t.id_conducteur != :userId " . $whereLieuExact . " ORDER BY t.date_heure_depart ASC";
 
     $stmt = $db->prepare($sqlExact);
     $stmt->execute([
-        ':dateComplete' => $dateComplete,
-        ':userId'       => $userId,
-        ':cpDep'        => $cpDep,
-        ':depClean'     => "%$villeDepClean%",
-        ':cpArr'        => $cpArr,
-        ':arrClean'     => "%$villeArrClean%"
+        ':dateComplete' => $dateComplete, ':userId' => $userId,
+        ':cpDep' => $cpDep, ':depClean' => "%$villeDepClean%",
+        ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
     ]);
     
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $typeResultat = 'exact';
     $message = null;
 
-    // 2. RECHERCHE ALTERNATIVE
+    // 2. SI VIDE : Vérifier Passé
     if (empty($trajets)) {
+        
+        $sqlCheckPast = "SELECT 1 FROM TRAJETS t 
+            LEFT JOIN LIEUX_FREQUENTS lf_dep ON (t.rue_depart = lf_dep.rue AND t.ville_depart = lf_dep.ville)
+            LEFT JOIN LIEUX_FREQUENTS lf_arr ON (t.rue_arrivee = lf_arr.rue AND t.ville_arrivee = lf_arr.ville)
+            WHERE t.date_heure_depart BETWEEN :dateStart AND :dateEnd 
+            AND t.statut_flag = 'A' 
+            AND t.id_conducteur != :userId " . $whereLieuExact . " 
+            LIMIT 1";
+
+        $stmtCheck = $db->prepare($sqlCheckPast);
+        $stmtCheck->execute([
+            ':dateStart' => $date . ' 00:00:00', 
+            ':dateEnd'   => $date . ' 23:59:59',
+            ':userId'    => $userId,
+            ':cpDep' => $cpDep, ':depClean' => "%$villeDepClean%",
+            ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
+        ]);
+        
+        $trajetPasseExiste = $stmtCheck->fetchColumn();
+
+        // --- CHOIX DU MESSAGE ---
+        if ($trajetPasseExiste) {
+            // CORRECTION ICI : Message plus clair sur la chronologie
+            $prefixeMsg = "<strong>Attention</strong>, tous les départs pour ce trajet précis sont <strong>déjà passés à l'heure demandée</strong>.";
+        } else {
+            $prefixeMsg = "Aucun trajet exact trouvé pour ce parcours.";
+        }
+
+        // 3. ALTERNATIVES
         $typeResultat = 'alternatif';
         $sqlAlt = $baseSelect . "
-            AND ( (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr) OR t.ville_arrivee LIKE :arrClean OR t.rue_arrivee LIKE :arrClean )
+            WHERE ( 
+                (:cpArr IS NOT NULL AND t.code_postal_arrivee = :cpArr) 
+                OR t.ville_arrivee LIKE :arrClean 
+                OR t.rue_arrivee LIKE :arrClean 
+                OR lf_arr.nom_lieu LIKE :arrClean
+                OR (t.ville_arrivee != '' AND :arrClean LIKE CONCAT('%', t.ville_arrivee, '%'))
+            )
+            AND t.date_heure_depart >= :dateComplete
+            AND t.statut_flag = 'A' AND t.id_conducteur != :userId
             ORDER BY t.date_heure_depart ASC LIMIT 10";
         
         $stmtAlt = $db->prepare($sqlAlt);
         $stmtAlt->execute([
-            ':dateComplete' => $dateComplete,
-            ':userId'       => $userId,
-            ':cpArr'        => $cpArr,
-            ':arrClean'     => "%$villeArrClean%"
+            ':dateComplete' => $dateComplete, ':userId' => $userId,
+            ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
         ]);
         $trajets = $stmtAlt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!empty($trajets)) {
-            $message = "Aucun trajet exact. Voici des trajets <strong>vers votre destination</strong> :";
+            $message = $prefixeMsg . " Voici des <strong>alternatives</strong> vers votre destination :";
         } else {
-            // 3. DÉFAUT
+            // 4. DÉFAUT
             $typeResultat = 'defaut';
-            $sqlDernier = $baseSelect . " ORDER BY t.date_heure_depart ASC LIMIT 5";
+            $sqlDernier = $baseSelect . " WHERE t.date_heure_depart >= :dateComplete AND t.statut_flag = 'A' AND t.id_conducteur != :userId ORDER BY t.date_heure_depart ASC LIMIT 5";
             $stmtDernier = $db->prepare($sqlDernier);
             $stmtDernier->execute([':dateComplete' => $dateComplete, ':userId' => $userId]);
             $trajets = $stmtDernier->fetchAll(PDO::FETCH_ASSOC);
-            $message = "Aucun trajet trouvé. Voici les <strong>prochains départs</strong> :";
+            $message = $prefixeMsg . " Voici les <strong>prochains départs</strong> sur la plateforme :";
         }
     }
 
-    // On renvoie toutes les infos à la vue pour qu'elle puisse les réutiliser dans le bouton Modifier
     Flight::render('recherche/resultats_recherche.tpl', [
         'titre' => 'Résultats',
         'trajets' => $trajets,

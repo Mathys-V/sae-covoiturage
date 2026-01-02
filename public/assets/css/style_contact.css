@@ -1,132 +1,154 @@
 /* 1. CONFIGURATION GLOBALE */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background-color: #463077 !important; /* Violet principal */
-    color: white !important;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #463077 !important; /* Violet principal */
+  color: white !important;
 }
 
 /* 2. WRAPPER (Pour le footer sticky) */
 .page-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* 3. CONTENU PRINCIPAL */
 .main-content {
-    flex: 1;
-    width: 100%;
-    max-width: 700px; /* Largeur optimale pour un formulaire */
-    margin: 0 auto;
-    padding: 40px 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centre verticalement si l'écran est grand */
+  flex: 1;
+  width: 100%;
+  max-width: 700px; /* Largeur optimale pour un formulaire */
+  margin: 0 auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centre verticalement si l'écran est grand */
 }
 
 /* --- STYLES SPÉCIFIQUES PAGE CONTACT --- */
 
 /* Titre "Contactez-nous" */
 .contact-title {
-    text-align: center;
-    font-size: 2.2em;
-    font-weight: 700;
-    margin-bottom: 40px;
-    color: white;
+  text-align: center;
+  font-size: 2.2em;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: white;
 }
 
 /* Conteneur du formulaire */
 .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* Espace entre les groupes de champs */
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Espace entre les groupes de champs */
+}
+
+/* Zone bleue de démonstration */
+.simulation-info {
+  background-color: #2196f3; /* Le fond bleu */
+  color: white; /* Texte en blanc */
+  padding: 15px 20px; /* Espace intérieur */
+  border-radius: 8px; /* Coins arrondis */
+  margin-bottom: 30px; /* Espace sous la boîte */
+  text-align: center; /* Texte centré */
+  font-weight: 500;
+  border: 1px solid #64b5f6; /* Une petite bordure bleu clair */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Légère ombre pour le relief */
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centre les labels et inputs */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centre les labels et inputs */
 }
 
 /* Labels */
 .form-label {
-    margin-bottom: 10px;
-    font-size: 1.1em;
-    font-weight: 500;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  font-weight: 500;
 }
 
 .required-star {
-    color: #ff4d4d; /* Rouge pour l'astérisque */
-    margin-left: 4px;
+  color: #ff4d4d; /* Rouge pour l'astérisque */
+  margin-left: 4px;
 }
 
-/* Champs (Input & Textarea) */
-.form-input, .form-textarea {
-    width: 100%;
-    max-width: 500px; /* Largeur max des champs comme sur l'image */
-    padding: 12px 20px;
-    border-radius: 30px; /* Bords très arrondis */
-    background-color: white;
-    font-family: inherit;
-    font-size: 1em;
-    box-sizing: border-box;
-    
-    /* AJOUT DE LA BORDURE LUMINEUSE VIOLETTE */
-    border: 2px solid #8B5CF6; 
-    box-shadow: 0 0 10px 2px rgba(139, 92, 246, 0.6); 
+/* Champs (Input & Textarea) - VERSION CORRIGÉE ET NETTOYÉE */
+.form-input,
+.form-textarea {
+  width: 100%;
+  max-width: 500px; /* Largeur max des champs */
+  padding: 12px 20px;
+  border-radius: 30px; /* Bords très arrondis */
+  background-color: white;
+  font-family: inherit;
+  font-size: 1em;
+  box-sizing: border-box;
 
-    outline: none;
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  /* SUPPRESSION TOTALE DU BRILLANT */
+  border: 1px solid #ccc !important; /* Bordure grise fine et discrète */
+  box-shadow: none !important; /* Aucune ombre brillante */
+  outline: none !important; /* Aucun contour bleu du navigateur */
+
+  transition: border-color 0.3s ease;
 }
 
-.form-input:focus, .form-textarea:focus {
-    /* Rendre la bordure plus intense au focus */
-    border-color: #a78bfa;
-    box-shadow: 0 0 15px 4px rgba(139, 92, 246, 0.8);
+/* État au clic (Focus) */
+.form-input:focus,
+.form-textarea:focus {
+  /* On change juste la couleur de la bordure, SANS ajouter d'ombre */
+  border-color: #8a63d2 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .form-textarea {
-    border-radius: 20px; /* Un peu moins arrondi pour la zone de texte */
-    min-height: 150px;
-    resize: vertical;
+  border-radius: 20px; /* Un peu moins arrondi pour la zone de texte */
+  min-height: 150px;
+  resize: vertical;
 }
 
 /* Bouton Envoyer */
 .submit-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 .btn-submit {
-    background: linear-gradient(90deg, #8A63D2, #6a4ab5); /* Dégradé violet clair */
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(
+    90deg,
+    #8a63d2,
+    #6a4ab5
+  ); /* Dégradé violet clair */
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Note champ obligatoire en bas à gauche */
 .required-note {
-    color: #ff4d4d;
-    font-size: 0.9em;
-    margin-top: 40px;
+  color: #ff4d4d;
+  font-size: 0.9em;
+  margin-top: 40px;
 }

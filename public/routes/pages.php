@@ -4,10 +4,50 @@ Flight::route('/faq', function(){
     Flight::render('faq.tpl', ['titre' => 'FAQ Covoiturage']);
 });
 
-// Contact
-Flight::route('/contact', function(){
-    Flight::render('contact.tpl', ['titre' => 'Contactez-nous']);
+// Afficher la page de contact
+Flight::route('GET /contact', function(){
+    Flight::render('contact.tpl', [
+        'titre' => 'Nous contacter'
+    ]);
 });
+
+// Traiter l'envoi du formulaire
+Flight::route('POST /contact', function(){
+    $data = Flight::request()->data;
+    
+    // 1. Validation basique
+    if(empty($data->email) || empty($data->message)) {
+        $_SESSION['flash_error'] = "Veuillez remplir tous les champs.";
+        Flight::redirect('/contact');
+        return;
+    }
+
+    // 2. Préparation du contenu du "Faux Email"
+    $timestamp = date('Y-m-d H:i:s');
+    $contenu = "=== NOUVEAU MESSAGE DE CONTACT (SIMULATION) ===\n";
+    $contenu .= "Date réception : " . $timestamp . "\n";
+    $contenu .= "De : " . $data->email . "\n";
+    $contenu .= "Sujet (Problème) : " . $data->problem . "\n";
+    $contenu .= "------------------------------------------------\n";
+    $contenu .= "Message :\n";
+    $contenu .= $data->message . "\n";
+    $contenu .= "================================================\n";
+
+    // 3. Création du dossier s'il n'existe pas
+    $dossier = 'emails_simules'; // Le dossier sera à la racine du projet
+    if (!is_dir($dossier)) {
+        mkdir($dossier, 0777, true);
+    }
+
+    // 4. Écriture dans un fichier texte unique (ex: contact_2023-10-25_14h30.txt)
+    $nomFichier = 'contact_' . date('Y-m-d_His') . '.txt';
+    file_put_contents($dossier . '/' . $nomFichier, $contenu);
+
+    // 5. Succès et redirection
+    $_SESSION['flash_success'] = "Votre message a bien été simulé ! (Voir dossier '$dossier')";
+    Flight::redirect('/contact');
+});
+
 // 5. Carte (AVEC GESTION DES COORDONNÉES EN PHP)
 
 Flight::route('/carte', function(){

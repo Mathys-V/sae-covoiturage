@@ -1,0 +1,8 @@
+=== NOUVEAU MESSAGE DE CONTACT (SIMULATION) ===
+Date réception : 2026-01-02 11:49:43
+De : mathys19706980@gmail.com
+Sujet (Problème) : Bug test
+------------------------------------------------
+Message :
+Je fais un test
+================================================

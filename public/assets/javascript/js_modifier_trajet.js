@@ -1,8 +1,8 @@
 // --- VARIABLES GLOBALES ---
-let departCoords = null; // [long, lat]
-let arriveeCoords = null; // [long, lat]
+let departCoords = null;
+let arriveeCoords = null;
 
-// --- CORRECTION BUG 0KM (Dictionnaire) ---
+// --- DICTIONNAIRE LIEUX ---
 const KNOWN_LOCATIONS = {
     "IUT d'Amiens": [2.264032, 49.870683],
     "Gare d'Amiens": [2.306739, 49.890583],
@@ -11,7 +11,7 @@ const KNOWN_LOCATIONS = {
     "Centre-ville": [2.3089, 49.8872],
 };
 
-// --- 1. FONCTION UTILITAIRE : REMPLIR LES CHAMPS CACHÉS ---
+// --- FONCTIONS UTILITAIRES ---
 function fillHiddenFields(type, ville, cp, rue) {
     const villeInput = document.getElementById(`val_ville_${type}`);
     const cpInput = document.getElementById(`val_cp_${type}`);
@@ -20,112 +20,20 @@ function fillHiddenFields(type, ville, cp, rue) {
     if (villeInput) villeInput.value = ville || "";
     if (cpInput) cpInput.value = cp || "";
     if (rueInput) rueInput.value = rue || "";
-
-    console.log(`Données remplies pour ${type}:`, { ville, cp, rue });
 }
 
-// --- 2. FONCTION UTILITAIRE : VIDER LES CHAMPS CACHÉS ---
 function clearHiddenFields(type) {
     fillHiddenFields(type, "", "", "");
 }
 
-// --- FONCTION DATE DE FIN (Affichage) ---
-function toggleDateFin(show) {
-    const wrapper = document.getElementById("date_fin_wrapper");
-    const input = wrapper.querySelector("input");
-
-    if (show) {
-        wrapper.classList.add("visible");
-        input.required = true;
-        if (typeof updateSummary === "function") updateSummary();
-    } else {
-        wrapper.classList.remove("visible");
-        input.required = false;
-        input.value = "";
-
-        const summaryCard = document.getElementById("summary-card");
-        if (summaryCard) summaryCard.classList.add("d-none");
-    }
-}
-
-// --- METTRE A JOUR LE TEXTE DU RÉSUMÉ ---
-function updateSummary() {
-    const dateDepartInput = document.getElementById("date_depart");
-    const dateFinInput = document.getElementById("date_fin");
-    const heureInput = document.getElementById("heure_depart");
-    const summaryCard = document.getElementById("summary-card");
-    const summaryText = document.getElementById("summary-text");
-    const radioOui = document.getElementById("regulier_oui");
-
-    if (
-        !dateDepartInput ||
-        !dateFinInput ||
-        !heureInput ||
-        !summaryCard ||
-        !radioOui
-    )
-        return;
-
-    if (!radioOui.checked) {
-        summaryCard.classList.add("d-none");
-        return;
-    }
-
-    const startStr = dateDepartInput.value;
-    const endStr = dateFinInput.value;
-    const heureStr = heureInput.value;
-
-    if (startStr && endStr && heureStr) {
-        const startDate = new Date(startStr);
-        const endDate = new Date(endStr);
-
-        if (endDate <= startDate) {
-            summaryCard.classList.remove("d-none", "alert-info");
-            summaryCard.classList.add("alert-danger");
-            summaryText.innerHTML = "La date de fin doit être après le départ.";
-            return;
-        }
-
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const nbTrajets = Math.floor(diffDays / 7) + 1;
-
-        const options = { weekday: "long" };
-        const jourSemaine = new Intl.DateTimeFormat("fr-FR", options).format(
-            startDate
-        );
-        const optionsDate = {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        };
-        const startDisplay = startDate.toLocaleDateString("fr-FR", optionsDate);
-        const endDisplay = endDate.toLocaleDateString("fr-FR", optionsDate);
-
-        const message = `Il y aura <strong>${nbTrajets} trajets</strong> du ${startDisplay} au ${endDisplay}, chaque <strong>${jourSemaine} à ${heureStr}</strong>.`;
-
-        summaryCard.classList.remove("d-none", "alert-danger");
-        summaryCard.classList.add("alert-info");
-        summaryText.innerHTML = message;
-    } else {
-        summaryCard.classList.add("d-none");
-    }
-}
-
-// ============================================================
-// 2. FONCTIONS TECHNIQUES (Calcul & API)
-// ============================================================
-
+// --- CALCUL ITINÉRAIRE ---
 function calculateRoute() {
     if (departCoords && arriveeCoords) {
-        // Sécurité 0km
         if (
             departCoords[0] === arriveeCoords[0] &&
             departCoords[1] === arriveeCoords[1]
-        ) {
-            console.warn("Points identiques.");
+        )
             return;
-        }
 
         const url = `https://router.project-osrm.org/route/v1/driving/${departCoords[0]},${departCoords[1]};${arriveeCoords[0]},${arriveeCoords[1]}?overview=false`;
 
@@ -147,29 +55,6 @@ function calculateRoute() {
                     if (dureeInput) dureeInput.value = timeString;
                     if (distanceInput)
                         distanceInput.value = Math.round(distanceMeters / 1000);
-
-                    const btn = document.querySelector(".btn-submit-trajet");
-                    const originalText = "Poster le(s) trajet(s)";
-
-                    const minutes = Math.round(durationSeconds / 60);
-                    const heures = Math.floor(minutes / 60);
-                    const minutesRestantes = minutes % 60;
-
-                    let dureeTexte = `${minutes} min`;
-                    if (heures > 0)
-                        dureeTexte = `${heures}h${minutesRestantes}`;
-
-                    btn.innerHTML = `<i class="bi bi-check-circle"></i> Durée estimée : ${dureeTexte} (${Math.round(
-                        distanceMeters / 1000
-                    )}km)`;
-                    btn.classList.add("btn-success");
-
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.classList.remove("btn-success");
-                    }, 4000);
-
-                    if (typeof updateSummary === "function") updateSummary();
                 }
             })
             .catch((err) => console.error("Erreur OSRM", err));
@@ -191,7 +76,7 @@ function getCoordsFromName(ville, callback) {
         });
 }
 
-// --- FONCTION AUTOCOMPLETE PRINCIPALE ---
+// --- AUTOCOMPLETE ---
 function setupAutocomplete(inputId, resultsId, type) {
     const input = document.getElementById(inputId);
     const results = document.getElementById(resultsId);
@@ -199,7 +84,6 @@ function setupAutocomplete(inputId, resultsId, type) {
     let timeout = null;
 
     input.addEventListener("input", function () {
-        // Reset validation et champs cachés
         this.setAttribute("data-valid", "false");
         this.classList.remove("is-valid");
         clearHiddenFields(type);
@@ -211,7 +95,7 @@ function setupAutocomplete(inputId, resultsId, type) {
         results.innerHTML = "";
         if (query.length < 2) return;
 
-        // 1. Lieux Fréquents
+        // Lieux Fréquents
         const localData = window.lieuxFrequents || [];
         const matchesLocal = localData.filter(
             (lieu) =>
@@ -233,7 +117,6 @@ function setupAutocomplete(inputId, resultsId, type) {
                         lieu.code_postal,
                         lieu.rue
                     );
-
                     input.setAttribute("data-valid", "true");
                     input.classList.remove("input-error");
                     results.innerHTML = "";
@@ -255,7 +138,7 @@ function setupAutocomplete(inputId, resultsId, type) {
             });
         }
 
-        // 2. API Adresse Gouv
+        // API Adresse
         if (query.length > 3) {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
@@ -282,7 +165,6 @@ function setupAutocomplete(inputId, resultsId, type) {
                                         feature.properties.postcode,
                                         feature.properties.name
                                     );
-
                                     input.setAttribute("data-valid", "true");
                                     input.classList.remove("input-error");
                                     results.innerHTML = "";
@@ -291,7 +173,6 @@ function setupAutocomplete(inputId, resultsId, type) {
                                     if (type === "depart")
                                         departCoords = coords;
                                     else arriveeCoords = coords;
-
                                     calculateRoute();
                                 });
                                 results.appendChild(div);
@@ -302,7 +183,6 @@ function setupAutocomplete(inputId, resultsId, type) {
         }
     });
 
-    // Fermer si clic ailleurs
     document.addEventListener("click", function (e) {
         if (e.target !== input && e.target !== results) {
             results.innerHTML = "";
@@ -310,63 +190,24 @@ function setupAutocomplete(inputId, resultsId, type) {
     });
 }
 
-// --- INITIALISATION (Unique) ---
-document.addEventListener("DOMContentLoaded", function () {
-    setupAutocomplete("depart", "suggestions-depart", "depart");
-    setupAutocomplete("arrivee", "suggestions-arrivee", "arrivee");
-
-    const form = document.getElementById("trajetForm");
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            const depart = document.getElementById("depart");
-            const arrivee = document.getElementById("arrivee");
-            const errorMsg = document.getElementById("js-error-message");
-            let isValid = true;
-
-            if (depart.getAttribute("data-valid") !== "true") {
-                e.preventDefault();
-                depart.classList.add("input-error");
-                isValid = false;
-            }
-            if (arrivee.getAttribute("data-valid") !== "true") {
-                e.preventDefault();
-                arrivee.classList.add("input-error");
-                isValid = false;
-            }
-
-            if (!isValid) {
-                if (errorMsg) errorMsg.classList.remove("d-none");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            } else {
-                if (errorMsg) errorMsg.classList.add("d-none");
-            }
-        });
-    }
-});
-
 // --- INITIALISATION ---
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. RÉCUPÉRATION DES DONNÉES PHP (Sans JS dans le TPL)
     const dataDiv = document.getElementById("trajet-data");
     if (dataDiv) {
         try {
-            // On lit l'attribut data-lieux et on le parse en JSON
             window.lieuxFrequents = JSON.parse(
                 dataDiv.getAttribute("data-lieux")
             );
         } catch (e) {
-            console.warn("Erreur lecture lieux fréquents", e);
             window.lieuxFrequents = [];
         }
     } else {
         window.lieuxFrequents = [];
     }
 
-    // 2. CONFIGURATION DE L'AUTOCOMPLETE
     setupAutocomplete("depart", "suggestions-depart", "depart");
     setupAutocomplete("arrivee", "suggestions-arrivee", "arrivee");
 
-    // 3. VALIDATION DU FORMULAIRE
     const form = document.getElementById("trajetForm");
     if (form) {
         form.addEventListener("submit", function (e) {
@@ -375,7 +216,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const errorMsg = document.getElementById("js-error-message");
             let isValid = true;
 
-            // Vérifie si l'attribut data-valid est à "true"
             if (depart.getAttribute("data-valid") !== "true") {
                 e.preventDefault();
                 depart.classList.add("input-error");

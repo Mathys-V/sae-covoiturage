@@ -23,7 +23,7 @@ Flight::route('GET /trajet/nouveau', function(){
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
-    Flight::render('proposer_trajet.tpl', [
+    Flight::render('trajet/proposer_trajet.tpl', [
         'titre' => 'Proposer un trajet',
         'lieux_frequents' => $lieux
     ]);
@@ -43,7 +43,7 @@ Flight::route('POST /trajet/nouveau', function(){
     $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
 
     if(!$vehicule) {
-        Flight::render('proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé.']);
+        Flight::render('trajet/proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé.']);
         return;
     }
 
@@ -115,7 +115,7 @@ Flight::route('POST /trajet/nouveau', function(){
 
     } catch (Exception $e) {
         $db->rollBack();
-        Flight::render('proposer_trajet.tpl', [
+        Flight::render('trajet/proposer_trajet.tpl', [
             'error' => "Erreur : " . $e->getMessage(),
             'titre' => 'Proposer un trajet'
         ]);
@@ -300,7 +300,7 @@ Flight::route('/mes_trajets', function(){
         return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
     });
 
-    Flight::render('mes_trajets.tpl', [
+    Flight::render('trajet/mes_trajets.tpl', [
         'titre' => 'Mes trajets',
         'trajets_actifs' => $trajets_actifs,
         'trajets_archives' => $trajets_archives

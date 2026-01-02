@@ -6,6 +6,7 @@
     <title>Contactez-nous - MonCovoitJV</title>
     
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/style_contact.css">
+
 </head>
 
 <body>
@@ -18,7 +19,26 @@
             
             <h1 class="contact-title">Contactez-nous</h1>
 
-            <form class="contact-form" action="#" method="POST">
+            <div class="simulation-info">
+                ℹ️ <strong>Mode Démonstration :</strong> Aucun email réel ne sera envoyé. 
+                Votre message sera enregistré dans un fichier texte sur le serveur.
+            </div>
+
+            {if isset($smarty.session.flash_success)}
+                <div class="alert alert-success">
+                    {$smarty.session.flash_success}
+                </div>
+                {$smarty.session.flash_success = null} 
+            {/if}
+
+            {if isset($smarty.session.flash_error)}
+                <div class="alert alert-error">
+                    {$smarty.session.flash_error}
+                </div>
+                {$smarty.session.flash_error = null}
+            {/if}
+
+            <form class="contact-form" action="" method="POST">
                 
                 <div class="form-group">
                     <label class="form-label" for="problem">
@@ -31,7 +51,7 @@
                     <label class="form-label" for="email">
                         Quel est votre e-mail ?<span class="required-star">*</span>
                     </label>
-                    <input type="email" id="email" name="email" class="form-input" required>
+                    <input type="email" id="email" name="email" class="form-input" value="{if isset($smarty.session.user.email)}{$smarty.session.user.email}{/if}" required>
                 </div>
 
                 <div class="form-group">
@@ -43,7 +63,7 @@
 
                 <div class="submit-container">
                     <button type="submit" class="btn-submit">
-                        Envoyer
+                        Envoyer (Simulation)
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

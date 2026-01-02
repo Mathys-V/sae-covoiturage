@@ -54,7 +54,7 @@ Flight::route('/carte', function(){
         }
     }
 
-    Flight::render('carte.tpl', [
+    Flight::render('carte/carte.tpl', [
         'titre' => 'Carte interactive',
         'lieux_frequents' => $lieux,
         'trajets' => $trajets

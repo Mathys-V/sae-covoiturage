@@ -48,9 +48,9 @@
                                 <div class="d-flex align-items-center mb-3 p-2 rounded hover-profile transition">
                                     <div class="me-3">
                                         <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil|default:'default.png'}" 
-                                            class="avatar-img rounded-circle" 
-                                            alt="Photo de {$trajet.prenom}"
-                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                             class="avatar-img rounded-circle" 
+                                             alt="Photo de {$trajet.prenom}"
+                                             style="width: 50px; height: 50px; object-fit: cover;">
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="fw-bold fs-5 text-purple-primary">{$trajet.prenom} {$trajet.nom|upper}</div>
@@ -95,8 +95,8 @@
                             <div>
                                 <h5 class="fw-bold mb-3 text-purple-dark">Détails du voyage</h5>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6">
-                                        {$trajet.places_proposees} places disponibles
+                                    <span class="badge {if $trajet.places_restantes > 0}bg-success{else}bg-danger{/if} rounded-pill px-3 py-2 fs-6">
+                                        {$trajet.places_restantes} places disponibles
                                     </span>
                                     <span class="text-muted"><i class="bi bi-car-front-fill me-1"></i> {$trajet.marque} {$trajet.modele}</span>
                                 </div>
@@ -109,17 +109,33 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-end mt-4 gap-3">
+                            <div class="d-flex justify-content-end mt-4 gap-3 align-items-center">
+                                
                                 <button type="button" 
                                         class="btn btn-outline-danger btn-report rounded-pill px-4" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#modalSignalement" 
                                         data-id-trajet="{$trajet.id_trajet}"
-                                        data-id-conducteur="{$trajet.id_conducteur}"> <i class="bi bi-flag-fill me-1"></i> Signaler
+                                        data-id-conducteur="{$trajet.id_conducteur}"
+                                        style="height: 48px;">
+                                    <i class="bi bi-flag-fill me-1"></i> Signaler
                                 </button>
-                                <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 py-2 fw-bold fs-5 shadow-sm btn-reserve">
-                                    Réserver ce trajet
-                                </a>
+
+                                {if isset($trajet.deja_reserve) && $trajet.deja_reserve > 0}
+                                    <button class="btn btn-success fw-bold px-5 fs-5 shadow-sm d-flex align-items-center justify-content-center" disabled style="height: 48px; min-width: 220px;">
+                                        <i class="bi bi-check-circle-fill me-2"></i>Déjà réservé
+                                    </button>
+                                {else}
+                                    {if $trajet.places_restantes > 0}
+                                        <a href="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}" class="btn text-white px-5 fw-bold fs-5 shadow-sm btn-reserve d-flex align-items-center justify-content-center" style="height: 48px; min-width: 220px;">
+                                            Réserver ce trajet
+                                        </a>
+                                    {else}
+                                        <button class="btn btn-secondary px-5 fw-bold fs-5 shadow-sm d-flex align-items-center justify-content-center" disabled style="height: 48px; min-width: 220px;">
+                                            Complet
+                                        </button>
+                                    {/if}
+                                {/if}
                             </div>
                         </div>
                     </div>
@@ -143,7 +159,6 @@
 <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
-
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold text-danger">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Signaler ce trajet
@@ -158,7 +173,8 @@
                     </p>
                     
                     <input type="hidden" id="signalement_id_trajet">
-                    <input type="hidden" id="signalement_id_conducteur"> <div class="mb-3">
+                    <input type="hidden" id="signalement_id_conducteur"> 
+                    <div class="mb-3">
                         <label class="form-label-bold">Motif</label>
                         <select class="form-select bg-light border-0 py-2" id="signalement_motif" required>
                             <option value="" selected disabled>Choisir un motif...</option>

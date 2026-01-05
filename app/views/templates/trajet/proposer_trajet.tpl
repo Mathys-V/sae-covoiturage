@@ -35,7 +35,7 @@
                         <input type="hidden" name="cp_depart" id="val_cp_depart">
                         <input type="hidden" name="rue_depart" id="val_rue_depart">
 
-                        <div id="suggestions-depart" class="autocomplete-suggestions"></div>
+                        <div id="suggestions-depart" class="autocomplete-suggestions" style="border: none;"></div>
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                         <input type="hidden" name="cp_arrivee" id="val_cp_arrivee">
                         <input type="hidden" name="rue_arrivee" id="val_rue_arrivee">
 
-                        <div id="suggestions-arrivee" class="autocomplete-suggestions"></div>
+                        <div id="suggestions-arrivee" class="autocomplete-suggestions" style="border: none;"></div>
                     </div>
                 </div>
 

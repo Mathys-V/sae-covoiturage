@@ -8,10 +8,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/profil/style_profil.css">
-
-
 </head>
 
 <body>
@@ -34,7 +31,7 @@
                     </form>
 
                     <div class="avatar-circle" onclick="document.getElementById('input-photo').click();" title="Modifier la photo">
-                        {if !empty($user.photo_profil)}
+                        {if !empty($user.photo_profil) && $user.photo_profil != 'default.png'}
                             <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}" class="avatar-img">
                         {else}
                             <div class="default-avatar"><i class="bi bi-person-fill"></i></div>
@@ -79,6 +76,7 @@
                                     {if $noteC > 0}<span class="text-white-50 fs-6 ms-2">({$noteC|number_format:1})</span>{else}<span class="text-white-50 small ms-2 fst-italic" style="font-size:0.8rem;">(Aucun avis)</span>{/if}
                                 </div>
                             </div>
+                            
                             <div class="d-flex align-items-center gap-2">
                                 <span class="text-white-50 small text-uppercase fw-bold" style="width: 90px; text-align:left;">Passager</span>
                                 <div class="text-warning fs-5 d-flex align-items-center">
@@ -113,9 +111,9 @@
 
                 <span class="card-label">Véhicule</span>
                 <div class="info-card" id="card-vehicule">
-                    <form action="/sae-covoiturage/public/profil/update-vehicule" method="POST">
+                    <form id="form-vehicule" action="/sae-covoiturage/public/profil/update-vehicule" method="POST">
                         <div class="view-content">
-                            {if isset($vehicule)}
+                            {if isset($vehicule) && !empty($vehicule)}
                                 <div class="fs-5 lh-lg">
                                     <strong>Marque :</strong> {$vehicule.marque}<br>
                                     <strong>Modèle :</strong> {$vehicule.modele}<br>
@@ -125,10 +123,11 @@
                                 </div>
                                 <div class="d-flex justify-content-end mt-3"><button type="button" class="btn-purple" onclick="toggleEdit('vehicule')">Modifier</button></div>
                             {else}
-                                <p class="fs-5">Aucun véhicule.</p>
+                                <p class="fs-5">Aucun véhicule enregistré.</p>
                                 <div class="d-flex justify-content-end"><button type="button" class="btn-purple" onclick="toggleEdit('vehicule')">Ajouter</button></div>
                             {/if}
                         </div>
+                        
                         <div class="edit-content edit-mode">
                             <div class="row g-3">
                                 <div class="col-6">
@@ -155,7 +154,20 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="small text-muted ms-1">Immatriculation</label>
-                                    <input type="text" name="immat" class="form-control-custom" placeholder="AA-123-BB" value="{$vehicule.immatriculation|default:''}" required maxlength="15" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" pattern="{literal}^([A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2})|(\d{1,4}[-\s]?[A-Z]{2,3}[-\s]?[A-Z]{2})${/literal}" title="Format accepté : AA-123-BB">
+                                    <input type="text" 
+                                           id="immat-input" 
+                                           name="immat" 
+                                           class="form-control-custom" 
+                                           placeholder="AA-123-BB" 
+                                           value="{$vehicule.immatriculation|default:''}" 
+                                           required 
+                                           maxlength="15" 
+                                           style="text-transform: uppercase;" 
+                                           oninput="this.value = this.value.toUpperCase()">
+                                           
+                                    <div id="immat-error" class="text-danger small fw-bold mt-1" style="display:none;">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Format incorrect (ex: AA-123-BB ou 1234 AB 56)
+                                    </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end mt-3">
@@ -217,10 +229,9 @@
                                     </div>
 
                                     <div class="mt-4">
-                                        {if isset($trajet.passagers)}
+                                        {if isset($trajet.passagers) && !empty($trajet.passagers)}
                                             {foreach from=$trajet.passagers item=passager}
                                                 <div class="passenger-item">
-                                                    
                                                     {if $passager.id_utilisateur != $user.id_utilisateur}
                                                         <a href="/sae-covoiturage/public/profil/voir/{$passager.id_utilisateur}" class="profile-link d-flex align-items-center">
                                                     {else}
@@ -251,8 +262,7 @@
                                             {/foreach}
                                         {else}
                                             <div class="passenger-item">
-                                                <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
-                                                <span class="fw-bold me-2">Passager 1</span>
+                                                <span class="small text-muted fst-italic">Aucun passager sur ce trajet.</span>
                                             </div>
                                         {/if}
                                     </div>
@@ -262,7 +272,7 @@
                                     <div>
                                         <h5 class="fw-bold mb-3">Informations véhicule</h5>
                                         <div class="fs-6">
-                                            <div>{$trajet.vehicule_places|default:'--'} places disponibles</div>
+                                            <div>{$trajet.vehicule_places|default:'--'} places totales</div>
                                             <div class="mt-1">
                                                 {if !empty($trajet.vehicule_marque) || !empty($trajet.vehicule_modele)}
                                                     {$trajet.vehicule_marque|default:''} {$trajet.vehicule_modele|default:''}

@@ -56,35 +56,98 @@ function toggleIdentityEdit() {
 document.addEventListener('DOMContentLoaded', function() {
     const btns = document.querySelectorAll('.btn-report');
     const modalEl = document.getElementById('modalSignalement');
-    const modal = new bootstrap.Modal(modalEl);
-    const form = document.getElementById('formSignalement');
+    
+    // Vérification que les éléments existent pour éviter erreur console si pas connectés ou pas de signalements
+    if(modalEl && btns.length > 0) {
+        const modal = new bootstrap.Modal(modalEl);
+        const form = document.getElementById('formSignalement');
 
-    btns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.getElementById('trajetSignalement').value = this.dataset.trajet;
-            document.getElementById('userSignalement').value = this.dataset.concerne;
-            document.getElementById('nomUserSignalement').innerText = this.dataset.nom;
-            modal.show();
+        btns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('trajetSignalement').value = this.dataset.trajet;
+                document.getElementById('userSignalement').value = this.dataset.concerne;
+                document.getElementById('nomUserSignalement').innerText = this.dataset.nom;
+                modal.show();
+            });
         });
-    });
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const tid = document.getElementById('trajetSignalement').value;
-        const uid = document.getElementById('userSignalement').value;
-        const motif = document.getElementById('motifSignalement').value;
-        const desc = document.getElementById('detailsSignalement').value;
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const tid = document.getElementById('trajetSignalement').value;
+                const uid = document.getElementById('userSignalement').value;
+                const motif = document.getElementById('motifSignalement').value;
+                const desc = document.getElementById('detailsSignalement').value;
 
-        fetch('/sae-covoiturage/public/api/signalement/nouveau', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id_trajet: tid, id_signale: uid, motif: motif, description: desc })
-        })
-        .then(r => r.json())
-        .then(d => {
-            modal.hide();
-            if(d.success) { alert("Signalement envoyé !"); form.reset(); }
-            else { alert("Erreur : " + d.msg); }
+                fetch('/sae-covoiturage/public/api/signalement/nouveau', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id_trajet: tid, id_signale: uid, motif: motif, description: desc })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    modal.hide();
+                    if(d.success) { alert("Signalement envoyé !"); form.reset(); }
+                    else { alert("Erreur : " + d.msg); }
+                });
+            });
+        }
+    }
+
+    // --- VALIDATION DU VÉHICULE (SANS RECHARGEMENT) ---
+    const formVehicule = document.getElementById('form-vehicule');
+    const inputImmat = document.getElementById('immat-input');
+    const errorMsg = document.getElementById('immat-error');
+
+    if (formVehicule && inputImmat) {
+        // Regex formats: SIV (AA-123-AA) ou FNI (1234 AB 56)
+        const regexSIV = /^[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}$/;
+        const regexFNI = /^\d{1,4}[-\s]?[A-Z]{2,3}[-\s]?[A-Z]{2}$/;
+
+        formVehicule.addEventListener('submit', function(e) {
+            const val = inputImmat.value.trim();
+            // Si le format est invalide, on coupe tout de suite
+            if (!regexSIV.test(val) && !regexFNI.test(val)) {
+                e.preventDefault(); // STOP : Pas d'envoi au serveur, pas de rechargement
+                inputImmat.classList.add('is-invalid'); // Ajoute bordure rouge bootstrap si dispo
+                inputImmat.style.border = "2px solid #dc3545"; // Force bordure rouge
+                if(errorMsg) errorMsg.style.display = "block";
+                
+                // Petit effet visuel "Shake"
+                inputImmat.animate([
+                    { transform: 'translateX(0px)' },
+                    { transform: 'translateX(10px)' },
+                    { transform: 'translateX(-10px)' },
+                    { transform: 'translateX(0px)' }
+                ], { duration: 300 });
+            } else {
+                // Tout est bon, on laisse faire le serveur
+                if(errorMsg) errorMsg.style.display = "none";
+                inputImmat.style.border = "1px solid #ccc";
+            }
         });
-    });
+
+        // Nettoyage erreur quand on tape
+        inputImmat.addEventListener('input', function() {
+            if (errorMsg && errorMsg.style.display === 'block') {
+                errorMsg.style.display = 'none';
+                inputImmat.style.border = "1px solid #ccc";
+            }
+        });
+
+        // Formatage automatique SIV (ajoute les tirets)
+        inputImmat.addEventListener('keyup', function(e) {
+            // Ne pas formater si on efface (Backspace)
+            if (e.key === 'Backspace' || e.key === 'Delete') return;
+
+            let v = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (v.length > 2 && /^[A-Z]{2}/.test(v)) { // Détection SIV commence par 2 lettres
+                if(v.length <= 5) {
+                    this.value = v.slice(0, 2) + '-' + v.slice(2);
+                } else {
+                    this.value = v.slice(0, 2) + '-' + v.slice(2, 5) + '-' + v.slice(5, 7);
+                }
+            }
+        });
+    }
 });

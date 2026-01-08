@@ -15,6 +15,7 @@ Flight::route('GET /profil', function(){
     $idUser = $_SESSION['user']['id_utilisateur'];
 
     // --- A. RÉCUPÉRATION UTILISATEUR & MOYENNES ---
+    // Note : AVG() retourne NULL si pas d'avis, ce qui ne plante pas PHP.
     $sql = "SELECT U.*, 
             (SELECT AVG(note) FROM AVIS WHERE id_destinataire = U.id_utilisateur AND role_destinataire = 'C') as note_conducteur,
             (SELECT AVG(note) FROM AVIS WHERE id_destinataire = U.id_utilisateur AND role_destinataire = 'P') as note_passager
@@ -25,9 +26,12 @@ Flight::route('GET /profil', function(){
     $stmt->execute([$idUser]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // --- AUTO-VÉRIFICATION (Logique conservée) ---
+    // --- AUTO-VÉRIFICATION ---
+    // On verifie si les notes ne sont pas NULL (donc > 0 implicitement si pas null, mais vérifions > 0 pour être sûr)
     if ($user && $user['verified_flag'] === 'N') {
-        if ($user['note_conducteur'] > 0 || $user['note_passager'] > 0) {
+        if ((!is_null($user['note_conducteur']) && $user['note_conducteur'] > 0) || 
+            (!is_null($user['note_passager']) && $user['note_passager'] > 0)) {
+            
             $updFlag = $db->prepare("UPDATE UTILISATEURS SET verified_flag = 'Y' WHERE id_utilisateur = ?");
             $updFlag->execute([$idUser]);
             $user['verified_flag'] = 'Y';
@@ -37,7 +41,7 @@ Flight::route('GET /profil', function(){
 
     if ($user) {
         unset($user['mot_de_passe']);
-        $_SESSION['user'] = $user;
+        $_SESSION['user'] = array_merge($_SESSION['user'], $user); // Merge pour garder les clés de session existantes
     }
 
     // --- B. RÉCUPÉRATION VÉHICULE ---
@@ -51,8 +55,7 @@ Flight::route('GET /profil', function(){
     $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
     if ($vehicule === false) $vehicule = null;
 
-    // --- C. RÉCUPÉRATION HISTORIQUE (Avec Couleur) ---
-    // J'ai ajouté v.couleur AS vehicule_couleur ici
+    // --- C. RÉCUPÉRATION HISTORIQUE ---
     $sqlHistory = "
         SELECT 
             t.id_trajet, 
@@ -75,7 +78,7 @@ Flight::route('GET /profil', function(){
         LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
         WHERE 
             (t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V'))
-            AND t.date_heure_depart < NOW() -- Filtre dates passées
+            AND t.date_heure_depart < NOW()
         GROUP BY t.id_trajet
         ORDER BY t.date_heure_depart DESC
     ";
@@ -109,10 +112,16 @@ Flight::route('GET /profil', function(){
         $trajet['passagers'] = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Listes pour les selects du véhicule
+    $marques = ['Peugeot', 'Renault', 'Citroën', 'Volkswagen', 'Audi', 'BMW', 'Mercedes', 'Toyota', 'Ford', 'Fiat', 'Autre'];
+    $couleurs = ['Blanc', 'Noir', 'Gris', 'Argent', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Autre'];
+
     Flight::render('profil/profil.tpl', [
         'titre' => 'Mon Profil',
         'vehicule' => $vehicule,
-        'historique_trajets' => $historique
+        'historique_trajets' => $historique,
+        'marques' => $marques,
+        'couleurs' => $couleurs
     ]);
 });
 
@@ -127,38 +136,32 @@ Flight::route('POST /profil/update-description', function(){
     Flight::redirect('/profil');
 });
 
-// 3. MODIFIER L'IDENTITÉ (PRÉNOM + NOM)
+// 3. MODIFIER L'IDENTITÉ
 Flight::route('POST /profil/update-identity', function(){
     if(!isset($_SESSION['user'])) return;
 
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
     $data = Flight::request()->data;
-
-    // Nettoyage
     $prenom = trim(strip_tags($data->prenom));
     $nom = trim(strip_tags($data->nom));
 
-    // Validation basique
     if (empty($prenom) || empty($nom)) {
         $_SESSION['flash_error'] = "Le prénom et le nom ne peuvent pas être vides.";
         Flight::redirect('/profil');
         return;
     }
 
-    // Mise à jour BDD
     $stmt = $db->prepare("UPDATE UTILISATEURS SET prenom = :prenom, nom = :nom WHERE id_utilisateur = :id");
     $stmt->execute([':prenom' => $prenom, ':nom' => $nom, ':id' => $idUser]);
 
-    // Mise à jour immédiate de la session (pour l'affichage)
     $_SESSION['user']['prenom'] = $prenom;
     $_SESSION['user']['nom'] = $nom;
-
     $_SESSION['flash_success'] = "Identité modifiée avec succès !";
     Flight::redirect('/profil');
 });
 
-// 3. UPDATE VÉHICULE
+// 4. UPDATE VÉHICULE (Sécurisé)
 Flight::route('POST /profil/update-vehicule', function(){
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
     $data = Flight::request()->data;
@@ -170,17 +173,21 @@ Flight::route('POST /profil/update-vehicule', function(){
     $modele = strip_tags(trim($data->modele));
     $nb_places = (int)$data->nb_places;
     $immatBrut = strtoupper(trim($data->immat));
+    // On nettoie pour vérifier, mais on garde le format brut s'il est propre
     $immatClean = preg_replace('/[^A-Z0-9]/', '', $immatBrut); 
 
-    if (!in_array($marqueInput, $GLOBALS['voiture_marques'])) { $_SESSION['flash_error'] = "Marque invalide."; Flight::redirect('/profil'); return; }
-    if (!in_array($couleurInput, $GLOBALS['voiture_couleurs'])) { $_SESSION['flash_error'] = "Couleur invalide."; Flight::redirect('/profil'); return; }
+    // Validation Serveur (Filet de sécurité si JS désactivé)
+    $marques = ['Peugeot', 'Renault', 'Citroën', 'Volkswagen', 'Audi', 'BMW', 'Mercedes', 'Toyota', 'Ford', 'Fiat', 'Autre'];
+    if (!in_array($marqueInput, $marques)) $marqueInput = 'Autre';
+    
     if (strlen($modele) > 30) { $_SESSION['flash_error'] = "Modèle trop long."; Flight::redirect('/profil'); return; }
     if ($nb_places < 1 || $nb_places > 8) $nb_places = 5;
-    if (!preg_match('/^([A-Z]{2}\d{3}[A-Z]{2}|\d{1,4}[A-Z]{2,3}\d{2})$/', $immatClean)) { $_SESSION['flash_error'] = "Format plaque invalide."; Flight::redirect('/profil'); return; }
-
-    $immatFinale = $immatBrut;
-    if (preg_match('/^[A-Z]{2}\d{3}[A-Z]{2}$/', $immatClean)) {
-        $immatFinale = substr($immatClean, 0, 2) . '-' . substr($immatClean, 2, 3) . '-' . substr($immatClean, 5);
+    
+    // Regex Permissive Serveur (accepte AA-123-AA ou AA123AA)
+    if (!preg_match('/^([A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2})|(\d{1,4}[-\s]?[A-Z]{2,3}[-\s]?[A-Z]{2})$/', $immatBrut)) { 
+        $_SESSION['flash_error'] = "Format de plaque invalide."; 
+        Flight::redirect('/profil'); 
+        return; 
     }
 
     try {
@@ -190,12 +197,12 @@ Flight::route('POST /profil/update-vehicule', function(){
 
         if ($possede) {
             $stmtUpd = $db->prepare("UPDATE VEHICULES SET marque=:m, modele=:mo, couleur=:c, nb_places_totales=:p, immatriculation=:i WHERE id_vehicule=:id");
-            $stmtUpd->execute([':m'=>$marqueInput, ':mo'=>$modele, ':c'=>$couleurInput, ':p'=>$nb_places, ':i'=>$immatFinale, ':id'=>$possede['id_vehicule']]);
+            $stmtUpd->execute([':m'=>$marqueInput, ':mo'=>$modele, ':c'=>$couleurInput, ':p'=>$nb_places, ':i'=>$immatBrut, ':id'=>$possede['id_vehicule']]);
             $_SESSION['flash_success'] = "Véhicule modifié !";
         } else {
             $db->beginTransaction();
             $stmtIns = $db->prepare("INSERT INTO VEHICULES (marque, modele, couleur, nb_places_totales, immatriculation, type_vehicule) VALUES (:m, :mo, :c, :p, :i, 'voiture')");
-            $stmtIns->execute([':m'=>$marqueInput, ':mo'=>$modele, ':c'=>$couleurInput, ':p'=>$nb_places, ':i'=>$immatFinale]);
+            $stmtIns->execute([':m'=>$marqueInput, ':mo'=>$modele, ':c'=>$couleurInput, ':p'=>$nb_places, ':i'=>$immatBrut]);
             $idNew = $db->lastInsertId();
             $db->prepare("INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule) VALUES (?, ?)")->execute([$idUser, $idNew]);
             $db->commit();
@@ -203,7 +210,7 @@ Flight::route('POST /profil/update-vehicule', function(){
         }
     } catch (Exception $e) {
         if($db->inTransaction()) $db->rollBack();
-        $_SESSION['flash_error'] = "Erreur SQL.";
+        $_SESSION['flash_error'] = "Erreur base de données.";
     }
     Flight::redirect('/profil');
 });
@@ -253,9 +260,8 @@ Flight::route('POST /profil/delete-account', function(){
     Flight::redirect('/?msg=account_closed');
 });
 
-// AVIS, ADRESSE, MDP, PREFS... (Routes inchangées, gardez les telles quelles ou copiez-les si besoin)
-// Pour alléger la réponse, je mets juste les placeholders, mais si vous les avez déjà dans le fichier, gardez-les.
-Flight::route('GET /profil/avis', function(){ /* ... votre code avis ... */  $db=Flight::get('db'); $sql="SELECT a.*, u.prenom, u.nom, u.photo_profil, t.id_conducteur, a.role_destinataire FROM AVIS a JOIN RESERVATIONS r ON a.id_reservation=r.id_reservation JOIN TRAJETS t ON r.id_trajet=t.id_trajet JOIN UTILISATEURS u ON a.id_auteur=u.id_utilisateur WHERE a.id_destinataire=:id ORDER BY a.date_avis DESC"; $stmt=$db->prepare($sql); $stmt->execute([':id'=>$_SESSION['user']['id_utilisateur']]); $all=$stmt->fetchAll(PDO::FETCH_ASSOC); $ac=[]; $ap=[]; $tc=0;$cc=0;$tp=0;$cp=0; foreach($all as $av){ if($av['role_destinataire']=='C'){$ac[]=$av;$tc+=$av['note'];$cc++;}else{$ap[]=$av;$tp+=$av['note'];$cp++;}} Flight::render('avis/avis.tpl', ['titre'=>'Mes Avis','avis_cond'=>$ac,'nb_cond'=>$cc,'moy_cond'=>($cc>0?round($tc/$cc,1):0),'avis_pass'=>$ap,'nb_pass'=>$cp,'moy_pass'=>($cp>0?round($tp/$cp,1):0)]); });
+// ROUTEURS VERS LES AUTRES SECTIONS (INCHANGÉS)
+Flight::route('GET /profil/avis', function(){ if(!isset($_SESSION['user'])) Flight::redirect('/connexion'); $db=Flight::get('db'); $sql="SELECT a.*, u.prenom, u.nom, u.photo_profil, t.id_conducteur, a.role_destinataire FROM AVIS a JOIN RESERVATIONS r ON a.id_reservation=r.id_reservation JOIN TRAJETS t ON r.id_trajet=t.id_trajet JOIN UTILISATEURS u ON a.id_auteur=u.id_utilisateur WHERE a.id_destinataire=:id ORDER BY a.date_avis DESC"; $stmt=$db->prepare($sql); $stmt->execute([':id'=>$_SESSION['user']['id_utilisateur']]); $all=$stmt->fetchAll(PDO::FETCH_ASSOC); $ac=[]; $ap=[]; $tc=0;$cc=0;$tp=0;$cp=0; foreach($all as $av){ if($av['role_destinataire']=='C'){$ac[]=$av;$tc+=$av['note'];$cc++;}else{$ap[]=$av;$tp+=$av['note'];$cp++;}} Flight::render('avis/avis.tpl', ['titre'=>'Mes Avis','avis_cond'=>$ac,'nb_cond'=>$cc,'moy_cond'=>($cc>0?round($tc/$cc,1):0),'avis_pass'=>$ap,'nb_pass'=>$cp,'moy_pass'=>($cp>0?round($tp/$cp,1):0)]); });
 Flight::route('GET /profil/modifier_adresse', function(){ if(!isset($_SESSION['user'])){Flight::redirect('/connexion');return;} $db=Flight::get('db'); $stmt=$db->prepare("SELECT a.* FROM ADRESSES a JOIN UTILISATEURS u ON u.id_adresse=a.id_adresse WHERE u.id_utilisateur=?"); $stmt->execute([$_SESSION['user']['id_utilisateur']]); Flight::render('parametre/modifier_adresse.tpl',['titre'=>'Adresse','adresse'=>$stmt->fetch(PDO::FETCH_ASSOC)]); });
 Flight::route('POST /profil/modifier_adresse', function(){ if(!isset($_SESSION['user']))Flight::redirect('/connexion'); $db=Flight::get('db'); $uid=$_SESSION['user']['id_utilisateur']; $uref=$db->prepare("SELECT id_adresse FROM UTILISATEURS WHERE id_utilisateur=?"); $uref->execute([$uid]); $aid=$uref->fetchColumn(); $v=trim(Flight::request()->data->rue).' '.trim(Flight::request()->data->complement); $db->prepare("UPDATE ADRESSES SET numero=NULL, voie=?, ville=?, code_postal=? WHERE id_adresse=?")->execute([$v,trim(Flight::request()->data->ville),trim(Flight::request()->data->cp),$aid]); Flight::render('parametre/modifier_adresse.tpl',['titre'=>'Adresse','success'=>true,'adresse'=>['voie'=>$v,'ville'=>trim(Flight::request()->data->ville),'code_postal'=>trim(Flight::request()->data->cp)]]); });
 Flight::route('GET /profil/gestion_mdp', function(){ if(!isset($_SESSION['user']))Flight::redirect('/connexion'); Flight::render('parametre/gestion_mdp.tpl',['titre'=>'MDP']); });

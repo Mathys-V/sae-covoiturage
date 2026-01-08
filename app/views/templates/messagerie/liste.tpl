@@ -82,6 +82,11 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <h6 class="fw-bold mb-1 text-truncate pe-2">
                                     {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
+                                    
+                                    {* --- AJOUT DE L'HEURE ICI --- *}
+                                    <span class="text-muted fw-normal small ms-1">
+                                        ({$conv.date_heure_depart|date_format:"%H:%M"})
+                                    </span>
                                 </h6>
                                 {if $conv.nb_non_lus > 0}
                                     <span class="badge bg-danger rounded-pill">{$conv.nb_non_lus}</span>
@@ -94,6 +99,7 @@
                                 <span class="badge bg-{$conv.statut_couleur} bg-opacity-10 text-{$conv.statut_couleur} border border-{$conv.statut_couleur} rounded-pill px-2 py-0 small">
                                     {if $conv.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
                                     {elseif $conv.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
+                                    {elseif $conv.statut_visuel == 'annule'}<i class="bi bi-x-circle me-1"></i>
                                     {else}<i class="bi bi-check-circle-fill me-1"></i>{/if}
                                     {$conv.statut_libelle}
                                 </span>
@@ -108,31 +114,12 @@
                             <div class="small text-muted text-truncate">
                                 
                                 {if $conv.dernier_message}
-                                    {* --- GESTION DES MESSAGES SYSTÈME --- *}
-                                    
-                                    {* 1. Trajet Rejoint *}
-                                    {if $conv.dernier_message == '::sys_join::'}
-                                        <em class="fst-italic"><i class="bi bi-person-plus"></i> Un utilisateur a rejoint le trajet</em>
-                                    
-                                    {* 2. Trajet Quitté *}
-                                    {elseif $conv.dernier_message == '::sys_leave::'}
-                                        <em class="fst-italic"><i class="bi bi-person-dash"></i> Un utilisateur a quitté le trajet</em>
-                                    
-                                    {* 3. Trajet Terminé *}
-                                    {elseif $conv.dernier_message == '::sys_end::'}
-                                        <strong class="text-purple"><i class="bi bi-flag-fill"></i> Trajet terminé</strong>
-                                    
-                                    {* 4. Trajet Annulé (Correction : syntaxe modifier Smarty) *}
-                                    {elseif $conv.dernier_message|replace:'::sys_cancel::':'' != $conv.dernier_message}
-                                        <strong class="text-danger"><i class="bi bi-x-circle-fill"></i> Le trajet a été annulé</strong>
-
-                                    {* 5. Message Classique (Texte Utilisateur) *}
-                                    {else}
-                                        {if $conv.conducteur_prenom}
-                                            <span class="fw-semibold">{$conv.conducteur_prenom}</span> : 
-                                        {/if}
-                                        {$conv.dernier_message|replace:'::sys_create::':''|truncate:50:"..."}
+                                    {* La variable est DEJA traduite par le PHP (pas besoin de strstr ou replace) *}
+                                    {if $conv.dernier_auteur}
+                                        <span class="fw-semibold">{$conv.dernier_auteur} :</span>
                                     {/if}
+                                    
+                                    {$conv.dernier_message|truncate:50:"..."}
                                     
                                     <span class="text-muted ms-1 small">• {$conv.date_tri|date_format:"%d/%m %H:%M"}</span>
                                 
@@ -151,9 +138,7 @@
     </div>
 {/function}
 
-
-
 {* --- SCRIPT POUR ACTIVER LE BON ONGLET AU RETOUR --- *}
-<script scr="/sae-covoiturage/public/assets/javascript/messagerie/js_liste.js"></script>
+<script src="/sae-covoiturage/public/assets/javascript/messagerie/js_liste.js"></script>
 
 {include file='includes/footer.tpl'}

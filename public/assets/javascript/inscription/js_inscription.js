@@ -1,14 +1,30 @@
 /* ==========================================
-   FONCTIONS DE GESTION DES ÉTAPES
+   1. GESTION DES ÉTAPES & BOUTON GLOBAL
    ========================================== */
+let etapeActuelle = 1;
 
 function changerEtape(numeroEtape) {
+    etapeActuelle = numeroEtape;
+
+    // 1. Hide all steps
     let toutesLesEtapes = document.querySelectorAll(".bloc-etape");
     toutesLesEtapes.forEach((div) => div.classList.add("d-none"));
 
+    // 2. Show target step
     let etapeVisee = document.getElementById("step-" + numeroEtape);
     if (etapeVisee) etapeVisee.classList.remove("d-none");
 
+    // 3. Manage Global Back Button
+    const btnRetour = document.getElementById("btnRetourGlobal");
+    if (btnRetour) {
+        if (numeroEtape === 1 || numeroEtape === 8) {
+            btnRetour.classList.add("d-none");
+        } else {
+            btnRetour.classList.remove("d-none");
+        }
+    }
+
+    // 4. Manage Header/Footer Visibility
     let headerFixe = document.querySelector(".card > div.text-center");
     let footerText = document.querySelector(".texte-champ");
 
@@ -19,26 +35,120 @@ function changerEtape(numeroEtape) {
     }
 
     if (numeroEtape === 6 || numeroEtape === 8) {
-        if (footerText && footerText.parentElement) {
+        if (footerText && footerText.parentElement)
             footerText.parentElement.classList.add("d-none");
-        }
     } else {
-        if (footerText && footerText.parentElement) {
+        if (footerText && footerText.parentElement)
             footerText.parentElement.classList.remove("d-none");
-        }
     }
 
-    // Scroll vers le haut de l'étape
+    // Reset Scroll
     const cardScrollable = document.querySelector(".card-scrollable");
-    if (cardScrollable) {
-        cardScrollable.scrollTop = 0;
+    if (cardScrollable) cardScrollable.scrollTop = 0;
+}
+
+// Function called by the global back button
+function retourArriere() {
+    if (etapeActuelle > 1) {
+        changerEtape(etapeActuelle - 1);
     }
 }
 
 /* ==========================================
-   VALIDATION ÉTAPE 1 : EMAIL
+   2. AUTOCOMPLÉTION ADRESSE (VERSION API GOUV)
    ========================================== */
+function setupAddressAutocomplete() {
+    const rueInput = document.getElementById("rueInput");
+    const villeInput = document.getElementById("villeInput");
+    const postInput = document.getElementById("postInput");
 
+    if (!rueInput) return;
+
+    let suggestionsContainer = document.querySelector(
+        ".autocomplete-suggestions"
+    );
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement("div");
+        suggestionsContainer.className = "autocomplete-suggestions";
+        suggestionsContainer.style.display = "none";
+        rueInput.parentNode.appendChild(suggestionsContainer);
+    }
+
+    let timeout = null;
+
+    rueInput.addEventListener("input", function () {
+        const query = this.value.trim();
+        if (query.length < 3) {
+            suggestionsContainer.style.display = "none";
+            return;
+        }
+
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            fetch(
+                `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
+                    query
+                )}&limit=3`
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    suggestionsContainer.innerHTML = "";
+                    if (data.features && data.features.length > 0) {
+                        suggestionsContainer.style.display = "block";
+                        data.features.forEach((feature) => {
+                            const props = feature.properties;
+                            const div = document.createElement("div");
+                            div.className = "autocomplete-suggestion";
+                            div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${props.label}`;
+                            div.addEventListener("click", function () {
+                                rueInput.value = props.name;
+                                if (villeInput) {
+                                    villeInput.value = props.city;
+                                    villeInput.style.backgroundColor =
+                                        "#e8f0fe";
+                                    setTimeout(
+                                        () =>
+                                            (villeInput.style.backgroundColor =
+                                                "#f9f9f9"),
+                                        500
+                                    );
+                                }
+                                if (postInput) {
+                                    postInput.value = props.postcode;
+                                    postInput.style.backgroundColor = "#e8f0fe";
+                                    setTimeout(
+                                        () =>
+                                            (postInput.style.backgroundColor =
+                                                "#f9f9f9"),
+                                        500
+                                    );
+                                    postInput.classList.remove("is-invalid");
+                                    const errDiv =
+                                        document.getElementById("error-post");
+                                    if (errDiv) errDiv.classList.add("d-none");
+                                }
+                                suggestionsContainer.style.display = "none";
+                            });
+                            suggestionsContainer.appendChild(div);
+                        });
+                    } else {
+                        suggestionsContainer.style.display = "none";
+                    }
+                })
+                .catch((err) => console.error("Erreur API", err));
+        }, 300);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target !== rueInput && e.target !== suggestionsContainer) {
+            suggestionsContainer.style.display = "none";
+        }
+    });
+}
+
+/* ==========================================
+   3. VALIDATIONS
+   ========================================== */
 async function verifierEmail() {
     const emailInput = document.getElementById("emailInput");
     const errorFormat = document.getElementById("error-email");
@@ -55,13 +165,11 @@ async function verifierEmail() {
     }
 
     try {
-        const emailValue = emailInput.value;
         const response = await fetch(
             "/sae-covoiturage/public/api/check-email?email=" +
-                encodeURIComponent(emailValue)
+                encodeURIComponent(emailInput.value)
         );
         const data = await response.json();
-
         if (data.exists) {
             errorDoublon.classList.remove("d-none");
             emailInput.classList.add("is-invalid");
@@ -69,291 +177,122 @@ async function verifierEmail() {
             changerEtape(2);
         }
     } catch (error) {
-        console.error("Erreur lors de la vérification email:", error);
-        alert(
-            "Impossible de vérifier l'email pour le moment. Veuillez réessayer."
-        );
+        changerEtape(2);
     }
 }
 
-/* ==========================================
-   VALIDATION ÉTAPE 2 : MOT DE PASSE
-   ========================================== */
-
 function verifierMDP() {
-    const mdpInput = document.getElementById("mdpInput");
-    const confMdpInput = document.getElementById("confMdpInput");
-    const errorMsg = document.getElementById("error-mdp");
-
-    const mdp = mdpInput.value;
-    const confMdp = confMdpInput.value;
-
-    if (mdp !== confMdp) {
-        afficherErreur("Les mots de passe ne correspondent pas.");
-        return;
-    }
-
-    if (mdp.length < 8) {
-        afficherErreur("Le mot de passe doit faire au moins 8 caractères.");
-        return;
-    }
-
-    let aUneLettre = false;
-    let aUnChiffre = false;
-    let aUnSpecial = false;
-
-    for (let i = 0; i < mdp.length; i++) {
-        let char = mdp[i];
-        if (char >= "0" && char <= "9") {
-            aUnChiffre = true;
-        } else if (char.toLowerCase() !== char.toUpperCase()) {
-            aUneLettre = true;
-        } else {
-            aUnSpecial = true;
-        }
-    }
-
-    if (!aUneLettre || !aUnChiffre || !aUnSpecial) {
-        afficherErreur(
-            "Il faut au moins 1 lettre, 1 chiffre et 1 caractère spécial."
+    const mdp = document.getElementById("mdpInput").value;
+    const conf = document.getElementById("confMdpInput").value;
+    if (mdp !== conf)
+        return afficherErreur("Les mots de passe ne correspondent pas.");
+    if (mdp.length < 8) return afficherErreur("8 caractères minimum.");
+    if (
+        !/[a-zA-Z]/.test(mdp) ||
+        !/[0-9]/.test(mdp) ||
+        !/[^a-zA-Z0-9]/.test(mdp)
+    )
+        return afficherErreur(
+            "1 lettre, 1 chiffre, 1 caractère spécial requis."
         );
-        return;
-    }
 
-    errorMsg.classList.add("d-none");
-    mdpInput.classList.remove("is-invalid");
-    confMdpInput.classList.remove("is-invalid");
+    document.getElementById("error-mdp").classList.add("d-none");
     changerEtape(3);
 }
 
-function afficherErreur(message) {
-    const errorMsg = document.getElementById("error-mdp");
-    const mdpInput = document.getElementById("mdpInput");
-    const confMdpInput = document.getElementById("confMdpInput");
-
-    errorMsg.textContent = message;
-    errorMsg.classList.remove("d-none");
-    mdpInput.classList.add("is-invalid");
-    confMdpInput.classList.add("is-invalid");
+function afficherErreur(msg) {
+    const err = document.getElementById("error-mdp");
+    err.textContent = msg;
+    err.classList.remove("d-none");
 }
 
 function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
-
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-    } else {
-        input.type = "password";
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-    }
+    input.type = input.type === "password" ? "text" : "password";
+    icon.classList.toggle("bi-eye");
+    icon.classList.toggle("bi-eye-slash");
 }
-
-/* ==========================================
-   VALIDATION ÉTAPE 3 : NOM / PRÉNOM
-   ========================================== */
 
 function validerEtape3() {
-    const nom = document.getElementById("nomInput").value.trim();
-    const prenom = document.getElementById("prenomInput").value.trim();
-
-    if (nom && prenom) {
+    if (
+        document.getElementById("nomInput").value.trim() &&
+        document.getElementById("prenomInput").value.trim()
+    )
         changerEtape(4);
-    }
 }
-
-/* ==========================================
-   VALIDATION ÉTAPE 4 : DATE / TEL
-   ========================================== */
 
 function validerEtape4() {
     const dateInput = document.getElementById("dateInput");
-    const tel = document.getElementById("telInput").value;
-
-    const dateSaisie = new Date(dateInput.value);
-    const dateLimite13ans = new Date();
-    dateLimite13ans.setFullYear(dateLimite13ans.getFullYear() - 13);
-    dateLimite13ans.setHours(0, 0, 0, 0);
-    const dateMin = new Date("1900-01-01");
-
-    if (!dateInput.value) {
-        alert("Veuillez entrer une date.");
-        return;
-    }
-    if (dateSaisie > dateLimite13ans) {
-        alert("Vous devez avoir au moins 13 ans pour vous inscrire.");
-        return;
-    }
-    if (dateSaisie < dateMin) {
-        alert("Veuillez entrer une année de naissance valide.");
-        return;
-    }
-
-    if (tel.length === 10) {
-        changerEtape(5);
-    } else {
-        alert("Le numéro de téléphone doit comporter 10 chiffres.");
-    }
+    if (!dateInput.value) return alert("Date requise.");
+    if (document.getElementById("telInput").value.length < 10)
+        return alert("Numéro invalide.");
+    changerEtape(5);
 }
-
-/* ==========================================
-   VALIDATION ÉTAPE 5 : ADRESSE
-   ========================================== */
 
 function validerEtape5() {
-    const rueInput = document.getElementById("rueInput");
-    const villeInput = document.getElementById("villeInput");
-    const postInput = document.getElementById("postInput");
-    const errorPost = document.getElementById("error-post");
-
-    const rue = rueInput.value.trim();
-    const ville = villeInput.value.trim();
-    const post = postInput.value.trim();
-
-    errorPost.classList.add("d-none");
-    postInput.classList.remove("is-invalid");
-
-    if (!rue || !ville || !post) {
-        alert(
-            "Veuillez remplir tous les champs obligatoires (Rue, Ville, Code Postal)."
-        );
-        return;
-    }
-
-    const regexCP = /^[0-9]{5}$/;
-    if (!regexCP.test(post)) {
-        errorPost.classList.remove("d-none");
-        postInput.classList.add("is-invalid");
-        return;
-    }
-
+    if (
+        !document.getElementById("rueInput").value.trim() ||
+        !document.getElementById("villeInput").value.trim() ||
+        !document.getElementById("postInput").value.trim()
+    )
+        return alert("Tout remplir.");
     changerEtape(6);
 }
-
-/* ==========================================
-   VALIDATION ÉTAPE 6 & 7 : VOITURE
-   ========================================== */
 
 function choisirVoiture() {
     changerEtape(7);
 }
 
-function modifierPlaces(direction) {
-    const input = document.getElementById("nbPlacesInput");
-    let valeur = parseInt(input.value);
-    let nouvelleValeur = valeur + direction;
-
-    if (nouvelleValeur >= 1 && nouvelleValeur <= 8) {
-        input.value = nouvelleValeur;
-    }
-}
-
 function soumettreSansVoiture() {
-    let champsVoiture = document.querySelectorAll("#step-7 input");
-    champsVoiture.forEach(function (champ) {
-        champ.removeAttribute("required");
-        champ.disabled = true;
-    });
-
-    let form = document.querySelector("form");
-    let hiddenInput = document.createElement("input");
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "voiture";
-    hiddenInput.value = "non";
-    form.appendChild(hiddenInput);
-
-    form.submit();
-}
-
-function validerImmatriculation() {
-    const immatInput = document.getElementById("immatInput");
-    const immat = immatInput.value.trim().toUpperCase();
-
-    const nouveau = "[A-Z][A-Z][- ]?\\d\\d\\d[- ]?[A-Z][A-Z]";
-    const ancien = "\\d+[- ]?[A-Z][A-Z][A-Z]?[- ]?\\d\\d";
-
-    const pattern = "^((" + nouveau + ")|(" + ancien + "))$";
-    const regexImmat = new RegExp(pattern);
-
-    if (!regexImmat.test(immat)) {
-        immatInput.classList.add("is-invalid");
-        return false;
-    } else {
-        immatInput.classList.remove("is-invalid");
-        return true;
-    }
+    document
+        .querySelectorAll("#step-7 input, #step-7 select")
+        .forEach((el) => (el.disabled = true));
+    document.getElementById("voitureInput").value = "non";
+    document.querySelector("form").submit();
 }
 
 function soumettreAvecVoiture() {
-    const marque = document.getElementById("marqueInput").value.trim();
-    const modele = document.getElementById("modelInput").value.trim();
-    const immat = document.getElementById("immatInput").value.trim();
-
-    if (!marque || !modele || !immat) {
-        alert("Veuillez remplir tous les champs obligatoires de la voiture.");
-        return;
-    }
-    if (!validerImmatriculation()) {
-        alert("Le format de la plaque d'immatriculation est incorrect.");
-        document.getElementById("immatInput").focus();
-        return;
-    }
-
-    let form = document.querySelector("form");
-    let ancienInput = form.querySelector('input[name="voiture"]');
-    if (ancienInput) {
-        ancienInput.remove();
-    }
-    let hiddenInput = document.createElement("input");
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "voiture";
-    hiddenInput.value = "oui";
-    form.appendChild(hiddenInput);
-    form.submit();
+    if (!validerImmatriculation()) return alert("Plaque invalide.");
+    document.getElementById("voitureInput").value = "oui";
+    document.querySelector("form").submit();
 }
 
-/* ==========================================
-   INITIALISATION ET ÉCOUTEURS D'ÉVÉNEMENTS
-   ========================================== */
+function validerImmatriculation() {
+    const val = document.getElementById("immatInput").value.toUpperCase();
+    return /^([A-Z]{2}[- ]?\d{3}[- ]?[A-Z]{2})|(\d{1,4}[- ]?[A-Z]{2,3}[- ]?\d{2})$/.test(
+        val
+    );
+}
 
+function modifierPlaces(n) {
+    const input = document.getElementById("nbPlacesInput");
+    let val = parseInt(input.value) + n;
+    if (val >= 1 && val <= 8) input.value = val;
+}
+
+// INIT
 document.addEventListener("DOMContentLoaded", function () {
     const dateInput = document.getElementById("dateInput");
     if (dateInput) {
         const today = new Date();
-        today.setFullYear(today.getFullYear() - 13);
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        const maxDate = `${year}-${month}-${day}`;
-        dateInput.setAttribute("max", maxDate);
-        dateInput.setAttribute("min", "1900-01-01");
+        const year = today.getFullYear() - 13;
+        const m = String(today.getMonth() + 1).padStart(2, "0");
+        const d = String(today.getDate()).padStart(2, "0");
+        dateInput.setAttribute("max", `${year}-${m}-${d}`);
     }
 
-    // Sécurité anti-envoi classique
-    const form = document.querySelector("form");
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-        });
-    }
-});
+    setupAddressAutocomplete();
 
-// GESTION CORRIGÉE DE LA TOUCHE ENTRÉE (Simulation de clic)
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
+    changerEtape(1);
 
-        const etapeActive = document.querySelector(".bloc-etape:not(.d-none)");
-
-        if (etapeActive) {
-            const bouton = etapeActive.querySelector(".btn-inscription");
-
-            if (bouton) {
-                bouton.click();
-            }
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            const btn = document.querySelector(
+                ".bloc-etape:not(.d-none) .btn-inscription"
+            );
+            if (btn) btn.click();
         }
-    }
+    });
 });

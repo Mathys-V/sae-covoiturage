@@ -11,6 +11,17 @@
                 <i class="bi bi-exclamation-triangle-fill me-2"></i> {$error}
             </div>
         {/if}
+
+        {if isset($smarty.get.success) && $smarty.get.success == 'inscription'}
+            <div class="alert alert-success d-flex align-items-center rounded-4 mb-4 shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>Compte créé avec succès !</strong><br>
+                        Vous pouvez maintenant vous connecter avec vos identifiants.
+                    </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {/if}
         
         <form action="/sae-covoiturage/public/connexion" method="POST">
             

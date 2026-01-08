@@ -30,7 +30,9 @@
                     <div class="col-md-2">
                         <label class="form-label text-white fw-bold d-md-none">Date</label>
                         <input type="date" name="date" class="form-control rounded-pill py-2" 
-                               value="{$recherche_precedente.date}" required>
+       value="{$recherche_precedente.date}" 
+       min="{$smarty.now|date_format:'%Y-%m-%d'}" 
+       required>
                     </div>
                 </div>
 
@@ -71,13 +73,25 @@
                 {if isset($historique) && $historique|@count > 0}
                     <div class="d-flex flex-column gap-3">
                         {foreach from=$historique item=h}
-                            <a href="/sae-covoiturage/public/recherche/resultats?depart={$h.depart}&arrivee={$h.arrivee}&date={$h.date}&heure={$smarty.now|date_format:'%H'}&minute={$smarty.now|date_format:'%M'}" class="text-decoration-none">
+                            {* LOGIQUE INTELLIGENTE DATE *}
+                            {$today = $smarty.now|date_format:'%Y-%m-%d'}
+                            {if $h.date < $today}
+                                {$date_lien = $today}
+                            {else}
+                                {$date_lien = $h.date}
+                            {/if}
+
+                            {* On utilise $date_lien au lieu de $h.date *}
+                            <a href="/sae-covoiturage/public/recherche/resultats?depart={$h.depart}&arrivee={$h.arrivee}&date={$date_lien}&heure={$smarty.now|date_format:'%H'}&minute={$smarty.now|date_format:'%M'}" class="text-decoration-none">
                                 <div class="card border-0 shadow-sm" style="background-color: rgba(255, 255, 255, 0.1); border-radius: 15px; transition: background 0.3s;">
                                     <div class="card-body d-flex align-items-center justify-content-between text-white py-3">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-clock-history fs-5"></i></div>
                                             <div>
                                                 <div class="fw-bold fs-5">{$h.depart} <i class="bi bi-arrow-right mx-2 text-white-50"></i> {$h.arrivee}</div>
+                                                
+                                                {* Affichage visuel : On montre quand même la date originale pour info, ou "Aujourd'hui" ? *}
+                                                {* Gardons la date originale pour que l'utilisateur reconnaisse sa recherche *}
                                                 <small class="text-white-50">Le {$h.date|date_format:"%d/%m/%Y"}</small>
                                             </div>
                                         </div>

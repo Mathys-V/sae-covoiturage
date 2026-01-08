@@ -41,7 +41,22 @@ Flight::route('GET /recherche/resultats', function(){
     $heure = (isset($req->heure) && $req->heure !== '') ? $req->heure : '00';
     $minute = (isset($req->minute) && $req->minute !== '') ? $req->minute : '00';
     
-    $dateComplete = $date . ' ' . $heure . ':' . $minute . ':00';
+    // --- CORRECTION DATE PASSÉE ---
+    $now = new DateTime();
+    $dateDemandee = new DateTime($date . ' ' . $heure . ':' . $minute . ':00');
+
+    // Si la date demandée est dans le passé, on remplace par "Maintenant"
+    if ($dateDemandee < $now) {
+        $dateComplete = $now->format('Y-m-d H:i:s');
+        
+        // Optionnel : Mettre à jour les variables d'affichage pour que l'utilisateur voie qu'on a corrigé
+        $date = $now->format('Y-m-d');
+        $heure = $now->format('H');
+        $minute = $now->format('i');
+    } else {
+        $dateComplete = $dateDemandee->format('Y-m-d H:i:s');
+    }
+    // ------------------------------
     $userId = isset($_SESSION['user']) ? $_SESSION['user']['id_utilisateur'] : 0;
 
     // Cookies

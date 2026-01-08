@@ -6,7 +6,6 @@
     <h2 class="fw-bold text-center text-purple mb-4">Mes Discussions</h2>
 
     <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded-pill shadow-sm" id="msgTabs" role="tablist">
-        
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill active fw-bold position-relative" id="encours-tab" data-bs-toggle="pill" data-bs-target="#encours" type="button">
                 En cours
@@ -17,7 +16,6 @@
                 {/if}
             </button>
         </li>
-
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold position-relative" id="avenir-tab" data-bs-toggle="pill" data-bs-target="#avenir" type="button">
                 À venir
@@ -28,7 +26,6 @@
                 {/if}
             </button>
         </li>
-
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold position-relative" id="termine-tab" data-bs-toggle="pill" data-bs-target="#termine" type="button">
                 Terminé
@@ -42,23 +39,19 @@
     </ul>
 
     <div class="tab-content" id="msgTabsContent">
-        
         <div class="tab-pane fade show active" id="encours" role="tabpanel">
             {call name=displayList list=$groupes.encours emptyMsg="Aucun trajet en cours."}
         </div>
-
         <div class="tab-pane fade" id="avenir" role="tabpanel">
             {call name=displayList list=$groupes.avenir emptyMsg="Aucun trajet à venir."}
         </div>
-
         <div class="tab-pane fade" id="termine" role="tabpanel">
             {call name=displayList list=$groupes.termine emptyMsg="Historique vide."}
         </div>
-
     </div>
 </div>
 
-{* --- FONCTION SMARTY POUR AFFICHER UNE LISTE --- *}
+{* --- FONCTION D'AFFICHAGE --- *}
 {function name=displayList}
     <div class="d-flex flex-column gap-3">
         {if empty($list)}
@@ -83,9 +76,8 @@
                                 <h6 class="fw-bold mb-1 text-truncate pe-2">
                                     {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
                                     
-                                    {* --- AJOUT DE L'HEURE ICI --- *}
                                     <span class="text-muted fw-normal small ms-1">
-                                        ({$conv.date_heure_depart|date_format:"%H:%M"})
+                                        - départ le {$conv.date_heure_depart|date_format:"%d/%m à %H:%M"}
                                     </span>
                                 </h6>
                                 {if $conv.nb_non_lus > 0}
@@ -112,9 +104,7 @@
                             </div>
 
                             <div class="small text-muted text-truncate">
-                                
                                 {if $conv.dernier_message}
-                                    {* La variable est DEJA traduite par le PHP (pas besoin de strstr ou replace) *}
                                     {if $conv.dernier_auteur}
                                         <span class="fw-semibold">{$conv.dernier_auteur} :</span>
                                     {/if}
@@ -122,11 +112,9 @@
                                     {$conv.dernier_message|truncate:50:"..."}
                                     
                                     <span class="text-muted ms-1 small">• {$conv.date_tri|date_format:"%d/%m %H:%M"}</span>
-                                
                                 {else}
                                     <em class="text-muted fst-italic">Nouvelle discussion</em>
                                 {/if}
-                                
                             </div>
                         </div>
 
@@ -138,7 +126,6 @@
     </div>
 {/function}
 
-{* --- SCRIPT POUR ACTIVER LE BON ONGLET AU RETOUR --- *}
 <script src="/sae-covoiturage/public/assets/javascript/messagerie/js_liste.js"></script>
 
 {include file='includes/footer.tpl'}

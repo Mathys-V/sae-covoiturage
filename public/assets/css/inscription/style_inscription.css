@@ -1,6 +1,6 @@
 /* --- STYLE GLOBAL --- */
 body {
-    background-color: #452b85 !important; /* Force le fond violet */
+    background-color: #452b85 !important;
     font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
 }
@@ -40,7 +40,7 @@ body {
     outline: none;
 }
 
-/* --- BOUTONS PRINCIPAUX --- */
+/* --- BOUTONS --- */
 .btn-inscription {
     background-color: #8c52ff;
     color: white;
@@ -75,6 +75,7 @@ body {
 .card-scrollable {
     overflow-y: auto;
     scroll-behavior: smooth;
+    max-height: 70vh;
 }
 .card-scrollable::-webkit-scrollbar {
     width: 8px;
@@ -145,6 +146,7 @@ body {
 .spinner-btn:first-child {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
+
 .input-group .form-control {
     border: 2px solid #8c52ff;
     border-right: none;
@@ -167,37 +169,65 @@ body {
     color: #dc3545 !important;
 }
 
+/* --- AUTOCOMPLÉTION --- */
+.autocomplete-wrapper {
+    position: relative !important;
+    width: 100%;
+    z-index: 1050;
+}
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 2px solid #8c52ff;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    z-index: 9999;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.autocomplete-suggestion {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+}
+.autocomplete-suggestion i {
+    margin-right: 10px;
+    color: #8c52ff;
+}
+.autocomplete-suggestion:hover {
+    background-color: #f3efff !important;
+    color: #452b85;
+}
+.autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
 /* =========================================================
-    BOUTON RETOUR : SUR LE FOND VIOLET (Hors du cadre)
-========================================================= */
-.btn-retour-top {
-    /* 1. Positionnement FIXE (Par rapport à l'écran entier) */
-    position: fixed !important;
-
-    /* 2. Hauteur : 110px pour descendre SOUS la navbar */
-    top: 110px !important;
-
-    /* 3. Marge Gauche */
-    left: 20px !important;
-
-    /* Z-Index MAX pour flotter au-dessus de tout */
+   BOUTON RETOUR : ABSOLU (Fixé au conteneur principal)
+   ========================================================= */
+.btn-retour-card {
+    position: absolute !important;
+    top: 30px !important; /* En haut de la section */
+    left: 40px !important; /* À GAUCHE de l'écran */
     z-index: 99999 !important;
 
-    /* 4. Couleurs : Fond Blanc, Texte Violet, Bordure Violette */
     background-color: #ffffff !important;
     color: #8c52ff !important;
     border: 2px solid #8c52ff !important;
-
-    /* 5. Forme Arrondie (Pillule) */
     border-radius: 12px !important;
-
-    /* 6. Texte */
     font-weight: bold !important;
     font-size: 1rem !important;
     text-transform: capitalize !important;
     font-family: inherit !important;
-
-    /* 7. Dimensions et Reset */
     padding: 8px 25px !important;
     margin: 0 !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
@@ -205,18 +235,28 @@ body {
     outline: none !important;
     transition: transform 0.2s ease !important;
 }
-
-/* Effet au survol */
-.btn-retour-top:hover {
+.btn-retour-card:hover {
     transform: scale(1.05) !important;
-    background-color: #f3efff !important; /* Blanc cassé violet */
+    background-color: #f3efff !important;
 }
 
-/* Ajustement Mobile si besoin */
+/* Ajustement Mobile */
 @media (max-width: 768px) {
-    .btn-retour-top {
-        top: 90px !important; /* Remonte un peu sur petit écran */
-        left: 10px !important;
+    .btn-retour-card {
+        top: 20px !important;
+        left: 20px !important;
         padding: 6px 15px !important;
     }
+}
+
+/* =========================================================
+   ARRONDIS FORCÉS SUR LE CONTENU
+   ========================================================= */
+.header-rounded {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+}
+.footer-rounded {
+    border-bottom-left-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
 }

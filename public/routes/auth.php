@@ -191,8 +191,8 @@ Flight::route('POST /inscription', function(){
 
         $db->commit();
 
-        // Succès : On peut rediriger vers la connexion ou connecter l'utilisateur directement
-        Flight::redirect('/connexion');
+        // Succès : Redirection avec paramètre de succès
+        Flight::redirect('/connexion?success=inscription');
 
     } catch (PDOException $e) {
         $db->rollBack();

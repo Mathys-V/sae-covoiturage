@@ -93,6 +93,8 @@ Flight::route('GET /messagerie', function(){
                     $parts = explode('::', $contenu);
                     $nb = isset($parts[2]) ? (int)$parts[2] : 1;
                     $contenu = "a rejoint le trajet" . ($nb > 1 ? " ($nb places)" : ".");
+                } elseif (strpos($contenu, '::sys_update::') === 0) {
+                    $contenu = "Trajet modifié par le conducteur.";
                 } elseif ($contenu == '::sys_leave::') {
                     $contenu = "a quitté le trajet.";
                 } elseif ($contenu == '::sys_end::') {
@@ -231,6 +233,10 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
                 $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet';
                 if ($nbPlaces > 1) { $msg['text_affiche'] .= ' (et a réservé ' . $nbPlaces . ' places)'; } else { $msg['text_affiche'] .= '.'; }
             }
+            elseif (strpos($msg['contenu'], '::sys_update::') === 0) {
+                $parts = explode('::', $msg['contenu']);
+                $msg['text_affiche'] = isset($parts[2]) ? trim($parts[2]) : "Le conducteur a modifié le trajet.";
+    }
             elseif ($msg['contenu'] == '::sys_leave::') { $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.'; }
             elseif ($msg['contenu'] == '::sys_end::') { $msg['text_affiche'] = 'Le trajet est terminé.'; }
         } else {

@@ -312,6 +312,7 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
+    // ... (Tout le bloc de vérification reste identique) ...
     $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
     $stmtVerif->execute([':id' => $id]);
     $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
@@ -346,6 +347,16 @@ Flight::route('POST /trajet/modifier/@id', function($id){
             ':desc'      => $data->description,
             ':id'        => $id
         ]);
+
+        $msgContent = "::sys_update:: Le conducteur a modifié les détails du trajet.";
+        
+        $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
+        $stmtMsg->execute([
+            ':id_t'    => $id,
+            ':id_u'    => $userId,
+            ':contenu' => $msgContent
+        ]);
+        // ---------------------------------------------
 
         $_SESSION['flash_success'] = "Trajet modifié avec succès !";
         Flight::redirect('/mes_trajets');

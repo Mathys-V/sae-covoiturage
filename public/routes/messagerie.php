@@ -67,11 +67,21 @@ Flight::route('GET /messagerie', function(){
             $conv['temps_restant'] = ($diff->h > 0) ? $diff->format('%hh %Im') : $diff->format('%I min');
 
         } else {
-            $statutKey = 'avenir';
-            $conv['statut_visuel'] = 'avenir';
-            $conv['statut_libelle'] = ($conv['statut_flag'] == 'C') ? 'Complet' : 'À venir';
-            $conv['statut_couleur'] = ($conv['statut_flag'] == 'C') ? 'warning' : 'primary';
-        }
+            // Si le trajet est ANNULÉ ('C')
+    if ($conv['statut_flag'] == 'C') {
+        $statutKey = 'termine'; // On le déplace dans l'onglet "Terminé/Historique"
+        $conv['statut_visuel'] = 'annule';
+        $conv['statut_libelle'] = 'Annulé';
+        $conv['statut_couleur'] = 'danger'; // Rouge
+    } 
+    // Sinon, c'est un trajet futur standard
+    else {
+        $statutKey = 'avenir';
+        $conv['statut_visuel'] = 'avenir';
+        $conv['statut_libelle'] = 'À venir';
+        $conv['statut_couleur'] = 'primary'; // Bleu
+    }
+}
 
         // --- INFO MESSAGES (CORRIGÉ POUR DÉCODER ::SYS_) ---
         $stmtMsg = $db->prepare("

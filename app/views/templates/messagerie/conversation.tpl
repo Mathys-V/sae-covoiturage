@@ -7,9 +7,9 @@
     <div class="chat-header p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center" style="max-width: 80%;">
             <a href="/sae-covoiturage/public/messagerie#{if $trajet.statut_visuel == 'complet'}avenir{else}{$trajet.statut_visuel}{/if}" 
-   class="btn btn-light rounded-circle shadow-sm me-3">
-   <i class="bi bi-arrow-left text-dark"></i>
-</a>
+               class="btn btn-light rounded-circle shadow-sm me-3">
+               <i class="bi bi-arrow-left text-dark"></i>
+            </a>
             <div class="text-truncate">
                 <h5 class="mb-0 text-truncate fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$trajet.ville_arrivee}</h5>
                 <div class="d-flex align-items-center gap-2 small mt-1">
@@ -33,7 +33,7 @@
         </div>
         
         {if $participants|@count > 0}
-        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-report" title="Signaler un problème">
+        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-report" title="Signaler un problème" data-bs-toggle="modal" data-bs-target="#modalSignalement">
             <i class="bi bi-flag"></i>
         </button>
         {/if}
@@ -48,9 +48,11 @@
             </div>
         {else}
             {foreach $messages as $msg}
+                {* --- SÉPARATEUR DE DATE --- *}
                 {if $msg.type == 'separator'}
                     <div class="date-divider"><span>{$msg.date}</span></div>
                 
+                {* --- MESSAGES SYSTÈME --- *}
                 {elseif $msg.type == 'system'}
                     
                     {* CAS 1 : Trajet Terminé *}
@@ -68,7 +70,7 @@
                             </div>
                         </div>
 
-                    {* CAS 2 : Trajet Annulé (DÉTECTION CORRIGÉE) *}
+                    {* CAS 2 : Trajet Annulé *}
                     {elseif $msg.contenu|replace:'::sys_cancel::':'' != $msg.contenu}
                         <div class="system-msg my-4">
                             <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #fff5f5; border-left: 5px solid #dc3545 !important;">
@@ -83,44 +85,47 @@
                                 </div>
                             </div>
                         </div>
-                    {* --- AJOUTER CE BLOC DANS LA SECTION TYPE == 'SYSTEM' --- *}
 
-
-{* CAS 3 : Trajet Créé (Logique replace) *}
+                    {* CAS 3 : Trajet Créé *}
                     {elseif $msg.contenu|replace:'::sys_create::':'' != $msg.contenu}
                         <div class="system-msg my-3 text-center">
                             <span class="badge bg-purple bg-opacity-10 text-purple border border-purple px-3 py-2 rounded-pill shadow-sm">
                                 <i class="bi bi-stars me-1"></i> 
-                                {* On affiche le message sans le tag ::sys_create:: *}
                                 {$msg.contenu|replace:'::sys_create::':''}
                             </span>
                         </div>
-                    {* CAS 4 : Autres messages système (Join/Leave) *}
 
-{else}
-    {* On utilise 'contenu' car 'text_affiche' n'existe pas *}
-    <div class="system-msg"><span>{$msg.contenu}</span></div>
-{/if}
+                    {* CAS 4 : Join / Leave (C'EST ICI LA CORRECTION) *}
+                    {else}
+                        <div class="text-center my-3">
+                            <small class="text-muted fst-italic">
+                                <i class="bi bi-info-circle me-1"></i>
+                                {* On affiche la version traduite par PHP (text_affiche) *}
+                                {$msg.text_affiche|default:$msg.contenu}
+                            </small>
+                        </div>
+                    {/if}
 
+                {* --- MESSAGES UTILISATEURS (Code CSS d'origine conservé) --- *}
                 {else}
                     <div class="msg-row {if $msg.type == 'self'}self{else}other{/if}">
                         <div class="msg-content shadow-sm">
                             {$msg.contenu|nl2br}
                         </div>
                         <div class="msg-info">
-                    {if $msg.type == 'other'}
-                        <a href="/sae-covoiturage/public/profil/voir/{$msg.id_expediteur}" 
-                           class="text-decoration-none fw-bold" 
-                           style="color: #6c757d;"
-                           onmouseover="this.style.textDecoration='underline'; this.style.color='#8c52ff';" 
-                           onmouseout="this.style.textDecoration='none'; this.style.color='#6c757d';">
-                            {$msg.nom_affiche}
-                        </a>
-                    {else}
-                        {$msg.nom_affiche}
-                    {/if}
-                    • {$msg.heure_fmt}
-                </div>
+                            {if $msg.type == 'other'}
+                                <a href="/sae-covoiturage/public/profil/voir/{$msg.id_expediteur}" 
+                                   class="text-decoration-none fw-bold" 
+                                   style="color: #6c757d;"
+                                   onmouseover="this.style.textDecoration='underline'; this.style.color='#8c52ff';" 
+                                   onmouseout="this.style.textDecoration='none'; this.style.color='#6c757d';">
+                                    {$msg.nom_affiche}
+                                </a>
+                            {else}
+                                {$msg.nom_affiche}
+                            {/if}
+                            • {$msg.heure_fmt}
+                        </div>
                     </div>
                 {/if}
             {/foreach}

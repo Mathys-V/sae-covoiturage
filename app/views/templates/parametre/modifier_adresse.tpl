@@ -6,40 +6,43 @@
     <title>{$titre}</title>
     
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/parametre/style_modifier_adresse.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 
     {include file='includes/header.tpl'}
 
     <main>
-        <h1>Votre adresse postale</h1>
+        <h1>Modifier votre adresse</h1>
 
         <form action="/sae-covoiturage/public/profil/modifier_adresse" method="POST" id="addressForm">
             
             <div class="input-group">
-                <label>Votre rue ?<span class="required-star">*</span></label>
-                <input type="text" name="rue" id="rue" value="{$adresse.voie|default:''}" placeholder="Commencez à taper votre adresse..." autocomplete="off">
+                <label for="rue">Votre rue ?<span class="required-star">*</span></label>
                 
-                <ul class="suggestions-list" id="suggestions"></ul>
+                <div class="autocomplete-wrapper">
+                    <input type="text" name="rue" id="rue" value="{$adresse.voie|default:''}" placeholder="Commencez à taper votre adresse..." autocomplete="off">
+                    
+                    <div class="autocomplete-suggestions"></div>
+                </div>
                 
                 <div class="error-message" id="errorRue">Ce champ est obligatoire.</div>
-                <div class="error-message" id="errorRueApi">Veuillez sélectionner une adresse existante dans la liste.</div>
             </div>
 
             <div class="input-group">
-                <label>Un complément ?</label>
+                <label for="complement">Un complément ?</label>
                 <input type="text" name="complement" id="complement" value="{$adresse.complement|default:''}" placeholder="Ex: Appartement 6">
             </div>
 
             <div class="input-group">
-                <label>Votre ville ?<span class="required-star">*</span></label>
-                <input type="text" name="ville" id="ville" value="{$adresse.ville|default:''}" placeholder="Sera rempli automatiquement">
-                <div class="error-message" id="errorVille">Veuillez entrer une ville valide.</div>
+                <label for="ville">Votre ville ?<span class="required-star">*</span></label>
+                <input type="text" name="ville" id="ville" value="{$adresse.ville|default:''}" placeholder="Ville">
+                <div class="error-message" id="errorVille">Veuillez entrer une ville.</div>
             </div>
 
             <div class="input-group">
-                <label>Le code postal ?<span class="required-star">*</span></label>
-                <input type="text" name="cp" id="cp" value="{$adresse.code_postal|default:''}" placeholder="Sera rempli automatiquement" maxlength="5">
+                <label for="cp">Le code postal ?<span class="required-star">*</span></label>
+                <input type="text" name="cp" id="cp" value="{$adresse.code_postal|default:''}" placeholder="Code postal" maxlength="5">
                 <div class="error-message" id="errorCp">Le code postal doit contenir 5 chiffres.</div>
             </div>
             
@@ -70,7 +73,7 @@
 
     {include file='includes/footer.tpl'}
 
-    <script src="/sae-covoiturage/public/assets/javascript/parametre/js_modifier_adresse.js"></script>
+    <script src="/sae-covoiturage/public/assets/javascript/parametre/js_modif_adresse.js"></script>
 
 </body>
 </html>

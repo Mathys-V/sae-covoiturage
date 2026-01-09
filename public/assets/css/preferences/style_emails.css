@@ -1,43 +1,70 @@
-/* Mêmes styles de base */
+/* ==========================================================================
+   STYLE DES PRÉFÉRENCES EMAILS (style_emails.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   VARIABLES ET CONFIGURATION GLOBALE
+   ========================================================================== */
+/* Définition des couleurs principales du thème sombre */
 :root {
-  --bg-dark: #422875;
-  --accent: #8c52ff;
+  --bg-dark: #422875; /* Violet foncé (Fond) */
+  --accent: #8c52ff; /* Violet clair (Action/Mise en valeur) */
 }
+
+/* Application du thème global */
 body {
-  background-color: var(--bg-dark) !important;
-  color: white;
+  background-color: var(--bg-dark) !important; /* Force le fond sombre */
+  color: white; /* Texte blanc par défaut */
 }
+
+/* ==========================================================================
+   CONTENEUR PRINCIPAL
+   ========================================================================== */
+/* Zone centrale limitant la largeur du contenu */
 .pref-main {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto; /* Centrage horizontal */
   padding: 40px 20px;
 }
+
+/* ==========================================================================
+   EN-TÊTE DE NAVIGATION
+   ========================================================================== */
+/* Bandeau supérieur contenant le retour et le titre */
 .header-top {
   display: flex;
   align-items: center;
   margin-bottom: 30px;
 }
+
+/* Bouton de retour circulaire */
 .back-btn {
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Bordure semi-transparente */
   width: 40px;
   height: 40px;
   display: grid;
-  place-items: center;
+  place-items: center; /* Centre parfaitement l'icône (flèche) */
   border-radius: 50%;
   text-decoration: none;
 }
+
+/* Titre de la page */
 .title {
-  flex-grow: 1;
+  flex-grow: 1; /* Prend tout l'espace disponible */
   text-align: center;
   font-weight: bold;
   margin: 0;
-  padding-right: 40px;
+  padding-right: 40px; /* Compense la largeur du bouton retour pour centrer parfaitement */
 }
 
+/* ==========================================================================
+   COMPOSANTS D'INFORMATION
+   ========================================================================== */
+/* Bandeau d'information contextuelle (ex: Info SAE) */
 .sae-info {
-  background: rgba(140, 82, 255, 0.15);
-  border: 1px solid var(--accent);
+  background: rgba(140, 82, 255, 0.15); /* Fond teinté */
+  border: 1px solid var(--accent); /* Bordure couleur accent */
   border-radius: 15px;
   padding: 15px;
   margin-bottom: 30px;
@@ -47,48 +74,65 @@ body {
   align-items: center;
 }
 
+/* ==========================================================================
+   CARTES DE SÉLECTION (CHECKBOXES CUSTOM)
+   ========================================================================== */
+/* Conteneur d'une option sélectionnable */
 .checkbox-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05); /* Fond très léger */
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 15px;
   display: flex;
   align-items: center;
   gap: 15px;
-  cursor: pointer;
-  border: 2px solid transparent;
+  cursor: pointer; /* Indique que la zone est cliquable */
+  border: 2px solid transparent; /* Prépare la bordure pour éviter le décalage */
   transition: 0.2s;
 }
+
+/* Effet au survol de l'option */
 .checkbox-card:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Checkbox cachée mais fonctionnelle */
+/* Masquage de la case à cocher native du navigateur */
 .checkbox-card input {
   display: none;
 }
 
-/* Indicateur visuel */
+/* ==========================================================================
+   INDICATEUR VISUEL (ROND À COCHER)
+   ========================================================================== */
+/* Cercle vide par défaut */
 .indicator {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid #b0a4c5;
+  border: 2px solid #b0a4c5; /* Gris violacé */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: 0.2s;
 }
+
+/* État coché : Le cercle se remplit et se colore */
 .checkbox-card input:checked + .indicator {
   background: var(--accent);
   border-color: var(--accent);
 }
+
+/* État coché : Ajout de la coche (checkmark) */
 .checkbox-card input:checked + .indicator::after {
   content: "✔";
   font-size: 14px;
   color: white;
 }
 
+/* ==========================================================================
+   BOUTON D'ACTION
+   ========================================================================== */
+/* Bouton "Enregistrer" pleine largeur */
 .btn-save {
   display: block;
   width: 100%;

@@ -1,198 +1,239 @@
-/* --- CONFIGURATION GLOBALE --- */
+/* ==========================================================================
+   STYLE DE LA PAGE DE MODIFICATION DE TRAJET (style_modifier_trajet.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE ET MISE EN PAGE
+   ========================================================================== */
+/* Configuration du corps de page (Fond violet et Flexbox) */
 body {
-    background-color: #452b85 !important; /* FOND VIOLET */
-    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative; /* Important pour le positionnement absolu du bouton */
+  background-color: #452b85 !important; /* FOND VIOLET imposé par la charte */
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* Indispensable pour le positionnement absolu du bouton retour */
 }
 
+/* Wrapper principal pour centrer le formulaire verticalement et horizontalement */
 .main-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 100px; /* Espace pour la navbar */
-    padding-bottom: 50px;
+  flex: 1; /* Prend tout l'espace disponible */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alignement en haut pour éviter les soucis de scroll */
+  padding-top: 100px; /* Espace réservé pour la barre de navigation */
+  padding-bottom: 50px;
 }
 
-/* --- CARTE DU FORMULAIRE --- */
+/* ==========================================================================
+   CARTE DU FORMULAIRE
+   ========================================================================== */
+/* Conteneur principal du formulaire */
 .form-card {
-    background-color: #e9e4f5;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    max-width: 600px;
-    width: 90%;
-    padding: 40px;
-    border: 2px solid #fff;
-    position: relative;
-    margin-top: 20px;
+  background-color: #e9e4f5; /* Fond violet très pâle */
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Ombre portée marquée */
+  max-width: 600px;
+  width: 90%; /* Responsive : s'adapte à la largeur de l'écran */
+  padding: 40px;
+  border: 2px solid #fff; /* Bordure blanche pour le contraste */
+  position: relative;
+  margin-top: 20px;
 }
 
-/* --- TYPOGRAPHIE --- */
+/* ==========================================================================
+   TYPOGRAPHIE ET LABELS
+   ========================================================================== */
+/* Titre du formulaire */
 .form-title {
-    color: #000;
-    font-weight: 800;
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 30px;
+  color: #000;
+  font-weight: 800;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
+/* Étiquettes des champs */
 .custom-label {
-    font-weight: 600;
-    color: #000;
-    margin-bottom: 8px;
-    display: block;
-    text-align: center;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 8px;
+  display: block;
+  text-align: center;
 }
 
+/* Indicateur de champ obligatoire */
 .required-star {
-    color: #dc3545;
-    margin-left: 3px;
+  color: #dc3545; /* Rouge erreur */
+  margin-left: 3px;
 }
 
-/* --- CHAMPS DE SAISIE --- */
+/* ==========================================================================
+   CHAMPS DE SAISIE (INPUTS)
+   ========================================================================== */
+/* Style général des inputs arrondis */
 .form-control-rounded {
-    border-radius: 12px;
-    border: 2px solid #8c52ff;
-    padding: 12px 15px;
-    text-align: center;
-    font-size: 1rem;
-    background-color: white;
-    transition: all 0.3s;
+  border-radius: 12px;
+  border: 2px solid #8c52ff; /* Bordure violette */
+  padding: 12px 15px;
+  text-align: center; /* Texte centré dans le champ */
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.3s;
 }
 
+/* État focus des inputs */
 .form-control-rounded:focus {
-    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2);
-    border-color: #452b85;
-    outline: none;
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2); /* Halo violet */
+  border-color: #452b85;
+  outline: none;
 }
 
+/* État d'erreur (validation) */
 .input-error {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important;
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important; /* Halo rouge */
 }
 
-/* Input nombre de places */
+/* Spécifique : Input pour le nombre de places */
 .input-number-group {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
+
 .input-number-group input {
-    width: 80px;
-    font-weight: bold;
-    font-size: 1.2rem;
+  width: 80px; /* Largeur réduite */
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-/* --- BOUTON DE SOUMISSION --- */
+/* ==========================================================================
+   BOUTON DE SOUMISSION
+   ========================================================================== */
+/* Bouton principal "Publier" */
 .btn-submit-trajet {
-    background-color: #8c52ff;
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    padding: 15px;
-    width: 100%;
-    border-radius: 15px;
-    border: none;
-    transition: transform 0.2s, background-color 0.2s;
-    margin-top: 30px;
-    cursor: pointer;
+  background-color: #8c52ff;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 15px;
+  width: 100%;
+  border-radius: 15px;
+  border: none;
+  transition: transform 0.2s, background-color 0.2s;
+  margin-top: 30px;
+  cursor: pointer;
 }
 
+/* Effet au survol */
 .btn-submit-trajet:hover {
-    background-color: #703ccf;
-    transform: translateY(-3px);
+  background-color: #703ccf;
+  transform: translateY(-3px); /* Légère élévation */
 }
 
-/* --- AUTOCOMPLÉTION --- */
+/* ==========================================================================
+   AUTOCOMPLÉTION (LIEUX/VILLES)
+   ========================================================================== */
+/* Wrapper relatif pour positionner la liste */
 .autocomplete-wrapper {
-    position: relative;
+  position: relative;
 }
 
+/* Liste déroulante des suggestions */
 .autocomplete-suggestions {
-    text-align: left;
-    border: 1px solid #ddd;
-    background: #fff;
-    overflow: auto;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    z-index: 9999;
-    width: 100%;
-    max-height: 200px;
-    left: 0;
-    top: 100%;
+  text-align: left;
+  border: 1px solid #ddd;
+  background: #fff;
+  overflow: auto;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  z-index: 9999;
+  width: 100%;
+  max-height: 200px;
+  left: 0;
+  top: 100%; /* Juste sous le champ */
 }
 
+/* Élément de suggestion */
 .autocomplete-suggestion {
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    align-items: center;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
 }
 
 .autocomplete-suggestion:hover {
-    background-color: #f0f0f0;
-    color: #8c52ff;
+  background-color: #f0f0f0;
+  color: #8c52ff;
 }
+
 .suggestion-icon {
-    margin-right: 10px;
-    font-size: 1.1rem;
+  margin-right: 10px;
+  font-size: 1.1rem;
 }
+
+/* Style pour les lieux fréquents */
 .is-frequent {
-    background-color: #fff9e6;
-    font-weight: 600;
-    color: #b8860b;
+  background-color: #fff9e6;
+  font-weight: 600;
+  color: #b8860b;
 }
 
-/* =========================================================
-   BOUTON RETOUR : ABSOLU (Reste en haut de la page)
-   ========================================================= */
+/* ==========================================================================
+   BOUTON RETOUR (POSITIONNEMENT SPÉCIFIQUE)
+   ========================================================================== */
+/* Bouton retour positionné en absolu par rapport au flux de la page */
 .btn-retour-top {
-    /* 1. Changement crucial : ABSOLU au lieu de FIXED */
-    position: absolute !important;
+  /* 1. Changement crucial : ABSOLU au lieu de FIXED pour scroller avec la page */
+  position: absolute !important;
 
-    /* 2. Position par rapport au haut de la PAGE (pas de l'écran) */
-    top: 120px !important;
-    left: 30px !important;
+  /* 2. Position par rapport au haut de la PAGE (pas de l'écran) */
+  top: 120px !important;
+  left: 30px !important;
 
-    z-index: 999;
+  z-index: 999;
 
-    /* Style identique */
-    background-color: #ffffff !important;
-    color: #8c52ff !important;
-    border: 2px solid #8c52ff !important;
-    border-radius: 50px !important;
-    font-weight: bold !important;
-    font-size: 1rem !important;
-    text-transform: capitalize !important;
-    text-decoration: none !important;
-    font-family: inherit !important;
-    padding: 10px 30px !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
-    transition: transform 0.2s ease !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Style visuel */
+  background-color: #ffffff !important;
+  color: #8c52ff !important;
+  border: 2px solid #8c52ff !important;
+  border-radius: 50px !important;
+  font-weight: bold !important;
+  font-size: 1rem !important;
+  text-transform: capitalize !important;
+  text-decoration: none !important;
+  font-family: inherit !important;
+  padding: 10px 30px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.2s ease !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-retour-top:hover {
-    transform: scale(1.05) !important;
-    background-color: #f3efff !important;
-    color: #452b85 !important;
+  transform: scale(1.05) !important;
+  background-color: #f3efff !important;
+  color: #452b85 !important;
 }
 
+/* ==========================================================================
+   RESPONSIVE DESIGN (MOBILE)
+   ========================================================================== */
 @media (max-width: 768px) {
-    .btn-retour-top {
-        top: 90px !important;
-        left: 10px !important;
-        padding: 8px 20px !important;
-        font-size: 0.9rem !important;
-    }
-    .form-card {
-        padding: 25px;
-    }
+  /* Ajustement du bouton retour sur petits écrans */
+  .btn-retour-top {
+    top: 90px !important;
+    left: 10px !important;
+    padding: 8px 20px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Réduction du padding de la carte */
+  .form-card {
+    padding: 25px;
+  }
 }

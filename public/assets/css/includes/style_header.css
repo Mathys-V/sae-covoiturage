@@ -1,94 +1,133 @@
-/* --- THÈME VIOLET --- */
+/* ==========================================================================
+   STYLE DE L'EN-TÊTE ET NAVIGATION (style_header.css)
+   ========================================================================== */
+
+/* * Définition des variables globales (Charte graphique)
+ * Centralisation des codes couleurs pour faciliter la maintenance
+ */
 :root {
-  --main-purple: #8c52ff;
-  --hover-purple: #703ccf;
+  --main-purple: #8c52ff; /* Couleur primaire */
+  --hover-purple: #703ccf; /* Couleur au survol (plus foncée) */
 }
+
+/* Classe utilitaire pour appliquer la couleur textuelle */
 .text-purple {
   color: var(--main-purple);
 }
 
-/* === STRUCTURE DE LA PAGE (Footer Sticky) === */
+/* ==========================================================================
+   STRUCTURE GLOBALE DE LA PAGE (Sticky Footer)
+   ========================================================================== */
+/* * Configuration nécessaire pour que le footer reste en bas de page
+ * même si le contenu est court.
+ */
 html,
 body {
   height: 100%;
   margin: 0;
 }
+
 body {
   display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
+  flex-direction: column; /* Empile le header, le contenu et le footer */
+  background-color: #f8f9fa; /* Fond gris très clair par défaut */
 }
 
-/* BOUTONS NAVIGATION */
+/* ==========================================================================
+   BOUTONS DE NAVIGATION
+   ========================================================================== */
+
+/* * Bouton principal violet (Call To Action)
+ * Utilisé pour "Proposer un trajet", "Connexion", etc.
+ */
 .btn-purple {
   background-color: var(--main-purple);
   color: white;
   border: none;
-  border-radius: 50px;
+  border-radius: 50px; /* Bords totalement arrondis */
   padding: 8px 10px;
   font-weight: 500;
-  transition: background 0.3s, transform 0.1s;
+  transition: background 0.3s, transform 0.1s; /* Animation douce */
   text-decoration: none;
 
-  /* Largeur fixe */
-  width: 180px;
+  /* Dimensions et alignement */
+  width: 180px; /* Largeur fixe pour uniformiser les boutons du menu */
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  white-space: nowrap;
+  white-space: nowrap; /* Empêche le texte de passer à la ligne */
 }
 
+/* Effet au survol du bouton principal */
 .btn-purple:hover {
   background-color: var(--hover-purple);
   color: white;
-  transform: translateY(-1px);
+  transform: translateY(-1px); /* Légère élévation */
 }
 
+/* * Bouton Avatar Utilisateur (Cercle)
+ * Conteneur pour la photo de profil ou l'icône par défaut
+ */
 .user-avatar-btn {
   background-color: var(--main-purple);
   color: white;
   width: 45px;
   height: 45px;
-  border-radius: 50%;
+  border-radius: 50%; /* Cercle parfait */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.3s;
 }
+
 .user-avatar-btn:hover {
   background-color: var(--hover-purple);
 }
+
+/* * Gestion des flèches et icônes du menu déroulant (Bootstrap overrides)
+ */
 .no-arrow::after {
-  display: none !important;
+  display: none !important; /* Masque la flèche native de Bootstrap */
 }
+
 .big-arrow {
   color: var(--main-purple);
   cursor: pointer;
 }
+
 .big-arrow:hover {
   color: var(--hover-purple);
 }
 
+/* Dimensionnement du logo dans la barre de navigation */
 .navbar-brand img {
   max-height: 50px;
   width: auto;
 }
 
+/* ==========================================================================
+   NAVIGATION MOBILE
+   ========================================================================== */
+/* Liens spécifiques au menu hamburger (mobile) */
 .mobile-link {
   color: #333;
   text-decoration: none;
   padding: 10px 0;
   display: block;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee; /* Séparateur subtil */
   font-weight: 500;
 }
+
+/* Animation au survol sur mobile */
 .mobile-link:hover {
   color: var(--main-purple);
   background-color: #f9f9f9;
-  padding-left: 10px;
+  padding-left: 10px; /* Petit décalage vers la droite */
   transition: all 0.2s;
 }
+
+/* Icônes dans les items du menu déroulant */
 .dropdown-item i {
   width: 20px;
   display: inline-block;
@@ -96,6 +135,9 @@ body {
   color: var(--main-purple);
 }
 
+/* * Bouton contour violet (Outline)
+ * Utilisé pour "S'inscrire" par exemple
+ */
 .btn-outline-purple {
   background-color: transparent;
   color: var(--main-purple);
@@ -107,24 +149,30 @@ body {
   text-align: center;
   text-decoration: none;
 }
+
 .btn-outline-purple:hover {
   background-color: var(--main-purple);
   color: white;
 }
 
-/* --- CSS POUR L'ALERTE FLOTTANTE (TOAST) --- */
+/* ==========================================================================
+   MESSAGES FLASH / NOTIFICATIONS FLOTTANTES (TOAST)
+   ========================================================================== */
+/* Conteneur de l'alerte qui apparaît en haut de l'écran */
 .flash-message-container {
-  position: fixed; /* Fixe par rapport à l'écran */
-  top: 20px; /* Décalage du haut */
-  left: 50%; /* Centré horizontalement */
-  transform: translateX(-50%); /* Correction pour centrage parfait */
-  z-index: 9999; /* Au-dessus de TOUT (header, images...) */
-  width: 90%; /* Largeur responsive */
-  max-width: 600px; /* Largeur max sur PC */
-  animation: slideDown 0.5s ease-out; /* Petite animation d'arrivée */
+  position: fixed; /* Fixe par rapport à la fenêtre du navigateur */
+  top: 20px; /* Marge depuis le haut */
+  left: 50%; /* Positionnement horizontal initial */
+  transform: translateX(-50%); /* Centrage horizontal parfait */
+  z-index: 9999; /* S'assure que l'alerte passe au-dessus de tout le reste */
+  width: 90%; /* Largeur adaptative sur mobile */
+  max-width: 600px; /* Largeur maximale sur bureau */
+  animation: slideDown 0.5s ease-out; /* Animation d'apparition */
 }
 
-/* Animation de descente */
+/* * Définition de l'animation d'entrée
+ * Fait descendre l'alerte du haut en augmentant l'opacité
+ */
 @keyframes slideDown {
   from {
     top: -100px;

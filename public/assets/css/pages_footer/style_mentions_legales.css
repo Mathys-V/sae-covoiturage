@@ -1,77 +1,98 @@
+/* ==========================================================================
+   STYLE DES MENTIONS LÉGALES / CGU
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE DE LA PAGE
+   ========================================================================== */
 /* 1. CONFIGURATION GLOBALE (Force le thème violet) */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background-color: #463077 !important; /* Force le violet */
-    color: white !important; /* Force le texte en blanc */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%; /* La page occupe au minimum toute la fenêtre */
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #463077 !important; /* Force la couleur de fond violette */
+  color: white !important; /* Force le texte en blanc pour le contraste */
 }
 
+/* ==========================================================================
+   STRUCTURE DE MISE EN PAGE (LAYOUT)
+   ========================================================================== */
 /* 2. WRAPPER (Pour le footer sticky) */
+/* Conteneur principal flexible pour garder le footer en bas */
 .page-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* 3. CONTENU PRINCIPAL */
+/* Zone centrale qui s'étend pour remplir l'espace disponible */
 .main-content {
-    flex: 1;
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 60px 20px;
-    box-sizing: border-box;
+  flex: 1;
+  width: 100%;
+  max-width: 900px; /* Largeur confortable pour la lecture de textes longs */
+  margin: 0 auto; /* Centrage horizontal */
+  padding: 60px 20px;
+  box-sizing: border-box;
 }
 
-/* --- STYLES SPÉCIFIQUES --- */
+/* ==========================================================================
+   STYLES SPÉCIFIQUES AUX TEXTES JURIDIQUES
+   ========================================================================== */
+
+/* Titre principal de la page */
 .page-title {
-    text-align: center;
-    margin-bottom: 60px;
-    font-size: 2.8em;
-    font-weight: 800;
-    letter-spacing: -1px;
+  text-align: center;
+  margin-bottom: 60px;
+  font-size: 2.8em;
+  font-weight: 800; /* Très gras pour l'impact */
+  letter-spacing: -1px;
 }
 
+/* Bloc représentant un article ou une section juridique */
 .legal-section {
-    margin-bottom: 40px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Séparateur subtil */
 }
 
+/* Suppression de la bordure pour le dernier élément */
 .legal-section:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
+/* Sous-titres des sections */
 .section-title {
-    font-size: 1.4em;
-    font-weight: 700;
-    margin-bottom: 15px;
-    color: #dcd6f7; /* Un violet très clair pour les sous-titres */
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  font-size: 1.4em;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #dcd6f7; /* Violet très clair pour hiérarchiser l'information */
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
+/* Corps du texte juridique */
 .legal-text {
-    font-size: 1.05em;
-    line-height: 1.7;
-    color: #f0f0f0;
-    text-align: justify;
+  font-size: 1.05em;
+  line-height: 1.7; /* Interligne aéré pour la lisibilité */
+  color: #f0f0f0; /* Blanc cassé pour moins fatiguer les yeux */
+  text-align: justify; /* Justification pour un rendu formel */
 }
 
 .legal-text p {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .legal-text strong {
-    color: white;
-    font-weight: 600;
+  color: white; /* Mise en valeur des termes importants en blanc pur */
+  font-weight: 600;
 }
 
-/* Lien email ou autre */
+/* Liens hypertextes (email, sites tiers) */
 .legal-link {
-    color: #bfaee3;
-    text-decoration: underline;
+  color: #bfaee3; /* Violet pastel pour les liens */
+  text-decoration: underline;
 }

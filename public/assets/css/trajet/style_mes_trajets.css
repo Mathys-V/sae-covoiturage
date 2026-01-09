@@ -1,56 +1,75 @@
-/* Fond de la page */
+/* ==========================================================================
+   STYLE DE LA PAGE DES TRAJETS UTILISATEUR (style_mes_trajets.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE
+   ========================================================================== */
+/* Fond de page violet foncé (Charte graphique) */
 body {
-    background-color: #452b85;
-    min-height: 100vh;
+  background-color: #452b85;
+  min-height: 100vh; /* Assure que le fond couvre tout l'écran */
 }
 
-/* Style de la carte (Violet clair) */
+/* ==========================================================================
+   COMPOSANT CARTE (TRAJET)
+   ========================================================================== */
+/* Conteneur principal du détail (Fond clair pour contraste avec le body) */
 .card-trajet {
-    background-color: #e6e0f8;
-    color: #2c2c2c;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: #e6e0f8; /* Violet très pâle */
+  color: #2c2c2c; /* Texte gris foncé pour la lisibilité */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Ombre portée pour le relief */
 }
 
-/* Couleur violette pour les titres et éléments forts */
+/* Classe utilitaire pour la coloration du texte (Titres, Prix) */
 .text-purple {
-    color: #8c52ff;
+  color: #8c52ff;
 }
 
-/* Trait de séparation vertical (visible seulement sur PC) */
+/* ==========================================================================
+   RESPONSIVE DESIGN (MÉDIA QUERIES)
+   ========================================================================== */
+/* Bordure de séparation verticale (Visible uniquement sur Desktop/Tablette) */
 @media (min-width: 768px) {
-    .border-end-md {
-        border-right: 1px solid rgba(0, 0, 0, 0.1);
-    }
+  .border-end-md {
+    border-right: 1px solid rgba(0, 0, 0, 0.1); /* Séparateur subtil */
+  }
 }
 
-/* BOUTONS VIOLETS CLAIRS (Gros boutons) */
+/* ==========================================================================
+   BOUTONS ET ACTIONS
+   ========================================================================== */
+/* Boutons d'action principaux (Réserver, Contacter) - Style "Pill" */
 .btn-purple-action {
-    background-color: #8c52ff;
-    color: white;
-    border: none;
-    border-radius: 50px; /* Pill shape */
-    font-size: 1.2rem;
-    transition: transform 0.2s, background-color 0.2s;
+  background-color: #8c52ff;
+  color: white;
+  border: none;
+  border-radius: 50px; /* Forme arrondie (Pill shape) */
+  font-size: 1.2rem;
+  transition: transform 0.2s, background-color 0.2s; /* Animation fluide */
 }
 
+/* Effet au survol des boutons d'action */
 .btn-purple-action:hover {
-    background-color: #6f42c1;
-    color: white;
-    transform: scale(1.02);
+  background-color: #6f42c1; /* Assombrissement */
+  color: white;
+  transform: scale(1.02); /* Léger agrandissement */
 }
 
-/* BOUTON SIGNALER (Violet foncé) */
+/* Boutons secondaires (Signaler, etc.) - Fond foncé */
 .btn-dark-purple {
-    background-color: #452b85;
-    color: white;
-    font-size: 0.85rem;
-}
-.btn-dark-purple:hover {
-    background-color: #2a1a5e; /* Plus foncé au survol */
-    color: white;
+  background-color: #452b85;
+  color: white;
+  font-size: 0.85rem; /* Texte plus petit */
 }
 
+.btn-dark-purple:hover {
+  background-color: #2a1a5e; /* Plus foncé au survol */
+  color: white;
+}
+
+/* Personnalisation des boutons de danger (Bordure épaisse) */
 .btn-outline-danger {
-    border-radius: 50px;
-    border-width: 2.5px;
+  border-radius: 50px;
+  border-width: 2.5px;
 }

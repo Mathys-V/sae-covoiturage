@@ -1,92 +1,114 @@
+/* ==========================================================================
+   STYLE DE LA FOIRE AUX QUESTIONS (FAQ)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE DE LA PAGE
+   ========================================================================== */
 /* 1. CONFIGURATION GLOBALE */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background-color: #463077 !important; /* Violet principal */
-    color: white !important;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%; /* Occupe toute la hauteur de la fenêtre */
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #463077 !important; /* Force le violet principal de la charte */
+  color: white !important; /* Texte blanc sur fond sombre */
 }
 
+/* ==========================================================================
+   STRUCTURE DE MISE EN PAGE (LAYOUT)
+   ========================================================================== */
 /* 2. WRAPPER (Pour le footer sticky) */
+/* Conteneur flexible pour pousser le footer en bas de page */
 .page-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* 3. CONTENU PRINCIPAL */
+/* Zone centrale contenant la FAQ */
 .main-content {
-    flex: 1;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 60px 20px;
-    box-sizing: border-box;
+  flex: 1; /* Prend l'espace restant disponible */
+  width: 100%;
+  max-width: 800px; /* Largeur contenue pour une meilleure lisibilité */
+  margin: 0 auto; /* Centrage horizontal */
+  padding: 60px 20px;
+  box-sizing: border-box;
 }
 
-/* --- STYLES FAQ --- */
+/* ==========================================================================
+   COMPOSANTS FAQ (ACCORDÉON)
+   ========================================================================== */
+
+/* Titre de la section FAQ */
 .faq-title {
-    text-align: center;
-    margin-bottom: 60px;
-    font-size: 2.5em;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: white;
+  text-align: center;
+  margin-bottom: 60px;
+  font-size: 2.5em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: white;
 }
 
+/* Conteneur d'une question/réponse individuelle */
 .faq-item {
-    background-color: rgba(255, 255, 255, 0.05); /* Fond très léger */
-    border-radius: 15px;
-    margin-bottom: 20px;
-    padding: 0 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: background-color 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.05); /* Fond blanc très transparent */
+  border-radius: 15px;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure subtile */
+  transition: background-color 0.3s ease; /* Transition douce au survol */
 }
 
+/* Effet de survol sur l'élément */
 .faq-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1); /* Éclaircissement au survol */
 }
 
+/* En-tête de la question (Zone cliquable) */
 .faq-question {
-    padding: 20px 0;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.2em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #fff;
-    user-select: none;
+  padding: 20px 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: space-between; /* Espace entre le texte et l'icône */
+  align-items: center;
+  color: #fff;
+  user-select: none; /* Empêche la sélection de texte au double-clic */
 }
 
+/* Corps de la réponse (Masqué par défaut) */
 .faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-out, padding 0.4s ease;
-    font-size: 1em;
-    line-height: 1.6;
-    color: #dcd6f7; /* Blanc cassé violet pour le texte */
+  max-height: 0; /* Hauteur nulle pour masquer */
+  overflow: hidden; /* Cache le contenu qui dépasse */
+  transition: max-height 0.4s ease-out, padding 0.4s ease; /* Animation d'ouverture fluide */
+  font-size: 1em;
+  line-height: 1.6;
+  color: #dcd6f7; /* Blanc cassé teinté de violet pour le texte */
 }
 
-/* État ouvert */
+/* État ouvert (Activé via JS) */
 .faq-item.active .faq-answer {
-    max-height: 500px; /* Suffisant pour du texte long */
-    padding-bottom: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 10px;
+  max-height: 500px; /* Valeur arbitraire suffisante pour afficher le texte */
+  padding-bottom: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Séparateur avec la question */
+  margin-top: 10px;
 }
 
-/* Icône + / - */
+/* Icône de bascule (+ / -) */
 .toggle-icon {
-    font-size: 1.5em;
-    font-weight: 300;
-    color: #bfaee3;
-    transition: transform 0.3s ease;
+  font-size: 1.5em;
+  font-weight: 300;
+  color: #bfaee3; /* Violet clair */
+  transition: transform 0.3s ease; /* Animation de rotation */
 }
 
+/* Rotation de l'icône quand l'élément est actif */
 .faq-item.active .toggle-icon {
-    transform: rotate(45deg); /* Effet croix */
+  transform: rotate(45deg); /* Transforme le '+' en 'x' */
 }

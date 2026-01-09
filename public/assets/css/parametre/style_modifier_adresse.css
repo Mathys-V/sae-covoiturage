@@ -1,193 +1,235 @@
+/* ==========================================================================
+   STYLE DES FORMULAIRES ET MODALES (style_modifier_adresse.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE ET VARIABLES
+   ========================================================================== */
+/* Définition de la palette de couleurs (Charte graphique) */
 :root {
-    --primary-purple: #422875;
-    --accent-purple: #8c52ff;
-    --white: #ffffff;
-    --error-red: #ff4444;
+  --primary-purple: #422875; /* Violet foncé (Fond) */
+  --accent-purple: #8c52ff; /* Violet clair (Actions) */
+  --white: #ffffff;
+  --error-red: #ff4444; /* Couleur d'erreur */
 }
 
+/* Configuration du corps de page (Structure Flexbox pour le sticky footer) */
 body {
-    margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
+/* ==========================================================================
+   CONTENEUR PRINCIPAL
+   ========================================================================== */
+/* Zone principale avec fond violet, centrée verticalement et horizontalement */
 main {
-    background-color: var(--primary-purple);
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    color: white;
+  background-color: var(--primary-purple);
+  flex-grow: 1; /* Occupe tout l'espace disponible */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: white;
 }
 
+/* Titre de la page */
 h1 {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    margin-top: 0;
-    text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  margin-top: 0;
+  text-align: center;
 }
 
+/* ==========================================================================
+   STYLES DU FORMULAIRE
+   ========================================================================== */
+/* Conteneur du formulaire limité en largeur */
 form {
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Espacement uniforme entre les champs */
 }
 
+/* Groupe contenant Label + Input */
 .input-group {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
+
 .input-group label {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  font-weight: bold;
 }
+
+/* Indicateur visuel pour les champs obligatoires */
 .required-star {
-    color: var(--error-red);
+  color: var(--error-red);
 }
 
+/* Style des champs de saisie */
 .input-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  box-sizing: border-box; /* Inclut le padding dans la largeur calculée */
 }
 
+/* Message d'erreur (masqué par défaut) */
 .error-message {
-    color: var(--error-red);
-    font-size: 0.85rem;
-    margin-top: 5px;
-    display: none;
+  color: var(--error-red);
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: none; /* Affiché via JS en cas d'erreur */
 }
 
+/* Bouton de confirmation principal */
 .btn-confirm {
-    background: var(--accent-purple);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 30px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    width: 200px;
-    align-self: center;
-    transition: background 0.3s;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  width: 200px;
+  align-self: center; /* Centré dans le formulaire flex */
+  transition: background 0.3s;
 }
+
 .btn-confirm:hover {
-    background: #7a42ea;
+  background: #7a42ea;
 }
 
-/* =========================================================
-STYLE AUTOCOMPLÉTION (Style Inscription + Fix Z-Index)
-   ========================================================= */
+/* ==========================================================================
+   STYLE AUTOCOMPLÉTION (ADRESSE / VILLE)
+   ========================================================================== */
+/* Conteneur relatif pour positionner la liste de suggestions */
 .autocomplete-wrapper {
-    position: relative !important;
-    width: 100%;
-    /* INDISPENSABLE : Fait passer la liste au-dessus du champ suivant */
-    z-index: 1050 !important;
+  position: relative !important;
+  width: 100%;
+  /* INDISPENSABLE : Fait passer la liste au-dessus du champ suivant */
+  z-index: 1050 !important;
 }
 
+/* Liste déroulante des suggestions */
 .autocomplete-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 2px solid #8c52ff; /* Bordure violette */
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    z-index: 9999;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    display: none;
+  position: absolute;
+  top: 100%; /* Juste en dessous du champ */
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #8c52ff; /* Bordure violette */
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  z-index: 9999;
+  max-height: 200px; /* Limite de hauteur avec scroll */
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: none; /* Masqué par défaut */
 }
 
+/* Élément de suggestion individuel */
 .autocomplete-suggestion {
-    padding: 12px 15px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #eee;
-    color: #333;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    text-align: left;
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  text-align: left;
 }
 
 .autocomplete-suggestion i {
-    margin-right: 10px;
-    color: #8c52ff;
+  margin-right: 10px;
+  color: #8c52ff;
 }
 
+/* Interaction au survol d'une suggestion */
 .autocomplete-suggestion:hover {
-    background-color: #f3efff !important;
-    color: #452b85;
+  background-color: #f3efff !important;
+  color: #452b85;
 }
 
 .autocomplete-suggestion:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
-/* --- MODALES --- */
+/* ==========================================================================
+   MODALES ET OVERLAYS (POP-UPS)
+   ========================================================================== */
+/* Fond sombre semi-transparent couvrant tout l'écran */
 .custom-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none; /* Masqué par défaut */
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* Au-dessus de tout le reste */
 }
+
+/* Classe utilitaire pour afficher la modale via JS */
 .show-custom-modal {
-    display: flex !important;
+  display: flex !important;
 }
 
+/* Boîte de contenu de la modale */
 .custom-modal-box {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 20px;
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-    color: #333;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    display: block !important;
-}
-.custom-modal-box h2 {
-    margin-top: 0;
-    color: var(--primary-purple);
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  color: #333;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  display: block !important;
 }
 
+.custom-modal-box h2 {
+  margin-top: 0;
+  color: var(--primary-purple);
+}
+
+/* Zone des boutons d'action de la modale */
 .modal-actions {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
+
+/* Boutons génériques de la modale */
 .custom-btn {
-    background: var(--accent-purple);
-    color: white;
-    border: none;
-    padding: 10px 30px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+/* Variante bouton annuler (Gris) */
 .custom-btn-cancel {
-    background: #ddd;
-    color: #333;
+  background: #ddd;
+  color: #333;
 }

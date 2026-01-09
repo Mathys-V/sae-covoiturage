@@ -1,91 +1,224 @@
-:root { 
-    --primary-purple: #422875;
-    --accent-purple: #8C52FF; 
-    --white: #ffffff; 
-    --error-red: #ff4444; 
+/* ==========================================================================
+   STYLE DE LA MODIFICATION DE MOT DE PASSE (style_modifier_mdp.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE ET VARIABLES
+   ========================================================================== */
+/* Définition des variables de couleurs (Charte graphique) */
+:root {
+  --primary-purple: #422875; /* Violet foncé (Fond principal) */
+  --accent-purple: #8c52ff; /* Violet clair (Boutons et icônes) */
+  --white: #ffffff;
+  --error-red: #ff4444; /* Couleur d'alerte */
 }
 
-body { 
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif; 
-    background-color: #f0f0f0; 
-    display: flex; flex-direction: column; min-height: 100vh;
+/* Configuration du corps de page (Structure Flexbox pour le footer sticky) */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-main { 
-    background-color: var(--primary-purple);
-    flex-grow: 1; 
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
-    padding: 40px 20px; color: white;
+/* ==========================================================================
+   CONTENEUR PRINCIPAL
+   ========================================================================== */
+/* Zone principale violette, centrée verticalement */
+main {
+  background-color: var(--primary-purple);
+  flex-grow: 1; /* Occupe tout l'espace disponible */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px;
+  color: white;
 }
 
-h1 { 
-    font-size: 3rem; margin-bottom: 10px; font-weight: bold; text-align: center;
+/* Titre principal de la page */
+h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: center;
 }
 
+/* Sous-titre explicatif */
 .subtitle {
-    text-align: center; font-size: 1rem; margin-bottom: 40px; opacity: 0.9; max-width: 600px;
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 40px;
+  opacity: 0.9;
+  max-width: 600px;
 }
 
-form { 
-    width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 25px; 
+/* ==========================================================================
+   FORMULAIRE DE CHANGEMENT DE MOT DE PASSE
+   ========================================================================== */
+/* Conteneur du formulaire */
+form {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 
-.input-group { display: flex; flex-direction: column; position: relative; }
+/* Groupe pour le label et le champ */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
 
-.input-group label { font-size: 1.2rem; margin-bottom: 10px; font-weight: 500; }
+.input-group label {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
 
-.input-wrapper { position: relative; width: 100%; }
+/* Wrapper relatif pour positionner l'icône "voir mot de passe" */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
 
+/* Champ de saisie du mot de passe */
 .input-wrapper input {
-    width: 100%; padding: 15px 50px 15px 20px;
-    border-radius: 10px; border: none; font-size: 1rem; 
-    box-sizing: border-box; outline: none;
+  width: 100%;
+  padding: 15px 50px 15px 20px; /* Padding-right important pour l'icône */
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
 }
 
+/* Icône œil pour afficher/masquer le mot de passe */
 .toggle-password {
-    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-    cursor: pointer; width: 24px; height: 24px; fill: var(--accent-purple);
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%); /* Centrage vertical */
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  fill: var(--accent-purple);
 }
 
-/* Messages d'erreur */
+/* ==========================================================================
+   GESTION DES ERREURS
+   ========================================================================== */
+/* Message d'erreur sous le champ */
 .error-text {
-    color: var(--error-red); font-size: 0.9rem; margin-top: 8px; font-weight: bold;
-    display: none; 
+  color: var(--error-red);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  font-weight: bold;
+  display: none; /* Masqué par défaut */
 }
-.show-error-php { display: block !important; }
 
+/* Classe utilitaire pour afficher l'erreur (via PHP/JS) */
+.show-error-php {
+  display: block !important;
+}
+
+/* ==========================================================================
+   BOUTONS D'ACTION
+   ========================================================================== */
+/* Bouton principal de confirmation */
 .btn-confirm {
-    background: var(--accent-purple); color: white; border: none; padding: 15px; 
-    border-radius: 30px; font-size: 1.3rem; font-weight: bold; cursor: pointer; 
-    margin-top: 20px; width: 200px; align-self: center; transition: background 0.3s;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 30px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  width: 200px;
+  align-self: center;
+  transition: background 0.3s;
 }
-.btn-confirm:hover { background: #7a42ea; }
 
-/* --- MODALES (CONFIRMATION & SUCCÈS) --- */
-.custom-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.6); display: none; 
-    justify-content: center; align-items: center; z-index: 99999;
+.btn-confirm:hover {
+  background: #7a42ea;
 }
-.show-modal { display: flex !important; }
 
-.custom-modal-box { 
-    background: #E6DFF0; padding: 40px; border-radius: 20px; text-align: center; 
-    width: 90%; max-width: 500px; color: black; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+/* ==========================================================================
+   MODALES (CONFIRMATION & SUCCÈS)
+   ========================================================================== */
+/* Fond sombre semi-transparent (Overlay) */
+.custom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none; /* Masqué par défaut */
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
 }
-.custom-modal-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.8rem; font-weight: bold; }
-.custom-modal-box p { font-size: 1.2rem; margin-bottom: 30px; }
 
-/* Boutons de la modale */
-.modal-actions { display: flex; justify-content: center; gap: 15px; }
+/* Classe pour afficher la modale */
+.show-modal {
+  display: flex !important;
+}
 
+/* Boîte de dialogue de la modale */
+.custom-modal-box {
+  background: #e6dff0; /* Fond gris/violet très clair */
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 90%;
+  max-width: 500px;
+  color: black;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.custom-modal-box h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+.custom-modal-box p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+/* Zone des boutons d'action de la modale */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* Boutons génériques de la modale */
 .modal-btn {
-    background: var(--accent-purple); color: white; border: none; 
-    padding: 10px 30px; border-radius: 20px; font-size: 1rem; cursor: pointer; font-weight: bold;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+/* Bouton d'annulation (Gris) */
 .modal-btn-cancel {
-    background: #aaa; color: #333; /* Gris pour annuler */
+  background: #aaa;
+  color: #333;
 }
-.modal-btn:hover { opacity: 0.9; }
+
+.modal-btn:hover {
+  opacity: 0.9;
+}

@@ -1,41 +1,52 @@
-/* Fond violet global */
+/* Application du fond violet global et de la structure flex */
 body {
-  background-color: #422875 !important;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background-color: #422875 !important; /* Couleur de fond imposée (violet foncé) */
+  min-height: 100vh; /* La page prend au moins toute la hauteur de l'écran */
+  display: flex; /* Utilisation de Flexbox pour la mise en page */
+  flex-direction: column; /* Organisation verticale des éléments enfants */
 }
 
-/* Bouton violet */
+/* ==========================================================================
+   BOUTONS PERSONNALISÉS
+   ========================================================================== */
+/* Bouton standard violet avec transition fluide */
 .btn-purple {
-  background-color: #8c52ff;
+  background-color: #8c52ff; /* Violet clair pour le bouton */
   color: white;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease; /* Animation fluide pour toutes les propriétés */
 }
+
+/* État au survol du bouton */
 .btn-purple:hover {
-  background-color: #7a46e0;
-  transform: translateY(-2px);
+  background-color: #7a46e0; /* Assombrissement au survol */
+  transform: translateY(-2px); /* Légère élévation pour l'effet de clic */
   color: white;
 }
 
-/* Bandeau de simulation */
+/* ==========================================================================
+   BANDEAU D'ALERTE / SIMULATION
+   ========================================================================== */
+/* Style pour les messages d'avertissement ou d'information (type simulation) */
 .simu-alert {
-  background-color: #fff3cd;
-  border: 1px solid #ffecb5;
-  color: #664d03;
-  border-radius: 12px;
-  padding: 15px;
-  font-size: 0.9rem;
-  margin-bottom: 25px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  background-color: #fff3cd; /* Fond jaune pâle (alerte standard) */
+  border: 1px solid #ffecb5; /* Bordure légèrement plus foncée */
+  color: #664d03; /* Texte brun/jaune foncé pour le contraste */
+  border-radius: 12px; /* Coins arrondis modernes */
+  padding: 15px; /* Espace interne */
+  font-size: 0.9rem; /* Taille de texte légèrement réduite */
+  margin-bottom: 25px; /* Marge inférieure pour séparer du contenu */
+  display: flex; /* Flexbox pour aligner l'icône et le texte */
+  align-items: center; /* Centrage vertical des éléments */
+  gap: 12px; /* Espace entre les éléments internes */
 }
 
-/* Input spécial pour le code */
+/* ==========================================================================
+   CHAMPS DE SAISIE SPÉCIAUX
+   ========================================================================== */
+/* Champ de saisie optimisé pour les codes (OTP, validation, etc.) */
 .code-input {
-  letter-spacing: 5px;
-  font-family: monospace;
-  font-weight: bold;
+  letter-spacing: 5px; /* Espacement large pour la lisibilité des caractères */
+  font-family: monospace; /* Police à chasse fixe pour alignement précis */
+  font-weight: bold; /* Texte en gras pour la mise en valeur */
 }

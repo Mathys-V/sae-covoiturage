@@ -1,51 +1,76 @@
-/* Réutilisation des variables pour cohérence */
+/* ==========================================================================
+   STYLE DES PRÉFÉRENCES DE NOTIFICATION (style_push.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   VARIABLES ET CONFIGURATION GLOBALE
+   ========================================================================== */
+/* Réutilisation des variables pour la cohérence graphique du thème sombre */
 :root {
-  --bg-dark: #422875;
-  --accent: #8c52ff;
+  --bg-dark: #422875; /* Violet foncé (Fond) */
+  --accent: #8c52ff; /* Violet clair (Actions et mises en avant) */
 }
+
+/* Application du thème global sur le corps de page */
 body {
   background-color: var(--bg-dark) !important;
   color: white;
 }
 
+/* ==========================================================================
+   STRUCTURE PRINCIPALE
+   ========================================================================== */
+/* Conteneur principal centré limitant la largeur de lecture */
 .pref-main {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto; /* Centrage horizontal */
   padding: 40px 20px;
 }
 
+/* ==========================================================================
+   EN-TÊTE DE NAVIGATION
+   ========================================================================== */
+/* Bandeau supérieur contenant le bouton retour et le titre */
 .header-top {
   display: flex;
   align-items: center;
   margin-bottom: 30px;
 }
+
+/* Bouton de retour circulaire */
 .back-btn {
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Bordure semi-transparente */
   width: 40px;
   height: 40px;
   display: grid;
-  place-items: center;
+  place-items: center; /* Centre l'icône parfaitement */
   border-radius: 50%;
   text-decoration: none;
-  transition: 0.3s;
+  transition: 0.3s; /* Transition fluide pour le survol */
 }
+
+/* Effet au survol du bouton retour */
 .back-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
+/* Titre de la page centré */
 .title {
-  flex-grow: 1;
+  flex-grow: 1; /* Occupe l'espace restant pour centrer le texte */
   text-align: center;
   font-weight: bold;
   margin: 0;
-  padding-right: 40px;
+  padding-right: 40px; /* Compensation de la largeur du bouton retour pour un centrage optique */
 }
 
-/* BANDEAU INFO SAE */
+/* ==========================================================================
+   COMPOSANTS D'INFORMATION
+   ========================================================================== */
+/* Bandeau d'information contextuelle (ex: Info sur la SAE) */
 .sae-info {
-  background: rgba(140, 82, 255, 0.15);
+  background: rgba(140, 82, 255, 0.15); /* Fond teinté avec la couleur accent */
   border: 1px solid var(--accent);
   border-radius: 15px;
   padding: 15px;
@@ -55,41 +80,57 @@ body {
   gap: 15px;
   align-items: center;
 }
+
+/* Icône à l'intérieur du bandeau info */
 .sae-icon {
   font-size: 1.5rem;
   color: var(--accent);
 }
 
-/* TOGGLES IOS STYLE */
+/* ==========================================================================
+   LISTE DES OPTIONS (LIGNES AVEC TOGGLES)
+   ========================================================================== */
+/* Rangée contenant le texte à gauche et le switch à droite */
 .option-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Écarte les éléments aux extrémités */
   align-items: center;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Séparateur subtil */
 }
+
+/* Titre de l'option */
 .text-content h4 {
   font-size: 1.1rem;
   margin: 0 0 5px 0;
 }
+
+/* Description de l'option */
 .text-content p {
   font-size: 0.85rem;
-  color: #b0a4c5;
+  color: #b0a4c5; /* Gris violacé pour le texte secondaire */
   margin: 0;
 }
 
-/* Switch CSS pur */
+/* ==========================================================================
+   INTERRUPTEUR STYLE IOS (SWITCH CSS PUR)
+   ========================================================================== */
+/* Conteneur du switch */
 .switch {
   position: relative;
   display: inline-block;
   width: 50px;
   height: 28px;
 }
+
+/* Masquage de la case à cocher native */
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
+
+/* Piste de fond du switch (Track) */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -97,10 +138,12 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #553a85;
-  transition: 0.4s;
-  border-radius: 34px;
+  background-color: #553a85; /* Couleur quand désactivé */
+  transition: 0.4s; /* Animation de changement de couleur */
+  border-radius: 34px; /* Forme de pilule */
 }
+
+/* Le bouton rond (Knob) */
 .slider:before {
   position: absolute;
   content: "";
@@ -109,16 +152,24 @@ body {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: 0.4s;
+  transition: 0.4s; /* Animation de déplacement */
   border-radius: 50%;
 }
+
+/* État activé : Changement de couleur de fond */
 input:checked + .slider {
   background-color: var(--accent);
 }
+
+/* État activé : Déplacement du bouton vers la droite */
 input:checked + .slider:before {
   transform: translateX(22px);
 }
 
+/* ==========================================================================
+   BOUTON D'ACTION (PIED DE PAGE)
+   ========================================================================== */
+/* Bouton "Enregistrer" pleine largeur */
 .btn-save {
   display: block;
   width: 100%;
@@ -132,6 +183,8 @@ input:checked + .slider:before {
   margin-top: 30px;
   transition: transform 0.2s;
 }
+
+/* Effet de clic (enfoncement) */
 .btn-save:active {
   transform: scale(0.98);
 }

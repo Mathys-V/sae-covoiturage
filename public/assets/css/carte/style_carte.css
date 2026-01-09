@@ -1,260 +1,365 @@
-/* --- CONFIGURATION GÉNÉRALE --- */
-html, body { 
-    height: 100%; 
-    margin: 0; 
-    display: flex; 
-    flex-direction: column; 
-    overflow: hidden; 
-}
-#map-container { 
-    flex: 1; 
-    width: 100%; 
-    position: relative; 
-    z-index: 1; 
-}
-#map { 
-    height: 100%; 
-    width: 100%; 
+/* ==========================================================================
+   STYLE DE LA CARTE INTERACTIVE (style_carte.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GÉNÉRALE DE LA PAGE
+   ========================================================================== */
+html,
+body {
+  height: 100%; /* La page occupe toute la hauteur de la fenêtre */
+  margin: 0;
+  display: flex;
+  flex-direction: column; /* Structure en colonne pour header + carte */
+  overflow: hidden; /* Empêche le défilement global de la page */
 }
 
-/* --- CARTE DE RECHERCHE FLOTTANTE --- */
+/* Conteneur principal de la carte et de la sidebar */
+#map-container {
+  flex: 1; /* Prend tout l'espace vertical restant */
+  width: 100%;
+  position: relative; /* Référentiel pour les éléments absolus internes */
+  z-index: 1;
+}
+
+/* Élément div où Leaflet injecte la carte */
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+/* ==========================================================================
+   CARTE DE RECHERCHE FLOTTANTE
+   ========================================================================== */
+/* Panneau de recherche superposé à la carte */
 .search-card {
-    position: absolute; 
-    top: 20px; 
-    left: 20px; 
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.98); 
-    padding: 25px; 
-    border-radius: 20px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-    width: 380px; 
-    border: 1px solid rgba(140, 82, 255, 0.1);
-}
-.search-title { 
-    color: #452b85; 
-    font-weight: 800; 
-    margin-bottom: 20px; 
-    font-size: 1.2rem; 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000; /* Au-dessus de la carte Leaflet */
+  background: rgba(255, 255, 255, 0.98); /* Fond blanc quasi-opaque */
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); /* Ombre portée pour l'effet flottant */
+  width: 380px;
+  border: 1px solid rgba(140, 82, 255, 0.1);
 }
 
-.input-group-modern { 
-    position: relative; 
-    margin-bottom: 15px; 
+.search-title {
+  color: #452b85;
+  font-weight: 800;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+/* Groupe de champs de saisie moderne */
+.input-group-modern {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+/* Icône à l'intérieur du champ de saisie */
 .input-icon-box {
-    position: absolute; 
-    left: 15px; 
-    top: 50%; 
-    transform: translateY(-50%);
-    z-index: 10; 
-    color: #8c52ff; 
-    font-size: 1.1rem;
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%); /* Centrage vertical */
+  z-index: 10;
+  color: #8c52ff;
+  font-size: 1.1rem;
 }
+
+/* Champ de saisie stylisé */
 .form-control-map {
-    padding-left: 50px; 
-    height: 50px; 
-    border-radius: 12px !important;
-    border: 1px solid #e0e0e0; 
-    background-color: #f8f9fa; 
-    font-size: 0.95rem; 
-    width: 100%; 
-    transition: all 0.2s;
-}
-.form-control-map:focus { 
-    background-color: #fff; 
-    border-color: #8c52ff; 
-    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); 
-    outline: none; 
+  padding-left: 50px; /* Espace pour l'icône */
+  height: 50px;
+  border-radius: 12px !important;
+  border: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: all 0.2s;
 }
 
+.form-control-map:focus {
+  background-color: #fff;
+  border-color: #8c52ff;
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo de focus violet */
+  outline: none;
+}
+
+/* Bouton de recherche */
 .btn-search-map {
-    width: 100%; 
-    background: linear-gradient(135deg, #8c52ff, #703ccf);
-    color: white; 
-    border: none; 
-    border-radius: 12px; 
-    padding: 12px;
-    font-weight: 700; 
-    letter-spacing: 0.5px; 
-    transition: transform 0.2s; 
-    margin-top: 10px;
-}
-.btn-search-map:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 5px 15px rgba(140, 82, 255, 0.3); 
-    color: white; 
+  width: 100%;
+  background: linear-gradient(135deg, #8c52ff, #703ccf);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s;
+  margin-top: 10px;
 }
 
-/* --- AUTOCOMPLÉTION --- */
+.btn-search-map:hover {
+  transform: translateY(-2px); /* Effet de levée au survol */
+  box-shadow: 0 5px 15px rgba(140, 82, 255, 0.3);
+  color: white;
+}
+
+/* ==========================================================================
+   AUTOCOMPLÉTION (SEARCH SUGGESTIONS)
+   ========================================================================== */
 .autocomplete-suggestions {
-    position: absolute; 
-    top: 100%; 
-    left: 0; 
-    width: 100%;
-    background: white; 
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-    z-index: 9999; 
-    max-height: 280px; 
-    overflow-y: auto;
-    border: 1px solid #eee; 
-    border-top: none; 
-    margin-top: -5px;
-}
-.autocomplete-suggestion { 
-    padding: 12px 15px; 
-    cursor: pointer; 
-    font-size: 0.9rem; 
-    border-bottom: 1px solid #f0f0f0; 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-}
-.autocomplete-suggestion:hover { 
-    background-color: #f8f9fa; 
-    color: #8c52ff; 
-}
-.is-frequent { background-color: #fffbf0; }
-.is-frequent .sugg-icon { color: #ffc107; }
-.is-api .sugg-icon { color: #6c757d; }
-.sugg-text { display: flex; flex-direction: column; line-height: 1.2; }
-.sugg-main { font-weight: 600; color: #333; }
-.sugg-sub { font-size: 0.8rem; color: #888; }
-
-/* --- SIDEBAR LATÉRALE --- */
-.info-sidebar { 
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    width: 360px; 
-    height: calc(100% - 40px); 
-    background: white; 
-    z-index: 2000; 
-    box-shadow: -5px 0 20px rgba(0,0,0,0.1); 
-    border-radius: 20px; 
-    transform: translateX(120%); 
-    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-    display: flex; 
-    flex-direction: column; 
-    overflow: hidden; 
-}
-.info-sidebar.active { transform: translateX(0); }
-.sidebar-header { 
-    padding: 25px; 
-    background: linear-gradient(135deg, #452b85, #8c52ff); 
-    color: white; 
-    position: relative; 
-}
-.close-sidebar-btn { 
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    background: rgba(255,255,255,0.2); 
-    color: white; 
-    border: none; 
-    border-radius: 50%; 
-    width: 32px; 
-    height: 32px; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-top: none;
+  margin-top: -5px;
 }
 
-/* --- CARTES TRAJETS --- */
-.trip-card { 
-    background: white; 
-    border-radius: 12px; 
-    padding: 15px; 
-    margin-bottom: 12px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-    border-left: 5px solid #8c52ff; 
-    cursor: pointer; 
-    transition: transform 0.2s, border-color 0.2s; 
-    border: 1px solid #f0f0f0; 
-}
-.trip-card:hover { 
-    transform: translateY(-3px); 
-    border-color: #703ccf; 
-}
-.trip-card.selected { 
-    border-left: 5px solid #28a745; 
-    background-color: #f0fff4; 
-    border-color: #28a745; 
-} 
-.trip-card.alternative { 
-    border-left: 5px solid #ffc107; 
-    background-color: #fffff0; 
-}
-.badge-alternative { 
-    background-color: #ffc107 !important; 
-    color: #333; 
+.autocomplete-suggestion {
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.trip-time { font-size: 1.2rem; font-weight: 800; color: #452b85; }
-.trip-meta { 
-    font-size: 0.85rem; 
-    color: #666; 
-    margin-top: 8px; 
-    display: flex; 
-    justify-content: space-between; 
-    border-top: 1px solid #eee; 
-    padding-top: 8px;
+.autocomplete-suggestion:hover {
+  background-color: #f8f9fa;
+  color: #8c52ff;
 }
 
-/* --- LEAFLET OVERRIDES --- */
-.leaflet-routing-container { display: none !important; }
+/* Styles spécifiques pour les lieux fréquents vs API */
+.is-frequent {
+  background-color: #fffbf0;
+}
+.is-frequent .sugg-icon {
+  color: #ffc107;
+}
+.is-api .sugg-icon {
+  color: #6c757d;
+}
 
-.legend-card { 
-    position: absolute; 
-    bottom: 30px; 
-    left: 20px; 
-    background: white; 
-    padding: 12px 18px; 
-    border-radius: 12px; 
-    z-index: 1000; 
-    font-size: 0.85rem; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-    display: flex; 
-    gap: 15px;
+.sugg-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
-.legend-item { display: flex; align-items: center; gap: 8px; }
-.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.sugg-main {
+  font-weight: 600;
+  color: #333;
+}
+.sugg-sub {
+  font-size: 0.8rem;
+  color: #888;
+}
 
-/* --- MARQUEURS PERSONNALISÉS --- */
-.custom-div-icon { background: transparent; border: none; }
-.marker-pin { 
-    width: 30px; 
-    height: 30px; 
-    border-radius: 50% 50% 50% 0; 
-    position: absolute; 
-    transform: rotate(-45deg); 
-    left: 50%; 
-    top: 50%; 
-    margin: -15px 0 0 -15px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    box-shadow: 0 3px 5px rgba(0,0,0,0.3); 
+/* ==========================================================================
+   BARRE LATÉRALE D'INFORMATIONS (SIDEBAR)
+   ========================================================================== */
+.info-sidebar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 360px;
+  height: calc(100% - 40px); /* Marges haut/bas */
+  background: white;
+  z-index: 2000;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  transform: translateX(120%); /* Cachée par défaut hors écran */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Animation fluide */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-.marker-pin i { 
-    transform: rotate(45deg); 
-    color: white; 
-    font-size: 14px; 
-    margin-top: 2px; 
+
+/* Classe active pour faire glisser la sidebar à l'écran */
+.info-sidebar.active {
+  transform: translateX(0);
 }
-.marker-gold { background: #FFD700; border: 2px solid #fff; }
-.marker-green { background: #28a745; border: 2px solid #fff; }
-.marker-red { background: #dc3545; border: 2px solid #fff; }
-.marker-shadow { 
-    width: 14px; 
-    height: 4px; 
-    background: rgba(0,0,0,0.3); 
-    border-radius: 50%; 
-    margin-top: 30px; 
-    margin-left: 8px; 
-    filter: blur(2px); 
+
+.sidebar-header {
+  padding: 25px;
+  background: linear-gradient(135deg, #452b85, #8c52ff);
+  color: white;
+  position: relative;
+}
+
+.close-sidebar-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   CARTES DE TRAJETS (LISTE RÉSULTATS)
+   ========================================================================== */
+.trip-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #8c52ff; /* Indicateur visuel couleur primaire */
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  border: 1px solid #f0f0f0;
+}
+
+.trip-card:hover {
+  transform: translateY(-3px);
+  border-color: #703ccf;
+}
+
+/* État sélectionné (quand un trajet est cliqué) */
+.trip-card.selected {
+  border-left: 5px solid #28a745; /* Vert pour indiquer la sélection */
+  background-color: #f0fff4;
+  border-color: #28a745;
+}
+
+/* Style pour les trajets alternatifs */
+.trip-card.alternative {
+  border-left: 5px solid #ffc107; /* Jaune */
+  background-color: #fffff0;
+}
+
+.badge-alternative {
+  background-color: #ffc107 !important;
+  color: #333;
+}
+
+.trip-time {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #452b85;
+}
+
+.trip-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+/* ==========================================================================
+   SURCHARGES LEAFLET & LÉGENDE
+   ========================================================================== */
+/* Masquer le conteneur d'instructions par défaut de Leaflet Routing Machine */
+.leaflet-routing-container {
+  display: none !important;
+}
+
+/* Carte de légende en bas à gauche */
+.legend-card {
+  position: absolute;
+  bottom: 30px;
+  left: 20px;
+  background: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  z-index: 1000;
+  font-size: 0.85rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 15px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   MARQUEURS PERSONNALISÉS (PINS)
+   ========================================================================== */
+.custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Forme du marqueur (goutte inversée) */
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  position: absolute;
+  transform: rotate(-45deg); /* Rotation pour pointer vers le bas */
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Icône à l'intérieur du marqueur */
+.marker-pin i {
+  transform: rotate(45deg); /* Contre-rotation pour redresser l'icône */
+  color: white;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+/* Variantes de couleurs des marqueurs */
+.marker-gold {
+  background: #ffd700;
+  border: 2px solid #fff;
+}
+.marker-green {
+  background: #28a745;
+  border: 2px solid #fff;
+}
+.marker-red {
+  background: #dc3545;
+  border: 2px solid #fff;
+}
+
+/* Ombre ovale sous le marqueur */
+.marker-shadow {
+  width: 14px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  margin-top: 30px;
+  margin-left: 8px;
+  filter: blur(2px);
 }

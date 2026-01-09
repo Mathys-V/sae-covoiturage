@@ -1,48 +1,69 @@
+/* ==========================================================================
+   STYLE DU PIED DE PAGE (footer)
+   ========================================================================== */
+
+/* * Définition des variables CSS locales
+ * Permet de centraliser la couleur principale pour une modification aisée
+ */
 :root {
   --mon-covoit-purple: #8c52ff;
 }
 
-/* Le bloc principal du footer */
+/* * Conteneur principal du pied de page
+ * Structure le bas de page avec une bordure supérieure distinctive
+ * Utilise margin-top: auto pour se coller en bas si le contenu est court (Sticky Footer)
+ */
 .footer-custom {
-  background-color: #ffffff; /* Fond Blanc */
-  border-top: 3px solid var(--mon-covoit-purple); /* Ligne violette au-dessus */
-  color: #212529;
+  background-color: #ffffff; /* Fond Blanc pour la clarté */
+  border-top: 3px solid var(--mon-covoit-purple); /* Séparation visuelle avec la couleur de la charte */
+  color: #212529; /* Texte gris foncé standard */
   width: 100%;
-  margin-top: auto; /* Pousse le footer vers le bas */
+  margin-top: auto; /* Pousse le footer vers le bas de la fenêtre */
 }
 
-/* Les liens à gauche */
+/* * Liens de navigation du footer (Mentions légales, Contact, etc.)
+ * Style épuré sans soulignement par défaut
+ */
 .footer-link {
   text-decoration: none;
   color: #212529;
-  margin-right: 2rem;
+  margin-right: 2rem; /* Espacement entre les liens */
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color 0.2s; /* Transition douce pour l'effet de survol */
 }
 
+/* * État au survol des liens
+ * Changement de couleur vers le violet de la marque
+ */
 .footer-link:hover {
   color: var(--mon-covoit-purple);
 }
 
-/* Texte "MonCovoitJV" à droite */
+/* * Texte de la marque (Nom du site)
+ * Situé généralement à côté du logo
+ */
 .footer-logo-text {
   color: #000000;
   font-weight: bold;
   font-size: 1.1rem;
-  margin-left: 10px;
+  margin-left: 10px; /* Espace entre le logo et le texte */
 }
 
-/* Conteneur de l'image (Carré simple, pas de rond) */
+/* * Conteneur du logo
+ * Utilise Flexbox pour centrer verticalement l'image
+ */
 .footer-logo-box {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* L'image du logo */
+/* * Image du logo
+ * Dimensionnement contraint pour respecter la mise en page
+ */
 .footer-logo-box img {
-  height: 40px; /* Même hauteur que dans le header */
-  width: auto; /* Garde les proportions */
-  object-fit: contain;
+  height: 40px; /* Hauteur fixe pour l'alignement */
+  width: auto; /* Conserve le ratio d'aspect */
+  object-fit: contain; /* S'assure que l'image reste entière dans le conteneur */
 }

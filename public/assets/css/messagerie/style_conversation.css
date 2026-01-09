@@ -1,42 +1,50 @@
-/* --- CHATBOX / CONVERSATION --- */
+/* ==========================================================================
+   STYLE DE LA MESSAGERIE INSTANTANÉE (style_messagerie.css)
+   ========================================================================== */
 
-/* Empêcher le scroll sur le body pour avoir une app "full screen" */
+/* ==========================================================================
+   LAYOUT GÉNÉRAL (STRUCTURE DE CHAT)
+   ========================================================================== */
+/* Empêche le défilement de la page principale pour simuler une application native */
 body {
-  background-color: #f8f9fa;
-  height: 100vh;
+  background-color: #f8f9fa; /* Fond gris très clair */
+  height: 100vh; /* Occupe toute la hauteur de la fenêtre */
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Organisation verticale des éléments */
 }
 
+/* Conteneur principal de la boîte de dialogue */
 .chat-wrapper {
-  flex-grow: 1;
+  flex-grow: 1; /* Prend tout l'espace disponible */
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Header en haut, Messages au milieu, Input en bas */
   max-width: 1000px;
-  margin: 20px auto;
-  width: 95%;
+  margin: 20px auto; /* Centré horizontalement avec marges */
+  width: 95%; /* Largeur responsive */
   background: white;
-  border-radius: 24px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Important pour les coins arrondis */
-  height: 80vh; /* Hauteur fixe */
+  border-radius: 24px; /* Coins très arrondis */
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); /* Ombre portée importante pour l'effet de profondeur */
+  overflow: hidden; /* Masque tout contenu qui dépasserait des coins arrondis */
+  height: 80vh; /* Hauteur fixe de la zone de chat */
 }
 
-/* Header du chat */
+/* ==========================================================================
+   EN-TÊTE DU CHAT (HEADER)
+   ========================================================================== */
 .chat-header {
   padding: 15px 25px;
   background: white;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee; /* Séparation subtile avec la zone de messages */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 10;
+  z-index: 10; /* Reste au-dessus lors du défilement */
 }
 
 .chat-header-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #452b85;
+  color: #452b85; /* Couleur primaire de la charte */
   margin: 0;
 }
 
@@ -45,6 +53,7 @@ body {
   color: #888;
 }
 
+/* Bouton retour (Flèche) */
 .btn-back {
   color: #452b85;
   font-size: 1.5rem;
@@ -52,23 +61,26 @@ body {
   text-decoration: none;
   transition: transform 0.2s;
 }
+
 .btn-back:hover {
-  transform: translateX(-3px);
+  transform: translateX(-3px); /* Animation de retour vers la gauche */
   color: #8c52ff;
 }
 
-/* Zone des messages */
+/* ==========================================================================
+   ZONE DES MESSAGES (SCROLLABLE)
+   ========================================================================== */
 .messages-container {
-  flex-grow: 1;
-  overflow-y: auto; /* C'est ICI que ça scrolle */
+  flex-grow: 1; /* Remplit l'espace central */
+  overflow-y: auto; /* Active le défilement vertical uniquement ici */
   padding: 25px;
-  background-color: #fbfbfd;
+  background-color: #fbfbfd; /* Fond légèrement différent du blanc pur */
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 15px; /* Espace entre les messages */
 }
 
-/* Séparateur Date */
+/* Séparateur de date au centre */
 .date-divider {
   text-align: center;
   margin: 15px 0;
@@ -79,13 +91,17 @@ body {
   letter-spacing: 1px;
 }
 
-/* Bulles de message */
+/* ==========================================================================
+   BULLES DE MESSAGE (MESSAGES BUBBLES)
+   ========================================================================== */
+/* Rangée contenant un message (Alignement + Contenu) */
 .msg-row {
   display: flex;
   flex-direction: column;
-  max-width: 70%;
+  max-width: 70%; /* Limite la largeur du message pour la lisibilité */
 }
 
+/* Nom de l'expéditeur (affiché au-dessus de la bulle) */
 .msg-name {
   font-size: 0.75rem;
   color: #888;
@@ -93,44 +109,50 @@ body {
   margin-left: 12px;
 }
 
+/* Corps du message (la bulle elle-même) */
 .msg-bubble {
   padding: 12px 18px;
-  border-radius: 18px;
+  border-radius: 18px; /* Forme arrondie standard */
   font-size: 0.95rem;
   line-height: 1.5;
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-  word-wrap: break-word;
+  word-wrap: break-word; /* Coupe les mots trop longs */
 }
 
-/* STYLE : Messages Reçus (Gauche) */
+/* STYLE : Messages Reçus (Alignés à gauche) */
 .msg-row.other {
   align-self: flex-start;
 }
+
 .msg-row.other .msg-bubble {
   background-color: white;
   color: #333;
   border: 1px solid #eee;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 4px; /* Coin "pointu" vers l'interlocuteur */
 }
 
-/* STYLE : Messages Envoyés (Droite) */
+/* STYLE : Messages Envoyés (Alignés à droite) */
 .msg-row.self {
   align-self: flex-end;
-  align-items: flex-end;
-}
-.msg-row.self .msg-name {
-  display: none; /* On cache le nom pour soi-même */
-}
-.msg-row.self .msg-bubble {
-  background: linear-gradient(135deg, #8c52ff, #703ccf);
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-.msg-row.self .msg-time {
-  color: rgba(255, 255, 255, 0.8);
+  align-items: flex-end; /* Aligne le contenu à droite */
 }
 
+.msg-row.self .msg-name {
+  display: none; /* On cache le nom pour ses propres messages */
+}
+
+.msg-row.self .msg-bubble {
+  background: linear-gradient(135deg, #8c52ff, #703ccf); /* Dégradé violet */
+  color: white;
+  border-bottom-right-radius: 4px; /* Coin "pointu" vers soi */
+}
+
+.msg-row.self .msg-time {
+  color: rgba(255, 255, 255, 0.8); /* Heure en blanc semi-transparent */
+}
+
+/* Horodatage du message */
 .msg-time {
   font-size: 0.65rem;
   display: block;
@@ -139,29 +161,34 @@ body {
   opacity: 0.7;
 }
 
-/* Zone de saisie (Footer) */
+/* ==========================================================================
+   ZONE DE SAISIE (FOOTER)
+   ========================================================================== */
 .chat-footer {
   padding: 15px 20px;
   background: white;
   border-top: 1px solid #eee;
 }
 
+/* Groupe champ de texte + bouton */
 .input-group-chat {
   display: flex;
   gap: 10px;
-  background: #f0f2f5;
+  background: #f0f2f5; /* Fond gris clair pour la zone de saisie */
   padding: 5px;
   border-radius: 50px;
   border: 1px solid transparent;
   transition: all 0.3s;
 }
 
+/* Effet focus sur tout le groupe */
 .input-group-chat:focus-within {
   background: white;
   border-color: #8c52ff;
   box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.1);
 }
 
+/* Champ de texte transparent */
 .chat-input {
   flex-grow: 1;
   border: none;
@@ -171,6 +198,7 @@ body {
   font-size: 1rem;
 }
 
+/* Bouton d'envoi circulaire */
 .btn-send {
   width: 45px;
   height: 45px;
@@ -184,11 +212,15 @@ body {
   cursor: pointer;
   transition: transform 0.2s;
 }
+
 .btn-send:hover {
   background: #703ccf;
-  transform: scale(1.1);
+  transform: scale(1.1); /* Agrandissement au survol */
 }
-/* --- MESSAGE SYSTEME --- */
+
+/* ==========================================================================
+   MESSAGES SYSTÈME (INFO / NOTIFICATION)
+   ========================================================================== */
 .system-msg {
   text-align: center;
   margin: 10px 0;
@@ -205,7 +237,10 @@ body {
   display: inline-block;
   border: 1px solid #dee2e6;
 }
-/* Styles spécifiques pour la modale de signalement */
+
+/* ==========================================================================
+   COMPOSANTS DE FORMULAIRE (MODALE SIGNALEMENT)
+   ========================================================================== */
 .custom-textarea {
   background-color: #f8f9fa;
   border: 2px solid #e9ecef;
@@ -213,16 +248,18 @@ body {
   padding: 15px;
   font-size: 0.95rem;
   color: #333;
-  resize: none;
+  resize: none; /* Empêche le redimensionnement manuel */
   transition: all 0.3s ease;
   width: 100%;
 }
+
 .custom-textarea:focus {
   background-color: #ffffff;
   border-color: #8c52ff;
   box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
   outline: none;
 }
+
 .form-label-bold {
   font-weight: 700;
   color: #2c3e50;
@@ -230,17 +267,24 @@ body {
   display: block;
 }
 
-/* Styles pour les bulles de chat */
+/* ==========================================================================
+   REDEFINITIONS ET VARIANTES (POUR COMPATIBILITÉ)
+   ========================================================================== */
+/* Note: Certaines classes ci-dessous redéfinissent des styles déjà déclarés plus haut.
+   Ceci est conservé pour assurer la compatibilité avec le code existant. */
+
 .msg-row {
   display: flex;
   flex-direction: column;
   max-width: 75%;
   margin-bottom: 10px;
 }
+
 .msg-row.self {
   align-self: flex-end;
   align-items: flex-end;
 }
+
 .msg-row.other {
   align-self: flex-start;
   align-items: flex-start;
@@ -252,11 +296,13 @@ body {
   position: relative;
   word-wrap: break-word;
 }
+
 .msg-row.self .msg-content {
   background-color: #8c52ff;
   color: white;
   border-bottom-right-radius: 2px;
 }
+
 .msg-row.other .msg-content {
   background-color: #f1f0f0;
   color: #333;
@@ -268,12 +314,14 @@ body {
   margin-top: 4px;
   opacity: 0.7;
 }
+
 .date-divider {
   text-align: center;
   margin: 15px 0;
   font-size: 0.8rem;
   color: #aaa;
 }
+
 .system-msg {
   text-align: center;
   font-style: italic;

@@ -1,85 +1,126 @@
-/* --- LISTE DES CONVERSATIONS --- */
+/* ==========================================================================
+   STYLE DE LA LISTE DES CONVERSATIONS
+   ========================================================================== */
 
-/* Conteneur principal */
+/* ==========================================================================
+   CONTENEURS ET TYPOGRAPHIE
+   ========================================================================== */
+
+/* Conteneur principal de la page de messagerie */
 .messagerie-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding-bottom: 40px;
+  max-width: 900px; /* Largeur contenue pour la lisibilité */
+  margin: 0 auto; /* Centrage horizontal */
+  padding-bottom: 40px; /* Espace en bas de page */
 }
 
-/* Titre */
+/* Titre principal de la page */
 .page-title {
-  color: #452b85; /* Violet foncé de la charte */
-  font-weight: 800;
+  color: #452b85; /* Violet foncé de la charte graphique */
+  font-weight: 800; /* Très gras pour l'impact visuel */
   margin-bottom: 2rem;
   text-align: center;
   font-family: "Poppins", sans-serif;
 }
 
-/* Carte de conversation */
+/* ==========================================================================
+   CARTES DE CONVERSATION
+   ========================================================================== */
+
+/* Composant carte représentant une conversation unique */
 .conversation-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 16px; /* Coins arrondis modernes */
   padding: 20px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
+  margin-bottom: 16px; /* Espacement entre les cartes */
+  transition: all 0.3s ease; /* Animation fluide pour le survol */
   border: 1px solid #f0f0f0;
-  text-decoration: none !important; /* Enlève le soulignement des liens */
-  display: flex;
-  align-items: center;
+  text-decoration: none !important; /* Force la suppression du soulignement (si lien) */
+  display: flex; /* Alignement horizontal des éléments internes */
+  align-items: center; /* Centrage vertical */
   position: relative;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
+/* Effets au survol de la carte */
 .conversation-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.1); /* Ombre violette légère */
-  border-color: #e0d4fc;
+  transform: translateY(-3px); /* Légère élévation */
+  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.1); /* Ombre portée violette subtile */
+  border-color: #e0d4fc; /* Changement de couleur de bordure */
 }
 
-/* Indicateur Non Lu (Bordure gauche colorée) */
+/* Indicateur visuel pour les conversations non lues */
 .conversation-card.unread {
-  border-left: 5px solid #ff3d00;
-  background-color: #fffafa;
+  border-left: 5px solid #ff3d00; /* Bordure rouge distinctive à gauche */
+  background-color: #fffafa; /* Fond très légèrement teinté */
 }
 
-/* Icône Voiture/Groupe */
+/* ==========================================================================
+   ÉLÉMENTS VISUELS (ICÔNES, BADGES)
+   ========================================================================== */
+
+/* Conteneur de l'icône (Voiture/Groupe) */
 .conv-icon-box {
   width: 56px;
   height: 56px;
-  background-color: #f3f0ff; /* Violet très pâle */
+  background-color: #f3f0ff; /* Fond violet très pâle */
   border-radius: 14px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #8c52ff;
+  justify-content: center; /* Centrage parfait de l'icône */
+  color: #8c52ff; /* Couleur de l'icône */
   font-size: 1.5rem;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Empêche le rétrécissement si le texte est long */
   margin-right: 20px;
 }
 
-/* Contenu texte */
-.conv-content {
-  flex-grow: 1;
-  overflow: hidden; /* Pour couper le texte trop long */
+/* Badge compteur de messages non lus */
+.badge-unread {
+  background: #ff3d00; /* Rouge vif pour attirer l'attention */
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px; /* Forme de pilule */
+  margin-left: 15px;
+  box-shadow: 0 2px 5px rgba(255, 61, 0, 0.3);
 }
 
+/* Icône de navigation (flèche droite) */
+.chevron {
+  color: #ddd;
+  margin-left: 15px;
+  font-size: 1.2rem;
+}
+
+/* ==========================================================================
+   CONTENU TEXTUEL
+   ========================================================================== */
+
+/* Bloc contenant les textes (Titre, Info, Dernier message) */
+.conv-content {
+  flex-grow: 1; /* Occupe tout l'espace disponible restant */
+  overflow: hidden; /* Nécessaire pour l'effet d'ellipse sur le texte */
+}
+
+/* Titre du trajet (Ville départ -> Arrivée) */
 .conv-trajet-title {
   font-weight: 700;
   color: #2c3e50;
   font-size: 1.05rem;
   margin-bottom: 4px;
-  white-space: nowrap;
+  white-space: nowrap; /* Empêche le retour à la ligne */
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis; /* Ajoute "..." si trop long */
 }
 
+/* Informations métadonnées (Date, heure) */
 .conv-info {
   font-size: 0.85rem;
   color: #888;
   margin-bottom: 6px;
 }
 
+/* Aperçu du dernier message */
 .conv-last-msg {
   color: #666;
   font-size: 0.95rem;
@@ -89,30 +130,17 @@
   max-width: 100%;
 }
 
+/* Style spécifique si le dernier message est nouveau */
 .conv-last-msg.new {
   font-weight: 700;
   color: #2c3e50;
 }
 
-/* Badge compteur */
-.badge-unread {
-  background: #ff3d00;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-left: 15px;
-  box-shadow: 0 2px 5px rgba(255, 61, 0, 0.3);
-}
+/* ==========================================================================
+   ÉTATS VIDES ET UTILITAIRES
+   ========================================================================== */
 
-.chevron {
-  color: #ddd;
-  margin-left: 15px;
-  font-size: 1.2rem;
-}
-
-/* État vide */
+/* Bloc affiché quand il n'y a aucune conversation */
 .empty-state-box {
   background: white;
   border-radius: 20px;
@@ -120,18 +148,28 @@
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
+
+/* Classe utilitaire pour ombre au survol */
 .hover-shadow:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
+
+/* Classe utilitaire de transition générique */
 .transition-all {
   transition: all 0.2s ease-in-out;
 }
+
+/* ==========================================================================
+   SURCHARGE BOOTSTRAP (NAV PILLS)
+   ========================================================================== */
 .nav-pills .nav-link {
   color: #6c757d;
   transition: all 0.3s;
 }
+
+/* Style actif des onglets de navigation */
 .nav-pills .nav-link.active {
-  background-color: #8c52ff;
+  background-color: #8c52ff; /* Violet de la charte */
   color: white;
 }

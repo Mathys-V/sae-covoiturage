@@ -1,36 +1,52 @@
-/* Zone de texte plus claire et "cliquable" */
+/* ==========================================================================
+   STYLE DES RÉSERVATIONS UTILISATEUR (style_mes_reservations.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CHAMP DE TEXTE PERSONNALISÉ (TEXTAREA)
+   ========================================================================== */
+/* Zone de saisie principale (ex: "Détails du problème") */
 .custom-textarea {
-  background-color: #f8f9fa; /* Fond gris très léger */
-  border: 2px solid #e9ecef; /* Bordure visible mais douce */
-  border-radius: 12px; /* Coins arrondis */
-  padding: 15px; /* Espace interne confortable */
+  background-color: #f8f9fa; /* Fond gris très léger pour délimiter la zone */
+  border: 2px solid #e9ecef; /* Bordure visible mais douce (gris clair) */
+  border-radius: 12px; /* Coins arrondis modernes */
+  padding: 15px; /* Espace interne confortable pour le texte */
   font-size: 0.95rem;
-  color: #333;
-  resize: none; /* Empêche de déformer la modale */
-  transition: all 0.3s ease; /* Animation fluide au clic */
-  width: 100%;
+  color: #333; /* Gris foncé pour la lisibilité */
+  resize: none; /* Empêche l'utilisateur de déformer la modale en étirant le champ */
+  transition: all 0.3s ease; /* Animation fluide lors du clic/focus */
+  width: 100%; /* Occupe toute la largeur du conteneur parent */
 }
 
-/* Quand on clique dedans */
+/* État actif : Quand l'utilisateur clique ou écrit dedans */
 .custom-textarea:focus {
-  background-color: #ffffff; /* Devient blanc */
-  border-color: #8c52ff; /* Bordure violette */
-  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet */
-  outline: none;
+  background-color: #ffffff; /* Le fond devient blanc pur pour la mise au point */
+  border-color: #8c52ff; /* La bordure prend la couleur violette de la charte */
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet externe (Focus ring) */
+  outline: none; /* Supprime le contour bleu par défaut du navigateur */
 }
 
-/* Label au-dessus */
+/* ==========================================================================
+   TYPOGRAPHIE DES FORMULAIRES
+   ========================================================================== */
+/* Style des étiquettes au-dessus des champs */
 .form-label-bold {
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  display: block;
+  font-weight: 700; /* Texte en gras */
+  color: #2c3e50; /* Bleu nuit foncé pour le contraste */
+  margin-bottom: 8px; /* Espace sous le label */
+  display: block; /* Force le label à prendre sa propre ligne */
 }
-/* Effet au survol du profil */
+
+/* ==========================================================================
+   INTERACTIONS ET UTILITAIRES
+   ========================================================================== */
+/* Effet visuel au survol d'un élément cliquable (ex: ligne de profil) */
 .hover-bg-light:hover {
-  background-color: #e2e6ea;
-  cursor: pointer;
+  background-color: #e2e6ea; /* Gris légèrement plus foncé au survol */
+  cursor: pointer; /* Indique que l'élément est cliquable */
 }
+
+/* Classe utilitaire pour adoucir les changements de couleur de fond */
 .transition {
   transition: background-color 0.2s;
 }

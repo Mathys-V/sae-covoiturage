@@ -1,41 +1,67 @@
+/* ==========================================================================
+   STYLE DE LA PAGE DE PRÉFÉRENCES TÉLÉPHONE (style_telephone.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   VARIABLES ET CONFIGURATION GLOBALE
+   ========================================================================== */
+/* Réutilisation des variables de la charte graphique */
 :root {
-  --bg-dark: #422875;
-  --accent: #8c52ff;
+  --bg-dark: #422875; /* Violet foncé (Fond) */
+  --accent: #8c52ff; /* Violet clair (Actions) */
 }
+
+/* Application du thème sombre */
 body {
   background-color: var(--bg-dark) !important;
   color: white;
 }
+
+/* ==========================================================================
+   STRUCTURE PRINCIPALE
+   ========================================================================== */
+/* Conteneur centré pour le contenu du formulaire */
 .pref-main {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto; /* Centrage horizontal */
   padding: 40px 20px;
 }
 
+/* ==========================================================================
+   EN-TÊTE DE NAVIGATION
+   ========================================================================== */
+/* Bandeau supérieur avec bouton retour et titre */
 .header-top {
   display: flex;
   align-items: center;
   margin-bottom: 30px;
 }
+
+/* Bouton retour circulaire */
 .back-btn {
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
   width: 40px;
   height: 40px;
   display: grid;
-  place-items: center;
+  place-items: center; /* Centre l'icône */
   border-radius: 50%;
   text-decoration: none;
 }
+
+/* Titre de la page centré */
 .title {
-  flex-grow: 1;
+  flex-grow: 1; /* Occupe l'espace central */
   text-align: center;
   font-weight: bold;
   margin: 0;
-  padding-right: 40px;
+  padding-right: 40px; /* Compensation visuelle du bouton retour */
 }
 
-/* BANDEAU INFO SAE */
+/* ==========================================================================
+   BANDEAU D'INFORMATION
+   ========================================================================== */
+/* Boîte d'information translucide (ex: Info SAE) */
 .sae-info {
   background: rgba(140, 82, 255, 0.15);
   border: 1px solid var(--accent);
@@ -48,6 +74,10 @@ body {
   align-items: center;
 }
 
+/* ==========================================================================
+   CHAMPS DE SAISIE PERSONNALISÉS (INPUTS)
+   ========================================================================== */
+/* Conteneur blanc arrondi pour le champ de texte */
 .input-group-custom {
   background: white;
   border-radius: 15px;
@@ -56,23 +86,28 @@ body {
   align-items: center;
   margin-bottom: 10px;
 }
+
+/* Champ de saisie transparent à l'intérieur du conteneur */
 .input-group-custom input {
   border: none;
-  flex-grow: 1;
+  flex-grow: 1; /* Prend toute la largeur disponible */
   padding: 15px;
   font-size: 1.1rem;
-  outline: none;
+  outline: none; /* Supprime le contour bleu par défaut */
   background: transparent;
-  color: #333;
+  color: #333; /* Texte foncé sur fond blanc pour la lisibilité */
 }
+
+/* Icône "X" pour vider le champ */
 .clear-icon {
   color: #999;
   padding: 0 15px;
   cursor: pointer;
 }
 
+/* Titres de sections (ex: "CONFIDENTIALITÉ") */
 .section-title {
-  color: #b0a4c5;
+  color: #b0a4c5; /* Gris violacé */
   font-size: 0.9rem;
   text-transform: uppercase;
   margin-top: 30px;
@@ -80,7 +115,10 @@ body {
   letter-spacing: 1px;
 }
 
-/* Switch CSS */
+/* ==========================================================================
+   INTERRUPTEURS / TOGGLES (STYLE IOS)
+   ========================================================================== */
+/* Ligne contenant le libellé et l'interrupteur */
 .option-row {
   display: flex;
   justify-content: space-between;
@@ -88,17 +126,23 @@ body {
   padding: 15px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Conteneur du switch */
 .switch {
   position: relative;
   display: inline-block;
   width: 50px;
   height: 28px;
 }
+
+/* Masquage de la checkbox native */
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
+
+/* Piste de l'interrupteur (Track) */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -106,10 +150,12 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #553a85;
+  background-color: #553a85; /* Couleur désactivée */
   transition: 0.4s;
   border-radius: 34px;
 }
+
+/* Bouton rond (Knob) */
 .slider:before {
   position: absolute;
   content: "";
@@ -121,13 +167,21 @@ body {
   transition: 0.4s;
   border-radius: 50%;
 }
+
+/* État activé : couleur de fond */
 input:checked + .slider {
   background-color: var(--accent);
 }
+
+/* État activé : déplacement du bouton */
 input:checked + .slider:before {
   transform: translateX(22px);
 }
 
+/* ==========================================================================
+   BOUTON DE SAUVEGARDE
+   ========================================================================== */
+/* Bouton d'action principal en bas de formulaire */
 .btn-save {
   display: block;
   width: 100%;
@@ -142,8 +196,10 @@ input:checked + .slider:before {
   opacity: 1;
   transition: 0.3s;
 }
+
+/* État désactivé (si formulaire invalide) */
 .btn-save:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #666;
+  background: #666; /* Gris neutre */
 }

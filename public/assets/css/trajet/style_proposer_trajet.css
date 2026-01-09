@@ -1,199 +1,251 @@
-/* --- CORRECTION LAYOUT (Sticky Footer) --- */
+/* ==========================================================================
+   STYLE DE LA PAGE DE PROPOSITION DE TRAJET (style_proposer_trajet.css)
+   ========================================================================== */
 
-/* 1. On force la structure globale en colonne flexible */
-html, body {
-    height: 100%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
+/* ==========================================================================
+   CORRECTION LAYOUT (STICKY FOOTER)
+   ========================================================================== */
+/* 1. Configuration de la structure globale en colonne flexible */
+html,
+body {
+  height: 100%; /* Occupe toute la hauteur de la fenêtre */
+  margin: 0;
+  display: flex;
+  flex-direction: column; /* Empilement vertical */
 }
 
-/* 2. Ce wrapper va prendre tout l'espace disponible et pousser le footer */
+/* 2. Wrapper principal qui pousse le footer vers le bas */
 .main-wrapper {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa; /* Couleur de fond de la page */
+  flex: 1 0 auto; /* S'étend pour remplir l'espace vide */
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa; /* Couleur de fond de la page */
 }
 
-/* 3. La section du formulaire */
-.propose-section { 
-    width: 100%;
-    /* Espacement : 120px haut (Header), 80px bas (Footer) */
-    padding: 120px 20px 80px 20px; 
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Important: aligne en haut pour éviter le débordement */
+/* 3. Section contenant le formulaire */
+.propose-section {
+  width: 100%;
+  /* Espacement critique : 120px haut (Navbar), 80px bas (Footer) */
+  padding: 120px 20px 80px 20px;
+  display: flex;
+  justify-content: center; /* Centre le formulaire horizontalement */
+  align-items: flex-start; /* Important: aligne en haut pour éviter le débordement sur petits écrans */
 }
 
-/* --- DESIGN DU FORMULAIRE --- */
-.form-card { 
-    background-color: #e9e4f5; 
-    border-radius: 20px; 
-    box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15); 
-    max-width: 600px; 
-    width: 100%; 
-    padding: 40px; 
-    border: 2px solid #fff; 
-    position: relative; 
-    z-index: 10;
+/* ==========================================================================
+   DESIGN DU FORMULAIRE (CARTE)
+   ========================================================================== */
+.form-card {
+  background-color: #e9e4f5; /* Fond violet pâle */
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(69, 43, 133, 0.15); /* Ombre portée */
+  max-width: 600px;
+  width: 100%;
+  padding: 40px;
+  border: 2px solid #fff; /* Bordure blanche pour le contraste */
+  position: relative;
+  z-index: 10; /* S'assure d'être au-dessus des éléments décoratifs */
 }
 
-.form-title { 
-    color: #000; 
-    font-weight: 800; 
-    font-size: 2rem; 
-    text-align: center; 
-    margin-bottom: 30px; 
-    font-family: 'Poppins', sans-serif; 
+/* ==========================================================================
+   TYPOGRAPHIE ET LABELS
+   ========================================================================== */
+.form-title {
+  color: #000;
+  font-weight: 800;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 30px;
+  font-family: "Poppins", sans-serif;
 }
 
-.custom-label { 
-    font-weight: 600; 
-    color: #000; 
-    margin-bottom: 8px; 
-    display: block; 
-    text-align: center; 
+.custom-label {
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 8px;
+  display: block;
+  text-align: center;
 }
 
-.required-star { 
-    color: #dc3545; 
-    margin-left: 3px; 
+/* Astérisque rouge pour champs obligatoires */
+.required-star {
+  color: #dc3545;
+  margin-left: 3px;
 }
 
-.form-control-rounded { 
-    border-radius: 12px; 
-    border: 2px solid #8c52ff; 
-    padding: 12px 15px; 
-    text-align: center; 
-    font-size: 1rem; 
-    background-color: white; 
+/* ==========================================================================
+   CHAMPS DE SAISIE (INPUTS)
+   ========================================================================== */
+.form-control-rounded {
+  border-radius: 12px;
+  border: 2px solid #8c52ff; /* Bordure violette */
+  padding: 12px 15px;
+  text-align: center;
+  font-size: 1rem;
+  background-color: white;
 }
 
-.form-control-rounded:focus { 
-    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2); 
-    border-color: #452b85; 
+/* État focus des champs */
+.form-control-rounded:focus {
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.2); /* Halo violet */
+  border-color: #452b85;
 }
 
+/* Style en cas d'erreur de validation */
 .input-error {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important;
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important; /* Halo rouge */
 }
 
-/* Toggle Switch */
-.toggle-container { 
-    display: flex; 
-    justify-content: center; 
-    margin: 10px auto; 
-    background: #fff; 
-    border: 2px solid #8c52ff; 
-    border-radius: 50px; 
-    width: fit-content; 
-    overflow: hidden; 
-    position: relative; 
+/* Groupe spécifique pour l'input numérique (Prix/Places) */
+.input-number-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
-.toggle-radio { display: none; }
-
-.toggle-label { 
-    padding: 8px 30px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: all 0.3s; 
-    margin: 0; 
-    z-index: 2; 
+.input-number-group input {
+  width: 80px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-#regulier_non:checked + label { 
-    background-color: #ff4d4d; 
-    color: white; 
+/* ==========================================================================
+   TOGGLE SWITCH (RÉGULIER OUI/NON)
+   ========================================================================== */
+/* Conteneur du switch en forme de pilule */
+.toggle-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+  background: #fff;
+  border: 2px solid #8c52ff;
+  border-radius: 50px;
+  width: fit-content;
+  overflow: hidden;
+  position: relative;
 }
 
-#regulier_oui:checked + label { 
-    background-color: #198754; 
-    color: white; 
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); 
+/* Masquage des boutons radio natifs */
+.toggle-radio {
+  display: none;
 }
 
-#date_fin_wrapper { 
-    transition: all 0.3s ease-in-out; 
-    opacity: 0; 
-    max-height: 0; 
-    overflow: hidden; 
-    margin-top: 0; 
+/* Style des labels cliquables */
+.toggle-label {
+  padding: 8px 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+  margin: 0;
+  z-index: 2;
 }
 
-#date_fin_wrapper.visible { 
-    opacity: 1; 
-    max-height: 200px; 
-    margin-top: 20px; 
+/* État sélectionné : NON (Rouge) */
+#regulier_non:checked + label {
+  background-color: #ff4d4d;
+  color: white;
 }
 
-.btn-submit-trajet { 
-    background-color: #8c52ff; 
-    color: white; 
-    font-weight: bold; 
-    font-size: 1.2rem; 
-    padding: 15px; 
-    width: 100%; 
-    border-radius: 15px; 
-    border: none; 
-    transition: transform 0.2s, box-shadow 0.2s; 
-    margin-top: 20px; 
+/* État sélectionné : OUI (Vert) */
+#regulier_oui:checked + label {
+  background-color: #198754;
+  color: white;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.btn-submit-trajet:hover { 
-    background-color: #703ccf; 
-    transform: translateY(-3px); 
-    box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3); 
-    color: white; 
+/* ==========================================================================
+   ANIMATION SECTION DATE FIN
+   ========================================================================== */
+/* État masqué par défaut */
+#date_fin_wrapper {
+  transition: all 0.3s ease-in-out;
+  opacity: 0;
+  max-height: 0; /* Hauteur nulle pour cacher */
+  overflow: hidden;
+  margin-top: 0;
 }
 
-.input-number-group { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 10px; 
+/* État visible (ajouté via JS) */
+#date_fin_wrapper.visible {
+  opacity: 1;
+  max-height: 200px; /* Suffisant pour afficher le contenu */
+  margin-top: 20px;
 }
 
-.input-number-group input { 
-    width: 80px; 
-    text-align: center; 
-    font-weight: bold; 
-    font-size: 1.2rem; 
+/* ==========================================================================
+   BOUTONS D'ACTION
+   ========================================================================== */
+.btn-submit-trajet {
+  background-color: #8c52ff;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 15px;
+  width: 100%;
+  border-radius: 15px;
+  border: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 20px;
 }
 
-/* Autocomplétion */
+.btn-submit-trajet:hover {
+  background-color: #703ccf;
+  transform: translateY(-3px); /* Légère élévation */
+  box-shadow: 0 10px 20px rgba(140, 82, 255, 0.3);
+  color: white;
+}
+
+/* ==========================================================================
+   AUTOCOMPLÉTION (ADRESSE/VILLE)
+   ========================================================================== */
+.autocomplete-wrapper {
+  position: relative;
+}
+
+/* Liste déroulante des suggestions */
 .autocomplete-suggestions {
-    text-align: left;
-    border: 1px solid #ddd;
-    background: #fff;
-    overflow: auto;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    position: absolute;
-    z-index: 9999;
-    width: 100%;
-    max-height: 200px;
-    left: 0;
-    top: 100%;
+  text-align: left;
+  border: 1px solid #ddd;
+  background: #fff;
+  overflow: auto;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  z-index: 9999;
+  width: 100%;
+  max-height: 200px;
+  left: 0;
+  top: 100%;
 }
 
-.autocomplete-suggestion { 
-    padding: 10px 15px; 
-    cursor: pointer; 
-    font-size: 0.9rem; 
-    border-bottom: 1px solid #eee; 
-    display: flex; 
-    align-items: center; 
+.autocomplete-suggestion {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
 }
 
-.autocomplete-suggestion:hover { 
-    background-color: #f0f0f0; 
-    color: #8c52ff; 
+.autocomplete-suggestion:hover {
+  background-color: #f0f0f0;
+  color: #8c52ff;
 }
 
-.autocomplete-wrapper { position: relative; }
-.suggestion-icon { margin-right: 10px; font-size: 1.1rem; }
-.is-frequent { background-color: #fff9e6; font-weight: 600; color: #b8860b; }
-.is-frequent:hover { background-color: #fff0b3; }
+.suggestion-icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+/* Style pour les lieux fréquents/favoris */
+.is-frequent {
+  background-color: #fff9e6;
+  font-weight: 600;
+  color: #b8860b;
+}
+.is-frequent:hover {
+  background-color: #fff0b3;
+}

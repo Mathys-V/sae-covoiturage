@@ -1,44 +1,61 @@
-/* ============================================================
+/* ==========================================================================
    STYLE DES AVIS (style_avis.css)
-   ============================================================ */
+   ========================================================================== */
 
-/* La barre violette des onglets */
+/*
+ * Barre de navigation des onglets
+ * Crée une entête violette arrondie pour contenir les boutons de sélection
+ */
 .custom-tabs {
-  background-color: #5a369e;
-  border-radius: 15px 15px 0 0;
+  background-color: #5a369e; /* Couleur de fond violet foncé */
+  border-radius: 15px 15px 0 0; /* Arrondi uniquement sur les coins supérieurs */
   padding: 10px;
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: center; /* Centre les onglets horizontalement */
+  gap: 20px; /* Espace entre chaque bouton */
 }
 
-/* Les boutons des onglets */
+/*
+ * Boutons des onglets (Tab Buttons)
+ * Style par défaut des onglets inactifs
+ */
 .tab-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6); /* Texte blanc semi-transparent */
   font-size: 1.2rem;
   font-weight: bold;
   padding: 10px 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease; /* Animation fluide pour le survol et l'activation */
+  border-bottom: 3px solid transparent; /* Bordure invisible pour préparer l'état actif */
 }
 
+/*
+ * État actif du bouton d'onglet
+ * Applique le style visuel pour l'onglet sélectionné
+ */
 .tab-btn.active {
-  color: #ffffff;
-  border-bottom: 3px solid #ffffff;
+  color: #ffffff; /* Texte blanc opaque */
+  border-bottom: 3px solid #ffffff; /* Soulignement blanc */
 }
 
+/*
+ * État survol du bouton d'onglet
+ * Améliore l'interactivité utilisateur
+ */
 .tab-btn:hover {
   color: #ffffff;
 }
 
-/* La boîte blanche qui contient les avis */
+/*
+ * Conteneur principal du contenu (Content Box)
+ * Zone blanche contenant la liste des avis
+ */
 .content-box {
   background: #fff;
-  border-radius: 0 0 15px 15px;
+  border-radius: 0 0 15px 15px; /* Arrondi uniquement sur les coins inférieurs */
   padding: 30px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  min-height: 300px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Ombre portée légère pour le relief */
+  min-height: 300px; /* Hauteur minimale pour éviter un écrasement si vide */
 }

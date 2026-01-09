@@ -1,262 +1,336 @@
-/* --- STYLE GLOBAL --- */
+/* ==========================================================================
+   STYLE DE LA PAGE D'INSCRIPTION (style_inscription.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   STYLE GLOBAL DE LA PAGE
+   ========================================================================== */
 body {
-    background-color: #452b85 !important;
-    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
+  background-color: #452b85 !important; /* Force la couleur de fond violette pour l'immersion */
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Pile de polices système modernes */
+  min-height: 100vh; /* Assure que le body prend au moins toute la hauteur de la fenêtre */
 }
 
-/* --- TITRES & TEXTES --- */
+/* ==========================================================================
+   TYPOGRAPHIE & TEXTES
+   ========================================================================== */
+/* Titre principal de la carte d'inscription */
 .titre-inscription {
-    color: #8c52ff;
-    font-family: "Garet", sans-serif;
-    font-weight: bold;
+  color: #8c52ff;
+  font-family: "Garet", sans-serif; /* Police personnalisée pour l'identité visuelle */
+  font-weight: bold;
 }
+
+/* Étiquettes des champs de formulaire */
 .form-label {
-    color: #8c52ff;
-    font-size: 1.2rem;
+  color: #8c52ff;
+  font-size: 1.2rem;
 }
+
+/* Astérisque rouge pour les champs obligatoires */
 .asterisque {
-    color: #ed3f27;
-    margin-left: 5px;
+  color: #ed3f27;
+  margin-left: 5px;
 }
+
+/* Texte d'aide ou d'erreur sous les champs */
 .texte-champ {
-    color: #ed3f27;
-    font-style: italic;
+  color: #ed3f27;
+  font-style: italic;
 }
 
-/* --- CHAMPS DE FORMULAIRE --- */
+/* ==========================================================================
+   CHAMPS DE FORMULAIRE (INPUTS)
+   ========================================================================== */
 .form-control {
-    border: 2px solid #8c52ff;
-    border-radius: 12px;
-    padding: 15px 20px;
-    font-size: 1.1rem;
-    background-color: #f9f9f9;
-    transition: all 0.3s ease;
+  border: 2px solid #8c52ff; /* Bordure violette distinctive */
+  border-radius: 12px;
+  padding: 15px 20px; /* Espace interne confortable */
+  font-size: 1.1rem;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease; /* Transition fluide pour le focus */
 }
+
+/* État focus des champs */
 .form-control:focus {
-    background-color: #fff;
-    border-color: #452b85;
-    box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25);
-    outline: none;
+  background-color: #fff;
+  border-color: #452b85; /* Assombrissement de la bordure */
+  box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.25); /* Halo violet */
+  outline: none;
 }
 
-/* --- BOUTONS --- */
+/* ==========================================================================
+   BOUTONS
+   ========================================================================== */
+/* Bouton principal de validation */
 .btn-inscription {
-    background-color: #8c52ff;
-    color: white;
-    border: none;
-    padding: 12px 0;
-    border-radius: 12px;
-    font-size: 1.2rem;
-    width: 100%;
-    transition: transform 0.2s, background-color 0.3s;
+  background-color: #8c52ff;
+  color: white;
+  border: none;
+  padding: 12px 0;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  width: 100%; /* Pleine largeur par défaut (mobile) */
+  transition: transform 0.2s, background-color 0.3s;
 }
+
 .btn-inscription:hover {
-    background-color: #452b85;
-    color: white;
-    transform: scale(1.02);
+  background-color: #452b85;
+  color: white;
+  transform: scale(1.02); /* Léger agrandissement au survol */
 }
 
+/* Classe utilitaire pour petits boutons (ex: navigation étapes) */
 .btn-petit {
-    width: 100px !important;
-    padding: 10px 0 !important;
-    margin-left: 40px;
-    margin-right: 40px;
+  width: 100px !important;
+  padding: 10px 0 !important;
+  margin-left: 40px;
+  margin-right: 40px;
 }
 
+/* Ajustement responsive pour les boutons sur tablette/desktop */
 @media (min-width: 768px) {
-    .btn-inscription {
-        width: 40%;
-        padding: 12px 40px;
-    }
+  .btn-inscription {
+    width: 40%;
+    padding: 12px 40px;
+  }
 }
 
-/* --- SCROLLBAR --- */
+/* ==========================================================================
+   BARRE DE DÉFILEMENT PERSONNALISÉE (SCROLLBAR)
+   ========================================================================== */
+/* Conteneur défilable pour la carte d'inscription */
 .card-scrollable {
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    max-height: 70vh;
-}
-.card-scrollable::-webkit-scrollbar {
-    width: 8px;
-}
-.card-scrollable::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-    margin: 10px 0;
-}
-.card-scrollable::-webkit-scrollbar-thumb {
-    background: #8c52ff;
-    border-radius: 10px;
-}
-.card-scrollable::-webkit-scrollbar-thumb:hover {
-    background: #452b85;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  max-height: 70vh; /* Limite la hauteur pour garder le tout visible */
 }
 
-/* --- INPUTS SPÉCIAUX --- */
+/* Largeur de la scrollbar (Webkit) */
+.card-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Piste de la scrollbar */
+.card-scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+/* Curseur de la scrollbar */
+.card-scrollable::-webkit-scrollbar-thumb {
+  background: #8c52ff;
+  border-radius: 10px;
+}
+
+/* Curseur au survol */
+.card-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #452b85;
+}
+
+/* ==========================================================================
+   INPUTS SPÉCIAUX (NUMBER SPINNER)
+   ========================================================================== */
+/* Conteneur pour le sélecteur numérique personnalisé */
 .number-input-container {
-    display: flex;
-    width: 120px;
-    height: 50px;
-    border: 2px solid #8c52ff;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: white;
-    margin: 0 auto;
+  display: flex;
+  width: 120px;
+  height: 50px;
+  border: 2px solid #8c52ff;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  margin: 0 auto; /* Centrage */
 }
+
+/* Champ numérique masqué mais fonctionnel */
 .number-field {
-    border: none !important;
-    height: 100%;
-    text-align: center;
-    font-size: 1.5rem;
-    color: #000;
-    width: 100%;
-    background: transparent;
+  border: none !important;
+  height: 100%;
+  text-align: center;
+  font-size: 1.5rem;
+  color: #000;
+  width: 100%;
+  background: transparent;
 }
+
 .number-field:focus {
-    box-shadow: none;
+  box-shadow: none;
 }
+
+/* Suppression des flèches natives des inputs number */
 .number-field::-webkit-outer-spin-button,
 .number-field::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
+
+/* Conteneur des boutons +/- */
 .spinners-container {
-    display: flex;
-    flex-direction: column;
-    width: 40px;
-    background-color: #8c52ff;
-    border-left: 1px solid #8c52ff;
+  display: flex;
+  flex-direction: column;
+  width: 40px;
+  background-color: #8c52ff;
+  border-left: 1px solid #8c52ff;
 }
+
+/* Boutons individuels du spinner */
 .spinner-btn {
-    flex: 1;
-    border: none;
-    background: none;
-    color: white;
-    font-size: 0.8rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
+  flex: 1;
+  border: none;
+  background: none;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
 }
+
 .spinner-btn:hover {
-    background-color: #452b85;
+  background-color: #452b85;
 }
+
+/* Séparateur entre le bouton + et - */
 .spinner-btn:first-child {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* ==========================================================================
+   GROUPES D'INPUTS (ICÔNES ADJACENTES)
+   ========================================================================== */
+/* Ajustement de la bordure pour l'input collé à une icône */
 .input-group .form-control {
-    border: 2px solid #8c52ff;
-    border-right: none;
-    border-radius: 12px 0 0 12px;
+  border: 2px solid #8c52ff;
+  border-right: none;
+  border-radius: 12px 0 0 12px;
 }
+
+/* Ajustement de la bordure pour l'icône collée à l'input */
 .input-group .input-group-text {
-    border: 2px solid #8c52ff;
-    border-left: none;
-    border-radius: 0 12px 12px 0;
-    background-color: white;
+  border: 2px solid #8c52ff;
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  background-color: white;
 }
+
 .input-group .form-control:focus {
-    box-shadow: none;
-    border-color: #8c52ff;
+  box-shadow: none;
+  border-color: #8c52ff;
 }
+
+/* Gestion de l'état d'erreur (rouge) pour le groupe */
 .form-control.is-invalid + .input-group-text {
-    border-color: #dc3545;
+  border-color: #dc3545;
 }
+
 .form-control.is-invalid + .input-group-text i {
-    color: #dc3545 !important;
+  color: #dc3545 !important;
 }
 
-/* --- AUTOCOMPLÉTION --- */
+/* ==========================================================================
+   AUTOCOMPLÉTION (ADRESSE/VILLE)
+   ========================================================================== */
 .autocomplete-wrapper {
-    position: relative !important;
-    width: 100%;
-    z-index: 1050;
+  position: relative !important;
+  width: 100%;
+  z-index: 1050; /* Doit passer au-dessus des autres champs */
 }
+
+/* Liste des suggestions */
 .autocomplete-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 2px solid #8c52ff;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    z-index: 9999;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 2px solid #8c52ff;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  z-index: 9999;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
 .autocomplete-suggestion {
-    padding: 12px 15px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #eee;
-    color: #333;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
 }
+
 .autocomplete-suggestion i {
-    margin-right: 10px;
-    color: #8c52ff;
+  margin-right: 10px;
+  color: #8c52ff;
 }
+
 .autocomplete-suggestion:hover {
-    background-color: #f3efff !important;
-    color: #452b85;
+  background-color: #f3efff !important;
+  color: #452b85;
 }
+
 .autocomplete-suggestion:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
-/* =========================================================
-   BOUTON RETOUR : ABSOLU (Fixé au conteneur principal)
-   ========================================================= */
+/* ==========================================================================
+   BOUTON RETOUR FLOTTANT
+   ========================================================================== */
+/* Bouton "Retour" positionné en absolu dans le coin supérieur gauche */
 .btn-retour-card {
-    position: absolute !important;
-    top: 30px !important; /* En haut de la section */
-    left: 40px !important; /* À GAUCHE de l'écran */
-    z-index: 99999 !important;
+  position: absolute !important;
+  top: 30px !important; /* En haut de la section */
+  left: 40px !important; /* À GAUCHE de l'écran */
+  z-index: 99999 !important; /* Toujours au premier plan */
 
-    background-color: #ffffff !important;
-    color: #8c52ff !important;
-    border: 2px solid #8c52ff !important;
-    border-radius: 12px !important;
-    font-weight: bold !important;
-    font-size: 1rem !important;
-    text-transform: capitalize !important;
-    font-family: inherit !important;
-    padding: 8px 25px !important;
-    margin: 0 !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
-    cursor: pointer !important;
-    outline: none !important;
-    transition: transform 0.2s ease !important;
+  background-color: #ffffff !important;
+  color: #8c52ff !important;
+  border: 2px solid #8c52ff !important;
+  border-radius: 12px !important;
+  font-weight: bold !important;
+  font-size: 1rem !important;
+  text-transform: capitalize !important;
+  font-family: inherit !important;
+  padding: 8px 25px !important;
+  margin: 0 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: transform 0.2s ease !important;
 }
+
 .btn-retour-card:hover {
-    transform: scale(1.05) !important;
-    background-color: #f3efff !important;
+  transform: scale(1.05) !important;
+  background-color: #f3efff !important;
 }
 
-/* Ajustement Mobile */
+/* Ajustement pour les petits écrans */
 @media (max-width: 768px) {
-    .btn-retour-card {
-        top: 20px !important;
-        left: 20px !important;
-        padding: 6px 15px !important;
-    }
+  .btn-retour-card {
+    top: 20px !important;
+    left: 20px !important;
+    padding: 6px 15px !important;
+  }
 }
 
-/* =========================================================
-   ARRONDIS FORCÉS SUR LE CONTENU
-   ========================================================= */
+/* ==========================================================================
+   UTILITAIRES D'ARRONDIS
+   ========================================================================== */
+/* Force les coins arrondis en haut pour l'en-tête de carte */
 .header-rounded {
-    border-top-left-radius: 1rem !important;
-    border-top-right-radius: 1rem !important;
+  border-top-left-radius: 1rem !important;
+  border-top-right-radius: 1rem !important;
 }
+
+/* Force les coins arrondis en bas pour le pied de carte */
 .footer-rounded {
-    border-bottom-left-radius: 1rem !important;
-    border-bottom-right-radius: 1rem !important;
+  border-bottom-left-radius: 1rem !important;
+  border-bottom-right-radius: 1rem !important;
 }

@@ -1,19 +1,29 @@
-/* --- STYLE RÉSULTATS RECHERCHE --- */
+/* ==========================================================================
+   STYLE DES RÉSULTATS DE RECHERCHE (style_resultats_recherche.css)
+   ========================================================================== */
 
-/* 1. Bandeau de recherche (En-tête violet) */
+/* ==========================================================================
+   1. BANDEAU DE RECHERCHE (EN-TÊTE)
+   ========================================================================== */
+/*
+ * Conteneur principal de la barre de filtres en haut de page
+ * Fond violet foncé pour se démarquer du reste du contenu
+ */
 .card-search-header {
   background-color: #3b2875;
   border-radius: 20px;
 }
 
+/* Fixation de la largeur des champs pour l'alignement */
 .search-input-fixed {
   width: 250px;
 }
 
+/* Bouton pour modifier la recherche */
 .btn-modify {
   background-color: #8c52ff;
   border-radius: 20px;
-  width: auto !important;
+  width: auto !important; /* Surcharge Bootstrap pour adapter à la largeur du texte */
   transition: background 0.3s;
 }
 
@@ -22,118 +32,139 @@
   color: white;
 }
 
-/* 2. Alertes personnalisées */
+/* ==========================================================================
+   2. ALERTES ET FEEDBACK UTILISATEUR
+   ========================================================================== */
+/* Alerte d'avertissement (ex: Pas de résultats exacts) */
 .alert-custom-warning {
   background-color: #fff3cd;
   color: #856404;
 }
 
+/* Alerte de succès (ex: Réservation confirmée) */
 .alert-custom-success {
   background-color: #d1e7dd;
   color: #0f5132;
 }
 
+/* Alerte informative générique */
 .alert-custom-info {
   background-color: #d1ecf1;
   border-color: #bee5eb;
   color: #0c5460;
 }
 
-/* 3. Carte de Résultat (Trajet) */
+/* ==========================================================================
+   3. CARTE DE RÉSULTAT (TRAJET)
+   ========================================================================== */
+/* Conteneur représentant un trajet unique */
 .card-result {
-  background-color: #f0ebf8;
+  background-color: #f0ebf8; /* Fond violet très pâle */
   border-radius: 20px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s; /* Animation fluide */
 }
 
+/* Effet de lévitation au survol de la carte */
 .card-result:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.15) !important;
+  transform: translateY(-5px); /* Déplacement vers le haut */
+  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.15) !important; /* Ombre portée violette */
 }
 
-/* Typographie et Couleurs */
+/* --- TYPOGRAPHIE ET COULEURS DE MARQUE --- */
+/* Violet foncé (Titres, Prix) */
 .text-purple-dark {
   color: #452b85;
 }
 
+/* Violet primaire (Icônes, Accents) */
 .text-purple-primary {
   color: #8c52ff;
 }
 
-/* Avatar */
+/* --- COMPOSANTS DE LA CARTE --- */
+/* Image de profil du conducteur */
 .avatar-img {
   width: 60px;
   height: 60px;
-  object-fit: cover;
+  object-fit: cover; /* Assure que l'image remplit le cercle sans déformation */
 }
 
-/* Zone Commentaire */
+/* Zone de commentaire du conducteur */
 .comment-box {
-  background-color: rgba(140, 82, 255, 0.1);
+  background-color: rgba(140, 82, 255, 0.1); /* Fond teinté semi-transparent */
 }
 
-/* Bouton Réserver */
+/* --- BOUTONS D'ACTION --- */
+/* Bouton principal "Réserver" */
 .btn-reserve {
   background-color: #8c52ff;
-  border-radius: 50px;
+  border-radius: 50px; /* Forme de pilule */
   width: auto !important;
   transition: all 0.3s;
 }
 
+/* Animation au survol du bouton réserver */
 .btn-reserve:hover {
   background-color: #703ccf;
-  transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(140, 82, 255, 0.4);
+  transform: scale(1.05); /* Léger grossissement */
+  box-shadow: 0 5px 15px rgba(140, 82, 255, 0.4); /* Glow violet */
 }
 
-/* Bouton Signaler */
+/* Bouton "Signaler" */
 .btn-report:hover {
-  background-color: #343a40;
+  background-color: #343a40; /* Devient sombre au survol */
   color: white;
 }
 
+/* Utilitaires de survol */
 .hover-bg-light:hover {
   background-color: #f8f9fa;
   cursor: pointer;
 }
+
 .transition {
   transition: background-color 0.2s;
 }
 
-/* --- STYLE SIGNALEMENT (Nouveau) --- */
+/* ==========================================================================
+   4. MODALE DE SIGNALEMENT
+   ========================================================================== */
+/* Style spécifique du bouton de signalement (Rouge/Danger) */
 .btn-report {
-    color: #dc3545;
-    border-color: #dc3545;
+  color: #dc3545;
+  border-color: #dc3545;
 }
 
 .btn-report:hover {
-    background-color: #dc3545;
-    color: white;
+  background-color: #dc3545;
+  color: white;
 }
 
-/* Zone de texte plus claire et "cliquable" */
+/* Zone de texte (Textarea) pour la raison du signalement */
 .custom-textarea {
-    background-color: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 0.95rem;
-    color: #333;
-    resize: none;
-    transition: all 0.3s ease;
-    width: 100%;
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 0.95rem;
+  color: #333;
+  resize: none; /* Empêche le redimensionnement manuel */
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
+/* État focus de la zone de texte */
 .custom-textarea:focus {
-    background-color: #ffffff;
-    border-color: #8c52ff;
-    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
-    outline: none;
+  background-color: #ffffff;
+  border-color: #8c52ff; /* Bordure violette active */
+  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo violet */
+  outline: none;
 }
 
+/* Label des champs du formulaire */
 .form-label-bold {
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 8px;
-    display: block;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  display: block;
 }

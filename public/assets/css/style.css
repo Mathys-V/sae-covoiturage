@@ -1,14 +1,31 @@
+/* ==========================================================================
+   STYLE GLOBAL ET TYPOGRAPHIE (style.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   DÉFINITION DES POLICES PERSONNALISÉES (@FONT-FACE)
+   ========================================================================== */
+
+/* * Importation de la police "Garet" - Version Normale (Book)
+ * Utilisée pour le corps de texte standard (font-weight: 400)
+ */
 @font-face {
-    font-family: 'Garet';
-    /* Le .. permet de remonter d'un dossier */
-    src: url('../fonts/Garet-Book.otf') format('opentype'); 
-    font-weight: normal;
-    font-style: normal;
+  font-family: "Garet"; /* Nom de référence utilisé dans le reste du CSS */
+
+  /* Chemin vers le fichier de police */
+  /* Note : '../' permet de remonter d'un niveau pour accéder au dossier 'fonts' */
+  src: url("../fonts/Garet-Book.otf") format("opentype");
+
+  font-weight: normal; /* Définit ce fichier comme le style "normal" */
+  font-style: normal;
 }
 
+/* * Importation de la police "Garet" - Version Grasse (Heavy)
+ * Utilisée automatiquement pour les titres ou le texte en gras (font-weight: 700)
+ */
 @font-face {
-    font-family: 'Garet';
-    src: url('../fonts/Garet-Heavy.otf') format('opentype');
-    font-weight: bold;
-    font-style: normal;
+  font-family: "Garet"; /* Même nom de famille pour unifier l'usage */
+  src: url("../fonts/Garet-Heavy.otf") format("opentype");
+  font-weight: bold; /* Définit ce fichier comme le style "gras" */
+  font-style: normal;
 }

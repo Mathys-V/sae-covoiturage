@@ -1,107 +1,132 @@
-/* --- DESIGN SYSTEM COOKIES --- */
+/* ==========================================================================
+   STYLE DU GESTIONNAIRE DE COOKIES (style_cookies.css)
+   ========================================================================== */
 
+/* ==========================================================================
+   DESIGN SYSTEM DES CARTES COOKIES
+   ========================================================================== */
+
+/* Conteneur principal de la modale/page de préférences */
 .cookie-card {
-    background-color: #3b2875;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(59, 40, 117, 0.15);
-    overflow: hidden;
+  background-color: #3b2875; /* Fond violet foncé de la charte */
+  border-radius: 20px; /* Coins arrondis modernes */
+  box-shadow: 0 15px 35px rgba(59, 40, 117, 0.15); /* Ombre portée douce */
+  overflow: hidden; /* Masque le débordement des enfants */
 }
 
+/* En-tête visuel de la carte */
 .cookie-header {
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 40px 20px;
-    text-align: center; /* Assure le centrage global dans le header */
+  background-color: rgba(0, 0, 0, 0.2); /* Voile sombre pour le contraste */
+  padding: 40px 20px;
+  text-align: center; /* Assure le centrage global dans le header */
 }
 
-/* Style des items (lignes) */
+/* Style des items (lignes de catégorie de cookies) */
 .cookie-item {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 25px 20px;
-    margin-bottom: 15px;
-    transition: background-color 0.2s;
+  background-color: rgba(255, 255, 255, 0.05); /* Fond blanc très transparent */
+  border-radius: 12px;
+  padding: 25px 20px;
+  margin-bottom: 15px; /* Espacement entre les catégories */
+  transition: background-color 0.2s; /* Transition fluide au survol */
 }
 
+/* Effet de survol sur une ligne */
 .cookie-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1); /* Éclaircissement au survol */
 }
 
-/* --- SWITCHES CUSTOM --- */
+/* ==========================================================================
+   INTERRUPTEURS PERSONNALISÉS (CUSTOM SWITCHES)
+   ========================================================================== */
+
+/* Conteneur du groupe de boutons (Oui/Non) */
 .btn-group-custom {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 50px;
-    padding: 4px;
-    display: inline-flex;
-    align-items: center; /* Centrage vertical des éléments dans le groupe */
+  background-color: rgba(255, 255, 255, 0.1); /* Fond du switch inactif */
+  border-radius: 50px; /* Forme de pilule */
+  padding: 4px;
+  display: inline-flex;
+  align-items: center; /* Centrage vertical des éléments dans le groupe */
 }
 
+/* Style de base des boutons (labels) */
 .btn-toggle-custom {
-    border: none;
-    border-radius: 50px !important;
-    padding: 8px 24px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    background: transparent;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;          
-    align-items: center;    /* Centrage vertical */
-    justify-content: center;/* Centrage horizontal */
-    height: 100%;           
+  border: none;
+  border-radius: 50px !important;
+  padding: 8px 24px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7); /* Texte gris clair par défaut */
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Animation "spring" */
+  display: flex;
+  align-items: center; /* Centrage vertical */
+  justify-content: center; /* Centrage horizontal */
+  height: 100%;
 }
 
 .btn-toggle-custom:hover {
-    color: white;
+  color: white;
 }
 
-/* ETAT ACTIVE - VERT (Accepter) */
+/* ETAT ACTIVE - VERT (Bouton Accepter coché) */
 .btn-check:checked + .btn-accept {
-    background-color: #00c853 !important;
-    color: white !important;
-    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);
+  background-color: #00c853 !important; /* Vert validation */
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4); /* Glow vert */
 }
 
-/* ETAT ACTIVE - ROUGE (Refuser) */
+/* ETAT ACTIVE - ROUGE (Bouton Refuser coché) */
 .btn-check:checked + .btn-refuse {
-    background-color: #ff3d00 !important;
-    color: white !important;
-    box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
+  background-color: #ff3d00 !important; /* Rouge alerte */
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4); /* Glow rouge */
 }
 
-/* Badge Essentiels */
+/* ==========================================================================
+   COMPOSANTS INFORMATIFS & NAVIGATION
+   ========================================================================== */
+
+/* Badge pour les cookies essentiels (non désactivables) */
 .badge-required {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center; /* Centrage */
-    gap: 8px;
-    cursor: default;
-    height: 40px; /* Hauteur fixe pour alignement */
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* Centrage */
+  gap: 8px;
+  cursor: default; /* Indique que ce n'est pas cliquable */
+  height: 40px; /* Hauteur fixe pour alignement avec les switches */
 }
 
-/* Animation Chevron */
+/* Bouton d'accordéon (Chevron) */
 .btn-collapse-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
 }
+
 .btn-collapse-icon:hover {
-    background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
 }
-.transition-icon { transition: transform 0.3s ease; }
-[aria-expanded="true"] .transition-icon { transform: rotate(180deg); }
+
+/* Animation de rotation du chevron */
+.transition-icon {
+  transition: transform 0.3s ease;
+}
+[aria-expanded="true"] .transition-icon {
+  transform: rotate(180deg);
+} /* Rotation si ouvert */
 
 /* Utilitaire Flexbox pour alignement vertical */
 .d-flex-center-v {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }

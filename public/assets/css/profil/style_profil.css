@@ -1,4 +1,11 @@
-/* --- CONFIGURATION GLOBALE --- */
+/* ==========================================================================
+   STYLE DE LA PAGE DE PROFIL UTILISATEUR (style_profil.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   CONFIGURATION GLOBALE DE LA PAGE
+   ========================================================================== */
+/* Application du thème violet foncé sur l'ensemble de la page */
 html,
 body {
   margin: 0;
@@ -6,31 +13,39 @@ body {
   width: 100%;
   height: 100%;
   font-family: "Segoe UI", system-ui, sans-serif;
-  background-color: #463077 !important;
-  color: white !important;
+  background-color: #463077 !important; /* Couleur de fond principale */
+  color: white !important; /* Texte en blanc pour le contraste */
 }
+
+/* Structure flexible pour pousser le footer en bas */
 .page-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
+
+/* Conteneur principal centré */
 .main-content {
-  flex: 1;
+  flex: 1; /* Prend tout l'espace disponible restant */
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* --- NAVIGATION ONGLETS --- */
+/* ==========================================================================
+   SYSTÈME D'ONGLETS (TABS)
+   ========================================================================== */
 .tabs-container {
   display: flex;
   width: 100%;
   max-width: 800px;
   margin: 20px auto 0;
 }
+
+/* Style de base d'un onglet */
 .tab {
-  flex: 1;
+  flex: 1; /* Largeur égale pour tous les onglets */
   padding: 15px;
   text-align: center;
   font-size: 2rem;
@@ -40,22 +55,29 @@ body {
   border-top-right-radius: 20px;
   transition: all 0.2s;
 }
+
+/* Onglet actif (sélectionné) */
 .tab-active {
-  background-color: #463077;
+  background-color: #463077; /* Se fond avec le background du body */
   color: white;
   position: relative;
-  z-index: 2;
+  z-index: 2; /* Passe au-dessus des autres éléments */
 }
+
+/* Onglet inactif */
 .tab-inactive {
-  background-color: #9370db;
+  background-color: #9370db; /* Violet plus clair */
   color: rgba(255, 255, 255, 0.7);
 }
+
 .tab-inactive:hover {
   background-color: #8a2be2;
   color: white;
 }
 
-/* --- HEADER PROFIL --- */
+/* ==========================================================================
+   EN-TÊTE DE PROFIL (HEADER)
+   ========================================================================== */
 .profile-header {
   display: flex;
   align-items: center;
@@ -63,49 +85,27 @@ body {
   margin-top: 30px;
   margin-bottom: 40px;
 }
+
+/* Conteneur circulaire de l'avatar */
 .avatar-circle {
-  width: 130px;
-  height: 130px;
-  background-color: #8c52ff;
-  border-radius: 50%;
+  width: 150px; /* Largeur fixe obligatoire */
+  height: 150px; /* Hauteur fixe obligatoire */
+  background-color: #8c52ff; /* Couleur de fond si image manquante */
+  border-radius: 50%; /* Rond parfait */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4rem;
   color: white;
-  overflow: hidden;
-  border: 4px solid #7b61ff;
-}
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.stars {
-  color: #ffd700;
-  font-size: 1.5rem;
-  margin: 0 10px;
-}
-.chevron-link {
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-/* --- LE CONTENEUR ROND (Fixe la taille pour éviter les déformations) --- */
-.avatar-circle {
-  width: 150px; /* Largeur fixe obligatoire */
-  height: 150px; /* Hauteur fixe obligatoire */
-  border-radius: 50%; /* Rond parfait */
-  position: relative; /* Nécessaire pour l'overlay */
   overflow: hidden; /* Coupe tout ce qui dépasse */
-  margin: 0 auto; /* Centre le cercle si besoin */
-  border: 4px solid white;
+  border: 4px solid white; /* Bordure blanche distinctive */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  background-color: #f0f0f0; /* Fond gris si pas d'image */
+  margin: 0 auto; /* Centre le cercle si besoin */
+  position: relative; /* Nécessaire pour l'overlay */
 }
 
-/* --- L'IMAGE OU L'ICÔNE PAR DÉFAUT --- */
+/* Image de l'avatar */
 .avatar-img {
   width: 100%;
   height: 100%;
@@ -113,6 +113,23 @@ body {
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
+/* Éléments décoratifs (étoiles de notation) */
+.stars {
+  color: #ffd700; /* Or */
+  font-size: 1.5rem;
+  margin: 0 10px;
+}
+
+/* Bouton de retour (Chevron) */
+.chevron-link {
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   AVATAR PAR DÉFAUT ET OVERLAY DE MODIFICATION
+   ========================================================================== */
 /* Style de l'icône par défaut (le bonhomme) */
 .default-avatar {
   width: 100%;
@@ -125,7 +142,7 @@ body {
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* --- L'OVERLAY (Texte + Icone) --- */
+/* Couche de superposition au survol (Overlay) */
 .photo-overlay {
   position: absolute;
   top: 0;
@@ -133,36 +150,35 @@ body {
   width: 100%;
   height: 100%;
 
-  /* Centrage parfait */
+  /* Centrage parfait du contenu */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
-  background-color: rgba(0, 0, 0, 0.3); /* Légère couche noire transparente */
+  background-color: rgba(0, 0, 0, 0.3); /* Fond noir semi-transparent */
   opacity: 0; /* INVISIBLE PAR DÉFAUT */
   z-index: 10; /* Au-dessus de l'image */
   transition: opacity 0.3s ease;
 }
 
-/* Style de l'icône appareil photo dans l'overlay */
+/* Icône appareil photo dans l'overlay */
 .photo-overlay i {
-  font-size: 1.5rem; /* Taille raisonnable */
+  font-size: 1.5rem;
   color: white;
   margin-bottom: 5px;
 }
 
-/* Style du texte "MODIFIER" */
+/* Texte "MODIFIER" dans l'overlay */
 .photo-overlay span {
-  font-size: 0.8rem; /* Petit texte */
+  font-size: 0.8rem;
   color: white;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-/* --- ACTION AU SURVOL (HOVER) --- */
-
+/* --- INTERACTIONS AVATAR (HOVER) --- */
 /* 1. L'overlay devient visible */
 .avatar-circle:hover .photo-overlay {
   opacity: 1;
@@ -175,15 +191,20 @@ body {
   transform: scale(1.1); /* Zoom léger */
 }
 
-/* --- CARTES INFO --- */
+/* ==========================================================================
+   CARTES D'INFORMATION
+   ========================================================================== */
+/* Bloc blanc cassé contenant les infos utilisateur */
 .info-card {
-  background-color: #ebe6f5;
-  color: black !important;
+  background-color: #ebe6f5; /* Fond clair */
+  color: black !important; /* Force le texte en noir */
   border-radius: 30px;
   padding: 30px;
   margin-bottom: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+
+/* Label au-dessus des champs (ex: "E-mail") */
 .card-label {
   color: white;
   font-weight: 600;
@@ -196,7 +217,10 @@ body {
   width: fit-content;
 }
 
-/* --- BOUTONS --- */
+/* ==========================================================================
+   BOUTONS D'ACTION
+   ========================================================================== */
+/* Bouton principal violet */
 .btn-purple {
   background-color: #8c52ff;
   color: white;
@@ -206,10 +230,13 @@ body {
   font-weight: 600;
   transition: 0.3s;
 }
+
 .btn-purple:hover {
   background-color: #703ccf;
   color: white;
 }
+
+/* Bouton d'annulation (gris violacé) */
 .btn-cancel {
   background-color: #9370db;
   color: white;
@@ -219,32 +246,36 @@ body {
   font-weight: 600;
   margin-right: 10px;
 }
+
 .btn-cancel:hover {
   background-color: #8060c0;
 }
 
-/* Style pour le gros bouton flèche */
+/* Bouton retour large (Flèche) */
 .big-arrow-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.6); /* Bordure blanche semi-transparente */
-  border-radius: 50px; /* Forme très arrondie (pillule) */
-  padding: 10px 30px; /* Espace intérieur */
+  border-radius: 50px; /* Forme de pilule */
+  padding: 10px 30px;
   color: white;
-  font-size: 1.5rem; /* Taille de la flèche */
+  font-size: 1.5rem;
   text-decoration: none;
   transition: background 0.3s, transform 0.2s;
   height: fit-content;
 }
 
 .big-arrow-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Léger fond blanc au survol */
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
-  transform: translateX(5px); /* Petite animation vers la droite */
+  transform: translateX(5px); /* Animation vers la droite */
 }
 
-/* --- NOUVEAUX STYLES POUR L'HISTORIQUE --- */
+/* ==========================================================================
+   HISTORIQUE ET LISTES
+   ========================================================================== */
+/* Mini avatar pour les listes de passagers */
 .avatar-small {
   width: 60px;
   height: 60px;
@@ -258,6 +289,8 @@ body {
   overflow: hidden;
   margin-right: 15px;
 }
+
+/* Petits boutons d'action dans les listes */
 .btn-mini-purple {
   background-color: #8c52ff;
   color: white;
@@ -267,6 +300,7 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
 }
+
 .btn-mini-dark {
   background-color: #463077;
   color: white;
@@ -276,11 +310,15 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+/* Élément de liste passager */
 .passenger-item {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
+
+/* Bouton "Voir plus" */
 .see-more-btn {
   background-color: #8c52ff;
   color: white;
@@ -292,10 +330,15 @@ body {
   margin: 0 auto;
 }
 
-/* Formulaires & Listes */
+/* ==========================================================================
+   FORMULAIRES ET PARAMÈTRES
+   ========================================================================== */
+/* Masque les éléments d'édition par défaut */
 .edit-mode {
   display: none;
 }
+
+/* Champ de formulaire personnalisé */
 .form-control-custom {
   width: 100%;
   padding: 10px;
@@ -305,33 +348,43 @@ body {
   color: black;
   margin-bottom: 10px;
 }
+
+/* Liste des paramètres */
 .settings-list {
   list-style: none;
   padding: 0;
   margin-top: 20px;
 }
+
+/* Élément de menu paramètre */
 .settings-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  border-bottom: 2px solid #7b61ff;
+  border-bottom: 2px solid #7b61ff; /* Ligne de séparation violette */
   color: white;
   text-decoration: none;
   font-size: 1.4rem;
   font-weight: 500;
   cursor: pointer;
 }
+
 .settings-item:hover {
   padding-left: 10px;
   color: #e0d4ff;
 }
+
+/* Texte rouge pour actions dangereuses (Déconnexion) */
 .text-danger-custom {
   color: #ff6b6b !important;
   border-bottom: none;
   margin-top: 20px;
 }
 
+/* ==========================================================================
+   RESPONSIVE DESIGN (MEDIA QUERIES)
+   ========================================================================== */
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
@@ -340,6 +393,7 @@ body {
   .tab {
     font-size: 1.5rem;
   }
+  /* Suppression de la bordure verticale sur mobile */
   .border-end-md {
     border-right: none !important;
     border-bottom: 1px solid #ccc;
@@ -347,44 +401,45 @@ body {
     margin-bottom: 20px;
   }
 }
+
 @media (min-width: 769px) {
+  /* Ajout de la bordure verticale sur desktop */
   .border-end-md {
     border-right: 2px solid #d1d1d1;
   }
 }
 
-/* Fond sombre transparent qui couvre tout l'écran */
+/* ==========================================================================
+   MODALES (POP-UPS)
+   ========================================================================== */
+/* Overlay sombre couvrant tout l'écran */
 .custom-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Fond noir semi-transparent */
-  z-index: 9999; /* Très haut pour être au dessus de tout */
-
-  /* Flexbox pour centrer parfaitement la boîte */
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* Petite animation d'apparition */
   animation: fadeIn 0.3s ease;
 }
 
-/* La boîte blanche de la modale */
+/* Boîte blanche de la modale */
 .custom-modal-box {
   background: white;
   padding: 30px;
   border-radius: 15px;
   width: 90%;
-  max-width: 400px; /* Pas trop large sur PC */
+  max-width: 400px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
-/* Animation simple */
+/* Animation d'apparition */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -394,15 +449,16 @@ body {
   }
 }
 
-/* Ajustement des boutons */
+/* Ajustement des boutons dans la modale */
 .custom-modal-box .btn {
   padding: 8px 20px;
   border-radius: 8px;
 }
-.avatar-circle {
-  position: relative;
-  overflow: hidden;
-}
+
+/* ==========================================================================
+   OVERLAY AVATAR (REDUNDANCE COMPATIBILITÉ)
+   ========================================================================== */
+/* Note : Ces classes semblent redondantes avec .photo-overlay mais sont conservées pour compatibilité */
 .avatar-overlay {
   position: absolute;
   top: 0;
@@ -418,15 +474,19 @@ body {
   cursor: pointer;
   border-radius: 50%;
 }
+
 .avatar-circle:hover .avatar-overlay {
   opacity: 1;
 }
+
 .avatar-overlay i {
   color: white;
   font-size: 2rem;
 }
 
-/* Styles Modale Signalement */
+/* ==========================================================================
+   FORMULAIRE DE SIGNALEMENT
+   ========================================================================== */
 .custom-textarea {
   background-color: #f8f9fa;
   border: 2px solid #e9ecef;
@@ -438,12 +498,14 @@ body {
   transition: all 0.3s ease;
   width: 100%;
 }
+
 .custom-textarea:focus {
   background-color: #ffffff;
   border-color: #8c52ff;
   box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
   outline: none;
 }
+
 .form-label-bold {
   font-weight: 700;
   color: #2c3e50;
@@ -451,12 +513,15 @@ body {
   display: block;
 }
 
-/* Style Lien Profil Public */
+/* ==========================================================================
+   LIENS PUBLICS
+   ========================================================================== */
 .profile-link {
   text-decoration: none;
   color: inherit;
   transition: color 0.2s;
 }
+
 .profile-link:hover .fw-bold {
   color: #8c52ff;
   text-decoration: underline;

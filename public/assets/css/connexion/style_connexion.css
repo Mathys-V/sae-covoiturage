@@ -1,51 +1,76 @@
-/* --- SECTION BACKGROUND --- */
+/* ==========================================================================
+   STYLE DE LA PAGE DE CONNEXION (login)
+   ========================================================================== */
+
+/*
+ * Section principale d'arrière-plan
+ * Configure l'image de fond et centre la carte de connexion verticalement et horizontalement
+ */
 .login-section {
-    background-image: url('/sae-covoiturage/public/assets/img/Image-IUT-connexion.jpg');
-    background-size: cover;
-    background-position: center;
-    min-height: 80vh; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+  background-image: url("/sae-covoiturage/public/assets/img/Image-IUT-connexion.jpg");
+  background-size: cover; /* L'image couvre tout l'espace sans déformation */
+  background-position: center; /* Centrage de l'image */
+  min-height: 80vh; /* Hauteur minimale de 80% de la fenêtre */
+  display: flex; /* Utilisation de Flexbox pour le centrage */
+  align-items: center; /* Centrage vertical */
+  justify-content: center; /* Centrage horizontal */
+  padding: 20px; /* Marge interne pour éviter que la carte ne touche les bords sur mobile */
 }
 
+/*
+ * Carte de connexion (Conteneur du formulaire)
+ * Boîte blanche flottante contenant les champs de saisie
+ */
 .card-login {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    border: 2px solid var(--main-purple);
+  background: white;
+  border-radius: 20px; /* Coins arrondis modernes */
+  padding: 2rem; /* Espacement interne confortable */
+  width: 100%;
+  max-width: 400px; /* Largeur maximale pour ne pas être trop large sur grand écran */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Ombre portée pour donner du relief */
+  border: 2px solid var(--main-purple); /* Bordure colorée rappelant la charte */
 }
 
+/*
+ * Titre de la carte ("Se connecter")
+ */
 .card-title {
-    color: var(--main-purple);
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
+  color: var(--main-purple);
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
 }
 
+/*
+ * Champs de saisie personnalisés
+ * Style spécifique avec bordure violette
+ */
 .custom-input {
-    border: 2px solid var(--main-purple);
-    border-radius: 10px;
-    padding: 10px 15px;
+  border: 2px solid var(--main-purple);
+  border-radius: 10px;
+  padding: 10px 15px;
 }
 
-/* Icône oeil */
-.password-group { 
-    position: relative; 
+/*
+ * Groupe de mot de passe
+ * Conteneur relatif permettant le positionnement absolu de l'icône "œil"
+ */
+.password-group {
+  position: relative;
 }
 
+/*
+ * Icône de bascule de visibilité du mot de passe (Œil)
+ * Positionnée à droite à l'intérieur du champ de saisie
+ */
 .toggle-password {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--main-purple);
-    font-size: 1.2rem;
-    z-index: 10;
+  position: absolute;
+  right: 15px;
+  top: 50%; /* Centrage vertical par rapport au champ */
+  transform: translateY(-50%); /* Correction du centrage */
+  cursor: pointer;
+  color: var(--main-purple);
+  font-size: 1.2rem;
+  z-index: 10; /* S'assure que l'icône est cliquable au-dessus du champ */
 }

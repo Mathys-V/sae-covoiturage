@@ -1,31 +1,41 @@
-/* Fond violet global */
+/* Application du fond violet global et configuration de la structure Flexbox */
 body {
-  background-color: #422875 !important;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background-color: #422875 !important; /* Force la couleur de fond de la charte */
+  min-height: 100vh; /* Garantit que la page occupe toute la hauteur de la fenêtre */
+  display: flex; /* Utilisation de Flexbox pour l'agencement vertical */
+  flex-direction: column; /* Empilement vertical des éléments (Header, Main, Footer) */
 }
 
-/* Bouton violet */
+/* ==========================================================================
+   BOUTONS PERSONNALISÉS
+   ========================================================================== */
+/* Style du bouton d'action principal violet */
 .btn-purple {
-  background-color: #8c52ff;
+  background-color: #8c52ff; /* Couleur violette de la marque */
   color: white;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease; /* Transition fluide pour les interactions */
 }
+
+/* Comportement au survol du bouton */
 .btn-purple:hover {
-  background-color: #7a46e0;
-  transform: translateY(-2px);
+  background-color: #7a46e0; /* Assombrissement visuel */
+  transform: translateY(-2px); /* Légère élévation pour simuler un clic */
   color: white;
 }
 
-/* Style des inputs */
+/* ==========================================================================
+   CHAMPS DE FORMULAIRE (INPUTS)
+   ========================================================================== */
+/* Style de base pour les contrôles de formulaire */
 .form-control {
-  background-color: #f8f9fa;
-  border: 1px solid transparent;
+  background-color: #f8f9fa; /* Fond gris clair pour délimiter la zone de saisie */
+  border: 1px solid transparent; /* Bordure invisible par défaut */
 }
+
+/* État actif (Focus) du champ de saisie */
 .form-control:focus {
-  background-color: #fff;
-  border-color: #8c52ff;
-  box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.1);
+  background-color: #fff; /* Fond blanc pour la lisibilité lors de la saisie */
+  border-color: #8c52ff; /* Bordure violette pour indiquer le focus */
+  box-shadow: 0 0 0 0.25rem rgba(140, 82, 255, 0.1); /* Halo externe violet subtil */
 }

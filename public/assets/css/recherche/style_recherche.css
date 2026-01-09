@@ -1,14 +1,30 @@
-/* --- 1. CONFIGURATION DU CONTENEUR (WRAPPER) --- */
+/* ==========================================================================
+   STYLE DE LA BARRE DE RECHERCHE AVEC AUTOCOMPLETE (style_recherche.css)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. CONFIGURATION DU CONTENEUR (WRAPPER)
+   ========================================================================== */
+/*
+ * Conteneur parent du champ de saisie
+ * Définit le contexte de positionnement (relative) pour le bouton et la liste déroulante
+ */
 .autocomplete-wrapper {
-  position: relative !important; /* Indispensable pour que le bouton se cale par rapport à ce bloc */
-  width: 100%; /* Force le bloc à prendre toute la largeur */
+  position: relative !important; /* Indispensable pour que les éléments absolus se calent par rapport à ce bloc */
+  width: 100%; /* Force le bloc à prendre toute la largeur disponible */
   display: block;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-/* --- 2. STYLE DU BOUTON DE GÉOLOCALISATION --- */
+/* ==========================================================================
+   2. STYLE DU BOUTON DE GÉOLOCALISATION
+   ========================================================================== */
+/*
+ * Bouton d'action situé à l'intérieur du champ de saisie
+ * Permet de déclencher la géolocalisation automatique
+ */
 .geo-btn {
   position: absolute;
   right: 15px; /* Place le bouton à droite (à l'intérieur du champ) */
@@ -17,36 +33,47 @@
 
   border: none;
   background: transparent; /* Fond transparent pour se fondre dans l'input */
-  color: #8c52ff; /* Couleur violette */
+  color: #8c52ff; /* Couleur violette de la charte */
   cursor: pointer;
-  z-index: 10; /* S'assure qu'il est AU-DESSUS du champ texte */
+  z-index: 10; /* S'assure qu'il est AU-DESSUS du champ texte pour être cliquable */
 
   font-size: 1.2rem; /* Taille de l'icône */
   padding: 0; /* Enlève les marges par défaut du bouton */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease; /* Animation fluide au survol */
 }
 
+/* Effet au survol du bouton */
 .geo-btn:hover {
   color: #3b2875; /* Violet foncé au survol */
   transform: translateY(-50%) scale(1.1); /* Léger grossissement au survol */
 }
 
-/* Animation de chargement (tourne quand on clique) */
+/*
+ * Animation de chargement
+ * Appliquée lorsque la géolocalisation est en cours
+ */
 .geo-loading {
   animation: spin 1s linear infinite;
   pointer-events: none; /* Empêche de recliquer pendant le chargement */
 }
 
+/* Définition de la rotation */
 @keyframes spin {
   100% {
-    transform: translateY(-50%) rotate(360deg);
+    transform: translateY(-50%) rotate(360deg); /* Conserve le centrage vertical pendant la rotation */
   }
 }
 
-/* --- 3. LISTE DES SUGGESTIONS (AUTOCOMPLÉTION) --- */
+/* ==========================================================================
+   3. LISTE DES SUGGESTIONS (DROPDOWN)
+   ========================================================================== */
+/*
+ * Conteneur de la liste déroulante
+ * Apparaît sous le champ lors de la saisie
+ */
 .autocomplete-suggestions {
   position: absolute;
   top: 100%; /* Juste en dessous du champ */
@@ -55,28 +82,29 @@
 
   background: white;
   border: 1px solid #eee;
-  border-top: none;
+  border-top: none; /* Fusion visuelle avec le champ au-dessus */
   border-radius: 0 0 15px 15px; /* Arrondi en bas seulement */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Ombre portée */
 
-  z-index: 9999;
-  max-height: 280px;
-  overflow-y: auto;
+  z-index: 9999; /* Au-dessus de tout le reste du contenu */
+  max-height: 280px; /* Hauteur maximale avant scroll */
+  overflow-y: auto; /* Active le défilement vertical */
   margin-top: 5px; /* Petit espace sous le champ */
 }
 
-/* Cache la boîte si elle est vide */
+/* Masque complètement la boîte si elle ne contient aucun résultat */
 .autocomplete-suggestions:empty {
   display: none !important;
   border: none !important;
   padding: 0 !important;
 }
 
+/* Style d'une ligne de suggestion individuelle */
 .autocomplete-suggestion {
   padding: 12px 15px;
   cursor: pointer;
   font-size: 0.95rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0; /* Séparateur */
   color: #333;
   display: flex;
   align-items: center;
@@ -84,28 +112,35 @@
   background: white; /* Force le fond blanc */
 }
 
+/* Effet au survol d'une suggestion */
 .autocomplete-suggestion:hover {
-  background-color: #f3efff;
-  color: #8c52ff;
+  background-color: #f3efff; /* Fond violet très clair */
+  color: #8c52ff; /* Texte violet */
 }
 
+/* Suppression de la bordure pour le dernier élément */
 .autocomplete-suggestion:last-child {
   border-bottom: none;
 }
 
-/* --- 4. TYPES DE SUGGESTIONS (ICÔNES ET TEXTES) --- */
+/* ==========================================================================
+   4. TYPES DE SUGGESTIONS (STYLES VISUELS)
+   ========================================================================== */
+/* Style spécifique pour les lieux fréquents/favoris */
 .is-frequent {
-  background-color: #fffbf0;
+  background-color: #fffbf0; /* Fond jaune très pâle */
 }
 
 .is-frequent .sugg-icon {
-  color: #ffc107; /* Etoile Jaune */
+  color: #ffc107; /* Étoile Jaune */
 }
 
+/* Style pour les résultats standards de l'API */
 .is-api .sugg-icon {
   color: #6c757d; /* Pin Gris */
 }
 
+/* Conteneur de l'icône à gauche */
 .sugg-icon {
   width: 24px;
   height: 24px;
@@ -113,24 +148,27 @@
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Empêche l'icône de rétrécir */
 }
 
+/* Conteneur du texte (Principal + Secondaire) */
 .sugg-text {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
-  overflow: hidden;
+  overflow: hidden; /* Nécessaire pour l'ellipse */
   text-align: left; /* Force l'alignement à gauche */
 }
 
+/* Texte principal (Nom du lieu) */
 .sugg-main {
   font-weight: 600;
-  white-space: nowrap;
+  white-space: nowrap; /* Pas de retour à la ligne */
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis; /* Ajoute "..." si trop long */
 }
 
+/* Texte secondaire (Adresse, Ville) */
 .sugg-sub {
   font-size: 0.8rem;
   color: #888;

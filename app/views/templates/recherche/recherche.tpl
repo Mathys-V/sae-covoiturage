@@ -13,6 +13,12 @@
         </div>
 
         <div class="card-body p-5" style="background-color: #3b2875; border-radius: 0 0 20px 20px;">
+            {if isset($error_message)}
+                <div class="alert alert-danger alert-dismissible fade show rounded-4 mb-4" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i> {$error_message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {/if}
             <form action="/sae-covoiturage/public/recherche/resultats" method="GET" autocomplete="off">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">

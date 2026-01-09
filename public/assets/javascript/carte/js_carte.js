@@ -365,7 +365,8 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
             var badgeClass = "badge bg-success rounded-pill px-3";
             var badgeText = t.places_proposees + " pl.";
 
-            // URL et Texte par défaut
+            // --- LIENS DES BOUTONS ---
+            // Par défaut (Public) : On va vers la page de réservation
             var btnUrl = "/sae-covoiturage/public/trajet/reserver/" + t.id_trajet;
             var btnText = 'Réserver <i class="bi bi-chevron-right"></i>';
 
@@ -373,14 +374,13 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
                 btnText = 'Voir détails';
 
                 if (t.mon_role === "conducteur") {
-                    // SI CONDUCTEUR -> Modifier
-                    btnUrl = "/sae-covoiturage/public/trajet/modifier/" + t.id_trajet;
+                    // SI CONDUCTEUR -> On retourne vers la liste "Mes Trajets"
+                    btnUrl = "/sae-covoiturage/public/mes_trajets";
                     badgeClass = "badge bg-primary rounded-pill px-3";
                     badgeText = "Mon Annonce";
                 } else {
-                    // SI PASSAGER -> Messagerie (Pour éviter l'erreur "Déjà réservé")
-                    // MODIFICATION ICI : On redirige vers la conversation
-                    btnUrl = "/sae-covoiturage/public/messagerie/conversation/" + t.id_trajet;
+                    // SI PASSAGER -> On retourne vers la liste "Mes Réservations"
+                    btnUrl = "/sae-covoiturage/public/mes_reservations";
                     badgeClass = "badge bg-info text-dark rounded-pill px-3";
                     badgeText = "Ma Réservation";
                 }

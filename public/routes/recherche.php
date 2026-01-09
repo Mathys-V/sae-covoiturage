@@ -6,13 +6,13 @@ date_default_timezone_set('Europe/Paris');
 // ============================================================
 // PARTIE 1 : AFFICHAGE DU FORMULAIRE DE RECHERCHE
 // ============================================================
-Flight::route('GET /recherche', function(){
+Flight::route('GET /recherche', function () {
     $db = Flight::get('db');
     $req = Flight::request();
 
     // 1. Récupération de l'historique depuis les cookies
     $historique = [];
-    if(isset($_COOKIE['historique_recherche'])) {
+    if (isset($_COOKIE['historique_recherche'])) {
         $historique = json_decode($_COOKIE['historique_recherche'], true);
     }
 
@@ -23,11 +23,11 @@ Flight::route('GET /recherche', function(){
     // 3. Pré-remplissage du formulaire (si des paramètres sont passés dans l'URL)
     // Utile quand on vient d'une carte ou d'un lien rapide
     $preRempli = [
-        'depart'  => $req->query->depart ?? '',
+        'depart' => $req->query->depart ?? '',
         'arrivee' => $req->query->arrivee ?? '',
-        'date'    => !empty($req->query->date) ? $req->query->date : date('Y-m-d'),
-        'heure'   => isset($req->query->heure) && $req->query->heure !== '' ? $req->query->heure : date('H'),
-        'minute'  => isset($req->query->minute) && $req->query->minute !== '' ? $req->query->minute : date('i')
+        'date' => !empty($req->query->date) ? $req->query->date : date('Y-m-d'),
+        'heure' => isset($req->query->heure) && $req->query->heure !== '' ? $req->query->heure : date('H'),
+        'minute' => isset($req->query->minute) && $req->query->minute !== '' ? $req->query->minute : date('i')
     ];
 
     Flight::render('recherche/recherche.tpl', [
@@ -41,14 +41,14 @@ Flight::route('GET /recherche', function(){
 // ============================================================
 // PARTIE 2 : TRAITEMENT DE LA RECHERCHE (RÉSULTATS)
 // ============================================================
-Flight::route('GET /recherche/resultats', function(){
+Flight::route('GET /recherche/resultats', function () {
     $req = Flight::request()->query;
     $depart = $req->depart;
     $arrivee = $req->arrivee;
     $date = $req->date;
     $heure = (isset($req->heure) && $req->heure !== '') ? $req->heure : '00';
     $minute = (isset($req->minute) && $req->minute !== '') ? $req->minute : '00';
-    
+
     // --- GESTION INTELLIGENTE DE LA DATE ---
     $now = new DateTime();
     $dateDemandee = new DateTime($date . ' ' . $heure . ':' . $minute . ':00');
@@ -57,7 +57,7 @@ Flight::route('GET /recherche/resultats', function(){
     // Cela évite d'afficher une page vide si on a oublié de changer l'heure par défaut
     if ($dateDemandee < $now) {
         $dateComplete = $now->format('Y-m-d H:i:s');
-        
+
         // Mise à jour visuelle pour le formulaire
         $date = $now->format('Y-m-d');
         $heure = $now->format('H');
@@ -66,32 +66,35 @@ Flight::route('GET /recherche/resultats', function(){
         $dateComplete = $dateDemandee->format('Y-m-d H:i:s');
     }
     // ---------------------------------------
-    
+
     $userId = isset($_SESSION['user']) ? $_SESSION['user']['id_utilisateur'] : 0;
 
     // --- SAUVEGARDE DANS L'HISTORIQUE (COOKIES) ---
     // Uniquement si l'utilisateur a accepté les cookies de performance
-    $consent = ['performance' => 1]; 
-    if (isset($_COOKIE['cookie_consent'])) $consent = json_decode($_COOKIE['cookie_consent'], true);
-    
+    $consent = ['performance' => 1];
+    if (isset($_COOKIE['cookie_consent']))
+        $consent = json_decode($_COOKIE['cookie_consent'], true);
+
     if ($consent['performance'] == 1) {
         $nouvelleRecherche = ['depart' => $depart, 'arrivee' => $arrivee, 'date' => $date, 'timestamp' => time()];
         $historique = isset($_COOKIE['historique_recherche']) ? json_decode($_COOKIE['historique_recherche'], true) : [];
-        
+
         // On évite les doublons consécutifs
-        $historique = array_filter($historique, function($h) use ($nouvelleRecherche) {
+        $historique = array_filter($historique, function ($h) use ($nouvelleRecherche) {
             return !($h['depart'] == $nouvelleRecherche['depart'] && $h['arrivee'] == $nouvelleRecherche['arrivee']);
         });
-        
+
         $historique[] = $nouvelleRecherche;
         // On ne garde que les 3 dernières recherches
-        if(count($historique) > 3) $historique = array_slice($historique, -3);
-        
+        if (count($historique) > 3)
+            $historique = array_slice($historique, -3);
+
         setcookie('historique_recherche', json_encode($historique), time() + (86400 * 30), "/");
-    } 
+    }
 
     // --- FONCTIONS DE NETTOYAGE DES ENTRÉES ---
-    function nettoyerInputLight($str) {
+    function nettoyerInputLight($str)
+    {
         $str = mb_strtolower($str, 'UTF-8');
         $str = str_replace(['’', '‘'], "'", $str);
         $str = preg_replace('/\d{5}/', '', $str); // Enlève les CP s'ils sont dans le texte
@@ -99,15 +102,18 @@ Flight::route('GET /recherche/resultats', function(){
         return trim($str);
     }
     // Extraction du Code Postal s'il est présent
-    function extraireCP($str) { return preg_match('/(\d{5})/', $str, $matches) ? $matches[1] : null; }
+    function extraireCP($str)
+    {
+        return preg_match('/(\d{5})/', $str, $matches) ? $matches[1] : null;
+    }
 
     $cpDep = extraireCP($depart);
     $cpArr = extraireCP($arrivee);
-    $villeDepClean = nettoyerInputLight($depart); 
+    $villeDepClean = nettoyerInputLight($depart);
     $villeArrClean = nettoyerInputLight($arrivee);
 
     $db = Flight::get('db');
-    
+
     // Requête SQL de base (Commune à tous les scénarios)
     // Elle récupère les infos du trajet, du conducteur, du véhicule et calcule les places restantes
     $baseSelect = "
@@ -125,6 +131,39 @@ Flight::route('GET /recherche/resultats', function(){
     ";
 
     // Condition SQL pour la recherche de lieux (Flexible : Ville, Rue, Nom de Lieu ou CP)
+    // Gestion spéciale pour le cas où départ = arrivée (même lieu)
+    if ($villeDepClean === $villeArrClean && $cpDep === $cpArr) {
+        // Validation : Empêcher la recherche si départ = arrivée
+        $messageErreur = "Le lieu de départ et la destination ne peuvent pas être identiques. Veuillez choisir des lieux différents.";
+
+        // On renvoie vers la vue de recherche avec le message d'erreur
+        // On doit recharger les données nécessaires pour la vue (historique, lieux, etc.)
+
+        // Récupération de l'historique (code dupliqué de la route /recherche pour l'affichage)
+        $historique = [];
+        if (isset($_COOKIE['historique_recherche'])) {
+            $historique = json_decode($_COOKIE['historique_recherche'], true);
+        }
+        $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
+        $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        Flight::render('recherche/recherche.tpl', [
+            'titre' => 'Rechercher un trajet',
+            'historique' => array_reverse($historique),
+            'lieux_frequents' => $lieux,
+            'recherche_precedente' => [
+                'depart' => $depart,
+                'arrivee' => $arrivee,
+                'date' => $date,
+                'heure' => $heure,
+                'minute' => $minute
+            ],
+            'error_message' => $messageErreur // Variable transmise à la vue
+        ]);
+        return; // On arrête l'exécution ici
+    }
+
+    $isMemeLieu = false; // Désactivé car on bloque ce cas maintenant
     $whereLieuExact = "
         AND ( 
             (:cpDep IS NOT NULL AND t.code_postal_depart = :cpDep) 
@@ -148,19 +187,23 @@ Flight::route('GET /recherche/resultats', function(){
     $sqlExact = $baseSelect . " WHERE t.date_heure_depart >= :dateComplete AND t.statut_flag = 'A' AND t.id_conducteur != :userId " . $whereLieuExact . " ORDER BY t.date_heure_depart ASC";
 
     $stmt = $db->prepare($sqlExact);
+    // Cas normal : départ et arrivée différents
     $stmt->execute([
-        ':dateComplete' => $dateComplete, ':userId' => $userId,
-        ':cpDep' => $cpDep, ':depClean' => "%$villeDepClean%",
-        ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
+        ':dateComplete' => $dateComplete,
+        ':userId' => $userId,
+        ':cpDep' => $cpDep,
+        ':depClean' => "%$villeDepClean%",
+        ':cpArr' => $cpArr,
+        ':arrClean' => "%$villeArrClean%"
     ]);
-    
+
     $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $typeResultat = 'exact';
     $message = null;
 
     // SI AUCUN RÉSULTAT EXACT TROUVÉ :
     if (empty($trajets)) {
-        
+
         // SCÉNARIO 2 : Vérification si des trajets ont eu lieu DANS LE PASSÉ aujourd'hui
         // Cela permet de dire "Trop tard !" au lieu de "Rien trouvé".
         $sqlCheckPast = "SELECT 1 FROM TRAJETS t 
@@ -172,14 +215,17 @@ Flight::route('GET /recherche/resultats', function(){
             LIMIT 1";
 
         $stmtCheck = $db->prepare($sqlCheckPast);
+        // Cas normal : départ et arrivée différents
         $stmtCheck->execute([
-            ':dateStart' => $date . ' 00:00:00', 
-            ':dateEnd'   => $date . ' 23:59:59',
-            ':userId'    => $userId,
-            ':cpDep' => $cpDep, ':depClean' => "%$villeDepClean%",
-            ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
+            ':dateStart' => $date . ' 00:00:00',
+            ':dateEnd' => $date . ' 23:59:59',
+            ':userId' => $userId,
+            ':cpDep' => $cpDep,
+            ':depClean' => "%$villeDepClean%",
+            ':cpArr' => $cpArr,
+            ':arrClean' => "%$villeArrClean%"
         ]);
-        
+
         $trajetPasseExiste = $stmtCheck->fetchColumn();
 
         // Message contextuel
@@ -202,11 +248,13 @@ Flight::route('GET /recherche/resultats', function(){
             AND t.date_heure_depart >= :dateComplete
             AND t.statut_flag = 'A' AND t.id_conducteur != :userId
             ORDER BY t.date_heure_depart ASC LIMIT 10";
-        
+
         $stmtAlt = $db->prepare($sqlAlt);
         $stmtAlt->execute([
-            ':dateComplete' => $dateComplete, ':userId' => $userId,
-            ':cpArr' => $cpArr, ':arrClean' => "%$villeArrClean%"
+            ':dateComplete' => $dateComplete,
+            ':userId' => $userId,
+            ':cpArr' => $cpArr,
+            ':arrClean' => "%$villeArrClean%"
         ]);
         $trajets = $stmtAlt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -228,8 +276,8 @@ Flight::route('GET /recherche/resultats', function(){
         'titre' => 'Résultats',
         'trajets' => $trajets,
         'recherche' => [
-            'depart' => $depart, 
-            'arrivee' => $arrivee, 
+            'depart' => $depart,
+            'arrivee' => $arrivee,
             'date' => $date,
             'heure' => $heure,
             'minute' => $minute

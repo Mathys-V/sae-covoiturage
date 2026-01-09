@@ -37,6 +37,33 @@ form { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap
 }
 .btn-confirm:hover { background: #7a42ea; }
 
+.back-btn {
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    flex-grow: 1;      /* Prend toute la place disponible */
+    text-align: center;
+    padding-right: 40px; /* Compense la largeur du bouton pour un centrage parfait */
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Pour s'aligner avec le formulaire */
+    margin-bottom: 30px;
+}
+
 /* --- STYLE AUTOCOMPLÉTION (NOUVEAU) --- */
 /* C'est ce qui crée la liste blanche sous le champ */
 .suggestions-list {

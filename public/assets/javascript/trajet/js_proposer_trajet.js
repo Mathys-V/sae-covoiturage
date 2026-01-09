@@ -355,4 +355,45 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // --- 3. VERIFICATION DE L'HORAIRE (Empêcher heures passées) ---
+  const dateInput = document.getElementById('date_depart');
+  const timeInput = document.getElementById('heure_depart');
+
+  function verifierHoraire() {
+      if (!dateInput || !timeInput) return;
+
+      const now = new Date();
+      // Année, mois, jour format YYYY-MM-DD local
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
+      const currentHour = String(now.getHours()).padStart(2, '0');
+      const currentMinute = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${currentHour}:${currentMinute}`;
+
+      // Si la date choisie est AUJOURD'HUI
+      if (dateInput.value === todayStr) {
+          timeInput.min = currentTimeStr;
+          
+          // Si l'utilisateur a déjà mis une heure passée, on reset
+          if (timeInput.value && timeInput.value < currentTimeStr) {
+              timeInput.value = '';
+          }
+      } else {
+          // Sinon, pas de limite d'heure
+          timeInput.removeAttribute('min');
+      }
+  }
+
+  if (dateInput && timeInput) {
+      // Vérifier au changement de date
+      dateInput.addEventListener('change', verifierHoraire);
+      // Vérifier au changement d'heure
+      timeInput.addEventListener('change', verifierHoraire);
+      // Vérifier au chargement initial
+      verifierHoraire();
+  }
 });

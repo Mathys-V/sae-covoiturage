@@ -34,44 +34,50 @@ body {
 }
 
 /* ==========================================================================
-   SYSTÈME D'ONGLETS (TABS)
+   SYSTÈME D'ONGLETS (TABS) - REDESIGN "SWITCH"
    ========================================================================== */
+/* Conteneur global des onglets (Style "Track" / Piste sombre) */
 .tabs-container {
   display: flex;
   width: 100%;
   max-width: 800px;
-  margin: 20px auto 0;
+  margin: 30px auto; /* Espacement vertical */
+  background-color: rgba(0, 0, 0, 0.25); /* Fond sombre semi-transparent */
+  border-radius: 60px; /* Forme de pilule très arrondie */
+  padding: 8px; /* Espace interne entre le bord et les boutons */
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Légère ombre interne */
 }
 
-/* Style de base d'un onglet */
+/* Style commun des boutons d'onglets */
 .tab {
-  flex: 1; /* Largeur égale pour tous les onglets */
-  padding: 15px;
+  flex: 1; /* Largeur égale (50%/50%) */
+  padding: 12px 20px;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.5rem; /* Taille de texte ajustée */
   font-weight: bold;
   cursor: pointer;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  transition: all 0.2s;
+  border-radius: 50px; /* Boutons arrondis */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Animation fluide */
+  border: none; /* Suppression des anciennes bordures */
 }
 
-/* Onglet actif (sélectionné) */
+/* Onglet ACTIF : Bouton lumineux qui ressort */
 .tab-active {
-  background-color: #463077; /* Se fond avec le background du body */
+  background-color: #8c52ff; /* Violet vif de la charte */
   color: white;
-  position: relative;
-  z-index: 2; /* Passe au-dessus des autres éléments */
+  box-shadow: 0 4px 15px rgba(140, 82, 255, 0.4); /* Effet "Glow" */
+  transform: scale(1.02); /* Léger agrandissement */
 }
 
-/* Onglet inactif */
+/* Onglet INACTIF : Se fond dans le conteneur */
 .tab-inactive {
-  background-color: #9370db; /* Violet plus clair */
-  color: rgba(255, 255, 255, 0.7);
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.6); /* Texte gris/blanc */
 }
 
+/* Survol de l'onglet inactif */
 .tab-inactive:hover {
-  background-color: #8a2be2;
+  background-color: rgba(255, 255, 255, 0.1); /* Léger éclaircissement */
   color: white;
 }
 
@@ -391,7 +397,7 @@ body {
     text-align: center;
   }
   .tab {
-    font-size: 1.5rem;
+    font-size: 1.2rem; /* Réduction légère de la taille sur mobile */
   }
   /* Suppression de la bordure verticale sur mobile */
   .border-end-md {
@@ -456,9 +462,8 @@ body {
 }
 
 /* ==========================================================================
-   OVERLAY AVATAR (REDUNDANCE COMPATIBILITÉ)
+   OVERLAY AVATAR (COMPATIBILITÉ)
    ========================================================================== */
-/* Note : Ces classes semblent redondantes avec .photo-overlay mais sont conservées pour compatibilité */
 .avatar-overlay {
   position: absolute;
   top: 0;

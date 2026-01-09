@@ -1,282 +1,440 @@
 // --- 1. INITIALISATION ---
-var map = L.map('map').setView([49.89407, 2.29575], 12);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+var map = L.map("map").setView([49.89407, 2.29575], 12);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap",
+}).addTo(map);
 
-var frequentLayer = L.layerGroup().addTo(map); 
+var frequentLayer = L.layerGroup().addTo(map);
 var routeMarkersLayer = L.layerGroup().addTo(map);
 var currentRoutingControl = null;
 
-function createCustomMarker(color, icon = 'fa-location-dot') {
-    return L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div class='marker-pin ${color}'><i class='fa-solid ${icon}'></i></div><div class='marker-shadow'></div>`,
-        iconSize: [30, 42], iconAnchor: [15, 42], popupAnchor: [0, -35]
-    });
+function createCustomMarker(color, icon = "fa-location-dot") {
+  return L.divIcon({
+    className: "custom-div-icon",
+    html: `<div class='marker-pin ${color}'><i class='fa-solid ${icon}'></i></div><div class='marker-shadow'></div>`,
+    iconSize: [30, 42],
+    iconAnchor: [15, 42],
+    popupAnchor: [0, -35],
+  });
 }
-var goldIcon = createCustomMarker('marker-gold', 'fa-star');
-var greenIcon = createCustomMarker('marker-green', 'fa-car');
-var redIcon = createCustomMarker('marker-red', 'fa-flag-checkered');
+var goldIcon = createCustomMarker("marker-gold", "fa-star");
+var greenIcon = createCustomMarker("marker-green", "fa-car");
+var redIcon = createCustomMarker("marker-red", "fa-flag-checkered");
 
 // --- 2. AUTOCOMPLÉTION ---
 function setupMapAutocomplete(inputId, resultsId) {
-    const input = document.getElementById(inputId);
-    const results = document.getElementById(resultsId);
-    let timeout = null;
+  const input = document.getElementById(inputId);
+  const results = document.getElementById(resultsId);
+  let timeout = null;
 
-    input.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
-        results.innerHTML = ''; 
-        if (query.length < 2) return;
+  input.addEventListener("input", function () {
+    const query = this.value.toLowerCase().trim();
+    results.innerHTML = "";
+    if (query.length < 2) return;
 
-        const matchesLocal = lieuxFrequents.filter(lieu => 
-            lieu.nom_lieu.toLowerCase().includes(query) || 
-            lieu.ville.toLowerCase().includes(query)
-        );
+    const matchesLocal = lieuxFrequents.filter(
+      (lieu) =>
+        lieu.nom_lieu.toLowerCase().includes(query) ||
+        lieu.ville.toLowerCase().includes(query)
+    );
 
-        if (matchesLocal.length > 0) {
-            matchesLocal.forEach(lieu => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-suggestion is-frequent';
-                div.innerHTML = `<div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
+    if (matchesLocal.length > 0) {
+      matchesLocal.forEach((lieu) => {
+        const div = document.createElement("div");
+        div.className = "autocomplete-suggestion is-frequent";
+        div.innerHTML = `<div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
                                     <div class="sugg-text"><span class="sugg-main">${lieu.nom_lieu}</span><span class="sugg-sub">${lieu.ville}</span></div>`;
-                div.addEventListener('click', function() { input.value = lieu.nom_lieu; results.innerHTML = ''; });
-                results.appendChild(div);
-            });
-        }
+        div.addEventListener("click", function () {
+          input.value = lieu.nom_lieu;
+          results.innerHTML = "";
+        });
+        results.appendChild(div);
+      });
+    }
 
-        if (query.length > 3) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                fetch('https://api-adresse.data.gouv.fr/search/?q=' + query + '&limit=3')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.features && data.features.length > 0) {
-                            data.features.forEach(feature => {
-                                const div = document.createElement('div');
-                                div.className = 'autocomplete-suggestion is-api';
-                                div.innerHTML = `<div class="sugg-icon"><i class="bi bi-geo-alt-fill"></i></div>
-                                                    <div class="sugg-text"><span class="sugg-main">${feature.properties.name}</span><span class="sugg-sub">${feature.properties.city || ''}</span></div>`;
-                                div.addEventListener('click', function() { input.value = feature.properties.label; results.innerHTML = ''; });
-                                results.appendChild(div);
-                            });
-                        }
-                    });
-            }, 300);
-        }
-    });
-    document.addEventListener('click', function(e) { if (e.target !== input && e.target !== results) results.innerHTML = ''; });
+    if (query.length > 3) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        fetch(
+          "https://api-adresse.data.gouv.fr/search/?q=" + query + "&limit=3"
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.features && data.features.length > 0) {
+              data.features.forEach((feature) => {
+                const div = document.createElement("div");
+                div.className = "autocomplete-suggestion is-api";
+                div.innerHTML = `<div class="sugg-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                                                    <div class="sugg-text"><span class="sugg-main">${
+                                                      feature.properties.name
+                                                    }</span><span class="sugg-sub">${
+                  feature.properties.city || ""
+                }</span></div>`;
+                div.addEventListener("click", function () {
+                  input.value = feature.properties.label;
+                  results.innerHTML = "";
+                });
+                results.appendChild(div);
+              });
+            }
+          });
+      }, 300);
+    }
+  });
+  document.addEventListener("click", function (e) {
+    if (e.target !== input && e.target !== results) results.innerHTML = "";
+  });
 }
-setupMapAutocomplete('departInput', 'suggestions-depart');
-setupMapAutocomplete('arriveeInput', 'suggestions-arrivee');
+setupMapAutocomplete("departInput", "suggestions-depart");
+setupMapAutocomplete("arriveeInput", "suggestions-arrivee");
 
 // --- 3. AFFICHAGE LIEUX FREQUENTS ---
 function afficherLieuxFrequents() {
-    lieuxFrequents.forEach(function(lieu) {
-        if(lieu.latitude && lieu.longitude) {
-            L.marker([lieu.latitude, lieu.longitude], {icon: goldIcon})
-                .bindPopup('<b>' + lieu.nom_lieu + '</b><br><span class="text-muted">Lieu fréquent</span>')
-                .addTo(frequentLayer);
-        }
-    });
+  lieuxFrequents.forEach(function (lieu) {
+    if (lieu.latitude && lieu.longitude) {
+      L.marker([lieu.latitude, lieu.longitude], { icon: goldIcon })
+        .bindPopup(
+          "<b>" +
+            lieu.nom_lieu +
+            '</b><br><span class="text-muted">Lieu fréquent</span>'
+        )
+        .addTo(frequentLayer);
+    }
+  });
 }
 afficherLieuxFrequents();
 
 // --- 4. GÉOCODAGE HYBRIDE ---
 async function geocodeVille(nomVille) {
-    const lieuConnu = lieuxFrequents.find(l => {
-        let dbName = l.nom_lieu.toLowerCase().trim();
-        let dbStreet = (l.rue || '').toLowerCase().trim();
-        let searchName = nomVille.toLowerCase().trim();
-        return dbName.includes(searchName) || searchName.includes(dbName) || (dbStreet && searchName.includes(dbStreet));
-    });
-    
-    if (lieuConnu && lieuConnu.latitude && lieuConnu.longitude) {
-        return L.latLng(lieuConnu.latitude, lieuConnu.longitude);
-    }
+  const lieuConnu = lieuxFrequents.find((l) => {
+    let dbName = l.nom_lieu.toLowerCase().trim();
+    let dbStreet = (l.rue || "").toLowerCase().trim();
+    let searchName = nomVille.toLowerCase().trim();
+    return (
+      dbName.includes(searchName) ||
+      searchName.includes(dbName) ||
+      (dbStreet && searchName.includes(dbStreet))
+    );
+  });
 
-    let cleanQuery = nomVille.split('(')[0].trim();
-    try {
-        const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cleanQuery)}&limit=1`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.features && data.features.length > 0) {
-            const coords = data.features[0].geometry.coordinates; 
-            return L.latLng(coords[1], coords[0]);
-        }
-        return null;
-    } catch (error) { return null; }
+  if (lieuConnu && lieuConnu.latitude && lieuConnu.longitude) {
+    return L.latLng(lieuConnu.latitude, lieuConnu.longitude);
+  }
+
+  let cleanQuery = nomVille.split("(")[0].trim();
+  try {
+    const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
+      cleanQuery
+    )}&limit=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.features && data.features.length > 0) {
+      const coords = data.features[0].geometry.coordinates;
+      return L.latLng(coords[1], coords[0]);
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
 }
 
 // --- 5. RECHERCHE INTELLIGENTE ---
 function rechercherTrajet() {
-    var departTxt = document.getElementById('departInput').value.toLowerCase().trim();
-    var arriveeTxt = document.getElementById('arriveeInput').value.toLowerCase().trim();
-    var statusDiv = document.getElementById('searchStatus');
+  var departTxt = document
+    .getElementById("departInput")
+    .value.toLowerCase()
+    .trim();
+  var arriveeTxt = document
+    .getElementById("arriveeInput")
+    .value.toLowerCase()
+    .trim();
+  var statusDiv = document.getElementById("searchStatus");
 
-    if(departTxt === "" && arriveeTxt === "") {
-        statusDiv.innerHTML = "Saisissez un lieu.";
-        return;
+  if (departTxt === "" && arriveeTxt === "") {
+    statusDiv.innerHTML = "Saisissez un lieu.";
+    return;
+  }
+
+  statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
+
+  var resultats = tousLesTrajets.filter(function (trajet) {
+    var dbDepart = trajet.ville_depart.toLowerCase();
+    var dbArrivee = trajet.ville_arrivee.toLowerCase();
+
+    var matchDepart = true;
+    var matchArrivee = true;
+
+    if (departTxt !== "") {
+      matchDepart =
+        dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
     }
+    if (arriveeTxt !== "") {
+      matchArrivee =
+        dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
+    }
+    return matchDepart && matchArrivee;
+  });
 
-    statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
-    
-    var resultats = tousLesTrajets.filter(function(trajet) {
-        var dbDepart = trajet.ville_depart.toLowerCase();
-        var dbArrivee = trajet.ville_arrivee.toLowerCase();
-        
-        var matchDepart = true; 
-        var matchArrivee = true;
+  var modeAlternatif = false;
 
-        if (departTxt !== "") {
-            matchDepart = dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
-        }
-        if (arriveeTxt !== "") {
-            matchArrivee = dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
-        }
-        return matchDepart && matchArrivee;
+  if (resultats.length === 0 && arriveeTxt !== "") {
+    modeAlternatif = true;
+    resultats = tousLesTrajets.filter((t) => {
+      var dbArrivee = t.ville_arrivee.toLowerCase();
+      return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
     });
+  }
 
-    var modeAlternatif = false;
-    
-    if (resultats.length === 0 && arriveeTxt !== "") {
-        modeAlternatif = true;
-        resultats = tousLesTrajets.filter(t => {
-            var dbArrivee = t.ville_arrivee.toLowerCase();
-            return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
-        });
-    }
+  if (resultats.length === 0 && departTxt !== "") {
+    modeAlternatif = true;
+    resultats = tousLesTrajets.filter((t) => {
+      var dbDepart = t.ville_depart.toLowerCase();
+      return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
+    });
+  }
 
-    if (resultats.length === 0 && departTxt !== "") {
-        modeAlternatif = true;
-        resultats = tousLesTrajets.filter(t => {
-            var dbDepart = t.ville_depart.toLowerCase();
-            return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
-        });
-    }
+  if (resultats.length === 0) {
+    modeAlternatif = true;
+    resultats = tousLesTrajets.slice(0, 10);
+  }
 
-    if (resultats.length === 0) {
-        modeAlternatif = true;
-        resultats = tousLesTrajets.slice(0, 10);
-    }
+  if (currentRoutingControl) {
+    map.removeControl(currentRoutingControl);
+    currentRoutingControl = null;
+  }
+  routeMarkersLayer.clearLayers();
 
-    if (currentRoutingControl) {
-        map.removeControl(currentRoutingControl);
-        currentRoutingControl = null;
-    }
-    routeMarkersLayer.clearLayers();
-    
-    if (resultats.length > 0) {
-        if (modeAlternatif) {
-            statusDiv.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</span>';
-        } else {
-            statusDiv.innerHTML = '<span class="text-success fw-bold">' + resultats.length + ' trajet(s) trouvé(s).</span>';
-        }
-        afficherResultatsSidebar(resultats, modeAlternatif);
+  if (resultats.length > 0) {
+    if (modeAlternatif) {
+      statusDiv.innerHTML =
+        '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</span>';
     } else {
-        statusDiv.innerHTML = '<span class="text-danger">Aucun trajet trouvé.</span>';
-        document.getElementById('infoSidebar').classList.remove('active');
+      statusDiv.innerHTML =
+        '<span class="text-success fw-bold">' +
+        resultats.length +
+        " trajet(s) trouvé(s).</span>";
     }
+    afficherResultatsSidebar(resultats, modeAlternatif);
+  } else {
+    statusDiv.innerHTML =
+      '<span class="text-danger">Aucun trajet trouvé.</span>';
+    document.getElementById("infoSidebar").classList.remove("active");
+  }
 }
 
 // --- 6. ITINÉRAIRE ---
 async function afficherItineraire(idTrajet) {
-    var trajet = tousLesTrajets.find(t => t.id_trajet == idTrajet);
-    if(!trajet) return;
+  var trajet = tousLesTrajets.find((t) => t.id_trajet == idTrajet);
+  if (!trajet) return;
 
-    var statusDiv = document.getElementById('searchStatus');
-    statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calcul itinéraire...';
+  var statusDiv = document.getElementById("searchStatus");
+  statusDiv.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Calcul itinéraire...';
 
-    try {
-        if (currentRoutingControl) map.removeControl(currentRoutingControl);
-        routeMarkersLayer.clearLayers();
+  try {
+    if (currentRoutingControl) map.removeControl(currentRoutingControl);
+    routeMarkersLayer.clearLayers();
 
-        const [departLatLng, arriveeLatLng] = await Promise.all([
-            geocodeVille(trajet.ville_depart),
-            geocodeVille(trajet.ville_arrivee)
-        ]);
+    const [departLatLng, arriveeLatLng] = await Promise.all([
+      geocodeVille(trajet.ville_depart),
+      geocodeVille(trajet.ville_arrivee),
+    ]);
 
-        if (!departLatLng || !arriveeLatLng) {
-            statusDiv.innerHTML = '<span class="text-danger">Localisation impossible.</span>';
-            return;
-        }
-
-        L.marker(departLatLng, {icon: greenIcon}).addTo(routeMarkersLayer).bindPopup("<b>Départ</b><br>" + trajet.ville_depart);
-        L.marker(arriveeLatLng, {icon: redIcon}).addTo(routeMarkersLayer).bindPopup("<b>Arrivée</b><br>" + trajet.ville_arrivee);
-
-        currentRoutingControl = L.Routing.control({
-            waypoints: [departLatLng, arriveeLatLng],
-            routeWhileDragging: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true, 
-            show: false, 
-            lineOptions: { styles: [{color: '#007bff', opacity: 0.7, weight: 5}] },
-            createMarker: function() { return null; } 
-        }).addTo(map);
-
-        statusDiv.innerHTML = '<span class="text-success">Itinéraire affiché !</span>';
-        highlightSelectedCard(idTrajet);
-
-    } catch (error) { statusDiv.innerHTML = '<span class="text-warning">Erreur calcul.</span>'; }
-}
-
-function afficherResultatsSidebar(resultats, isAlternative) {
-    var container = document.getElementById('listeTrajetsContainer');
-    var html = '';
-
-    if(isAlternative) {
-        html += '<div class="alert alert-warning small mb-3">Nous n\'avons pas trouvé de trajet exact. Voici d\'autres propositions :</div>';
+    if (!departLatLng || !arriveeLatLng) {
+      statusDiv.innerHTML =
+        '<span class="text-danger">Localisation impossible.</span>';
+      return;
     }
 
-    resultats.forEach(function(t) {
-        var dateObj = new Date(t.date_heure_depart.replace(' ', 'T'));
-        var heure = ('0'+dateObj.getHours()).slice(-2) + ':' + ('0'+dateObj.getMinutes()).slice(-2);
-        var date = ('0'+dateObj.getDate()).slice(-2) + '/' + ('0'+(dateObj.getMonth()+1)).slice(-2);
-        
-        var cardClass = isAlternative ? 'trip-card alternative' : 'trip-card';
-        var badgeClass = isAlternative ? 'badge badge-alternative rounded-pill px-3' : 'badge bg-success rounded-pill px-3';
+    L.marker(departLatLng, { icon: greenIcon })
+      .addTo(routeMarkersLayer)
+      .bindPopup("<b>Départ</b><br>" + trajet.ville_depart);
+    L.marker(arriveeLatLng, { icon: redIcon })
+      .addTo(routeMarkersLayer)
+      .bindPopup("<b>Arrivée</b><br>" + trajet.ville_arrivee);
 
-        html += `
-        <div class="${cardClass}" id="card-${t.id_trajet}" onclick="afficherItineraire(${t.id_trajet})">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="trip-time">${heure}</span>
-                    <span class="text-muted small ms-1">(${date})</span>
+    currentRoutingControl = L.Routing.control({
+      waypoints: [departLatLng, arriveeLatLng],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: true,
+      show: false,
+      lineOptions: { styles: [{ color: "#007bff", opacity: 0.7, weight: 5 }] },
+      createMarker: function () {
+        return null;
+      },
+    }).addTo(map);
+
+    statusDiv.innerHTML =
+      '<span class="text-success">Itinéraire affiché !</span>';
+    highlightSelectedCard(idTrajet);
+  } catch (error) {
+    statusDiv.innerHTML = '<span class="text-warning">Erreur calcul.</span>';
+  }
+}
+
+// --- FONCTION MODIFIÉE : AFFICHER LA SIDEBAR ---
+function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
+  var container = document.getElementById("listeTrajetsContainer");
+  var html = "";
+
+  if (isAlternative) {
+    html +=
+      '<div class="alert alert-warning small mb-3"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</div>';
+  }
+
+  resultats.forEach(function (t) {
+    var dateObj = new Date(t.date_heure_depart.replace(" ", "T"));
+    var heure =
+      ("0" + dateObj.getHours()).slice(-2) +
+      ":" +
+      ("0" + dateObj.getMinutes()).slice(-2);
+    var date =
+      ("0" + dateObj.getDate()).slice(-2) +
+      "/" +
+      ("0" + (dateObj.getMonth() + 1)).slice(-2);
+
+    var cardClass = isAlternative ? "trip-card alternative" : "trip-card";
+    var badgeClass = "badge bg-success rounded-pill px-3";
+    var badgeText = t.places_proposees + " pl.";
+
+    // Logique d'affichage des badges selon le rôle
+    if (isPerso) {
+      if (t.mon_role === "conducteur") {
+        badgeClass = "badge bg-primary rounded-pill px-3";
+        badgeText = "Conducteur";
+      } else if (t.mon_role === "passager") {
+        badgeClass = "badge bg-info text-dark rounded-pill px-3";
+        badgeText = "Passager";
+      }
+    } else if (isAlternative) {
+      badgeClass = "badge badge-alternative rounded-pill px-3";
+    }
+
+    html += `
+        <div class="${cardClass}" id="card-${t.id_trajet}">
+            <div style="cursor:pointer;" onclick="afficherItineraire(${
+              t.id_trajet
+            })">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="trip-time">${heure}</span>
+                        <span class="text-muted small ms-1">(${date})</span>
+                    </div>
+                    <span class="${badgeClass}">${badgeText}</span>
                 </div>
-                <span class="${badgeClass}">${t.places_proposees} pl.</span>
+                <div class="mt-2">
+                    <strong>${t.ville_depart.split(",")[0]}</strong> 
+                    <i class="bi bi-arrow-right text-muted mx-1"></i> 
+                    <strong>${t.ville_arrivee.split(",")[0]}</strong>
+                </div>
+                
+                <div class="trip-meta">
+                    <span><i class="bi bi-car-front-fill me-1"></i> Voiture</span>
+                    ${
+                      !isPerso || t.mon_role !== "conducteur"
+                        ? '<span><i class="bi bi-person-fill me-1"></i> Conducteur</span>'
+                        : ""
+                    }
+                </div>
             </div>
-            <div class="mt-2">
-                <strong>${t.ville_depart.split(',')[0]}</strong> 
-                <i class="bi bi-arrow-right text-muted mx-1"></i> 
-                <strong>${t.ville_arrivee.split(',')[0]}</strong>
-            </div>
-            <div class="trip-meta">
-                <span><i class="bi bi-car-front-fill me-1"></i> Voiture</span>
-                <span><i class="bi bi-person-fill me-1"></i> Conducteur</span>
+            
+            <div class="mt-3 pt-2 border-top d-flex justify-content-end">
+                <a href="/sae-covoiturage/public/trajet/reserver/${
+                  t.id_trajet
+                }" class="btn btn-sm btn-purple rounded-pill text-white fw-bold px-3">
+                    ${
+                      isPerso
+                        ? "Voir détails"
+                        : 'Réserver <i class="bi bi-chevron-right"></i>'
+                    }
+                </a>
             </div>
         </div>`;
-    });
+  });
 
-    container.innerHTML = html;
-    document.getElementById('sidebarTitle').innerText = isAlternative ? "Suggestions" : "Résultats";
-    document.getElementById('sidebarSubtitle').innerText = resultats.length + " trajet(s)";
-    document.getElementById('infoSidebar').classList.add('active');
+  container.innerHTML = html;
+
+  // Titre dynamique selon le contexte
+  var titre = "Résultats";
+  if (isPerso) titre = "Mes Trajets";
+  else if (isAlternative) titre = "Suggestions";
+
+  document.getElementById("sidebarTitle").innerText = titre;
+  document.getElementById("sidebarSubtitle").innerText =
+    resultats.length + " trajet(s)";
+  document.getElementById("infoSidebar").classList.add("active");
+}
+
+// ... (Garde highlightSelectedCard, closeSidebar, handleEnter comme avant) ...
+
+// --- NOUVELLES FONCTIONS POUR LES BOUTONS ---
+
+function afficherMesAnnonces() {
+  var statusDiv = document.getElementById("searchStatus");
+  if (mesAnnonces.length === 0) {
+    statusDiv.innerHTML =
+      '<span class="text-muted">Aucune annonce publiée.</span>';
+    return;
+  }
+  statusDiv.innerHTML =
+    '<span class="text-primary fw-bold">Vos ' +
+    mesAnnonces.length +
+    " annonces.</span>";
+  afficherResultatsSidebar(mesAnnonces, false, true);
+}
+
+function afficherMesReservations() {
+  var statusDiv = document.getElementById("searchStatus");
+  if (mesReservations.length === 0) {
+    statusDiv.innerHTML = '<span class="text-muted">Aucune réservation.</span>';
+    return;
+  }
+  statusDiv.innerHTML =
+    '<span class="text-info fw-bold">Vos ' +
+    mesReservations.length +
+    " réservations.</span>";
+  afficherResultatsSidebar(mesReservations, false, true);
 }
 
 function highlightSelectedCard(id) {
-    document.querySelectorAll('.trip-card').forEach(c => c.classList.remove('selected'));
-    const card = document.getElementById('card-' + id);
-    if (card) card.classList.add('selected');
+  document
+    .querySelectorAll(".trip-card")
+    .forEach((c) => c.classList.remove("selected"));
+  const card = document.getElementById("card-" + id);
+  if (card) card.classList.add("selected");
 }
 
 function closeSidebar() {
-    document.getElementById('infoSidebar').classList.remove('active');
-    if (currentRoutingControl) {
-        map.removeControl(currentRoutingControl);
-        currentRoutingControl = null;
-    }
-    routeMarkersLayer.clearLayers();
+  document.getElementById("infoSidebar").classList.remove("active");
+  if (currentRoutingControl) {
+    map.removeControl(currentRoutingControl);
+    currentRoutingControl = null;
+  }
+  routeMarkersLayer.clearLayers();
 }
 
-function handleEnter(e) { if(e.key === 'Enter') rechercherTrajet(); }
+function handleEnter(e) {
+  if (e.key === "Enter") rechercherTrajet();
+}
+
+// --- 7. AFFICHER MES TRAJETS ---
+function afficherMesTrajets() {
+  var statusDiv = document.getElementById("searchStatus");
+
+  if (mesTrajets.length === 0) {
+    statusDiv.innerHTML = '<span class="text-muted">Aucun trajet prévu.</span>';
+    return;
+  }
+
+  statusDiv.innerHTML =
+    '<span class="text-primary fw-bold">Affichage de vos ' +
+    mesTrajets.length +
+    " trajets.</span>";
+
+  // On réutilise la sidebar pour afficher la liste
+  afficherResultatsSidebar(mesTrajets, false, true); // Le 3ème argument 'isPerso' est nouveau
+}

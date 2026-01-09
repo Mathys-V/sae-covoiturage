@@ -5,22 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carte - MonCovoitJV</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/carte/style_carte.css">
 
     <style>
-        .autocomplete-suggestions:empty {
-            display: none !important;
-            border: none !important;
-            padding: 0 !important;
-        }
+        .autocomplete-suggestions:empty { display: none !important; border: none !important; padding: 0 !important; }
     </style>
-
 </head>
 <body>
 
@@ -46,6 +40,17 @@
             <button class="btn-search-map" onclick="rechercherTrajet()">
                 Rechercher
             </button>
+            
+            {if isset($user)}
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-outline-primary flex-grow-1" onclick="afficherMesAnnonces()">
+                    <i class="bi bi-car-front-fill"></i> Mes annonces
+                </button>
+                <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="afficherMesReservations()">
+                    <i class="bi bi-ticket-perforated-fill"></i> Mes réservations
+                </button>
+            </div>
+            {/if}
 
             <div id="searchStatus" class="mt-3 text-center small text-muted"></div>
         </div>
@@ -71,18 +76,42 @@
 
     {include file='includes/footer.tpl'}
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
-    <script>
-        var lieuxFrequents = [];
-        var tousLesTrajets = [];
-        try {
-            lieuxFrequents = JSON.parse('{$lieux_frequents|json_encode|escape:"javascript"}');
-            tousLesTrajets = JSON.parse('{$trajets|json_encode|escape:"javascript"}');
-        } catch(e) { console.warn("Erreur data", e); }
-    </script>
-    
-    <script src="/sae-covoiturage/public/assets/javascript/carte/js_carte.js"></script>
+<script>
+    // Initialisation des variables globales
+    var lieuxFrequents = [];
+    var tousLesTrajets = [];
+    var mesAnnonces = [];
+    var mesReservations = [];
+
+    // On utilise json_encode directement sans les guillemets JS autour
+    // Smarty va écrire directement le tableau JS valide 
+    try {
+        lieuxFrequents = {$lieux_frequents|json_encode|default:'[]'};
+        tousLesTrajets = {$trajets|json_encode|default:'[]'};
+        
+        {if isset($mes_annonces)}
+            mesAnnonces = {$mes_annonces|json_encode|default:'[]'};
+        {/if}
+        
+        {if isset($mes_reservations)}
+            mesReservations = {$mes_reservations|json_encode|default:'[]'};
+        {/if}
+
+        console.log("Données chargées :", {
+            lieux: lieuxFrequents.length,
+            publics: tousLesTrajets.length,
+            annonces: mesAnnonces.length,
+            reservations: mesReservations.length
+        });
+
+    } catch(e) { 
+        console.error("Erreur critique chargement données :", e); 
+    }
+</script>
+
+<script src="/sae-covoiturage/public/assets/javascript/carte/js_carte.js"></script>
 </body>
 </html>

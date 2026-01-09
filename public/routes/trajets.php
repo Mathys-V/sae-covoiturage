@@ -1,48 +1,143 @@
 <?php
 
-// AFFICHER LE FORMULAIRE DE CRÉATION
-Flight::route('GET /trajet/nouveau', function(){
-    if(!isset($_SESSION['user'])) {
-        $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet.";
-        Flight::redirect('/connexion');
-        return;
-    }
+// AFFICHER LE FORMULAIRE DE CRÉATION (GET)
+Flight::route('GET /trajet/nouveau', function() {
+    if (!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
     $db = Flight::get('db');
-    $userId = $_SESSION['user']['id_utilisateur'];
-    
-    // Vérif voiture
-    $stmt = $db->prepare("SELECT COUNT(*) FROM POSSESSIONS WHERE id_utilisateur = :id");
-    $stmt->execute([':id' => $userId]);
-    if ($stmt->fetchColumn() == 0) {
-        $_SESSION['flash_error'] = "Erreur : Vous devez ajouter un véhicule à votre profil !";
-        Flight::redirect('/'); 
-        return;
-    }
-
-    // --- CORRECTION ICI : Récupération et FORMATAGE des lieux globaux ---
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS ORDER BY nom_lieu ASC");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
-    // On prépare une chaîne 'full_address' pour que le JavaScript puisse faire la recherche dessus
     foreach ($lieux as &$lieu) {
-        // On crée un champ 'label' (le nom du lieu)
         $lieu['label'] = $lieu['nom_lieu']; 
-        
-        // On crée l'adresse complète pour la recherche et l'affichage
-        // Ex: "Gare du Nord Rue de Maubeuge 75010 Paris"
         $lieu['full_address'] = $lieu['nom_lieu'] . ' ' . 
                                 ($lieu['rue'] ? $lieu['rue'] . ' ' : '') . 
                                 $lieu['code_postal'] . ' ' . 
                                 $lieu['ville'];
     }
-    // -------------------------------------------------------------------
 
     Flight::render('trajet/proposer_trajet.tpl', [
         'titre' => 'Proposer un trajet',
         'lieux_frequents' => $lieux
     ]);
 });
+
+// TRAITEMENT CRÉATION (POST)
+Flight::route('POST /trajet/nouveau', function(){
+    if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
+
+    $data = Flight::request()->data;
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // Récupérer le véhicule
+    $stmtVehicule = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = :id LIMIT 1");
+    $stmtVehicule->execute([':id' => $userId]);
+    $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
+
+    if(!$vehicule) {
+        Flight::render('trajet/proposer_trajet.tpl', ['error' => 'Erreur : Aucun véhicule associé.']);
+        return;
+    }
+
+    // --- VERIFICATION DEPART ≠ ARRIVEE ---
+    $ville_dep = trim($data->ville_depart);
+    $cp_dep = trim($data->cp_depart);
+    $rue_dep = trim($data->rue_depart);
+
+    $ville_arr = trim($data->ville_arrivee);
+    $cp_arr = trim($data->cp_arrivee);
+    $rue_arr = trim($data->rue_arrivee);
+
+    if (
+        strtolower($ville_dep) === strtolower($ville_arr) &&
+        $cp_dep === $cp_arr &&
+        strtolower($rue_dep) === strtolower($rue_arr)
+    ) {
+        Flight::render('trajet/proposer_trajet.tpl', [
+            'error' => "Le lieu de départ et d'arrivée ne peuvent pas être identiques.",
+            'lieux_frequents' => Flight::get('lieux_frequents') ?? []
+        ]);
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        $dateDebut = new DateTime($data->date . ' ' . $data->heure);
+        
+        if ($data->regulier === 'Y' && !empty($data->date_fin)) {
+            $dateFin = new DateTime($data->date_fin . ' 23:59:59');
+        } else {
+            $dateFin = clone $dateDebut;
+        }
+
+        $compteur = 0;
+        while ($dateDebut <= $dateFin) {
+            // 1. CRÉATION DU TRAJET
+            $sql = "INSERT INTO TRAJETS (
+                        id_conducteur, id_vehicule, 
+                        ville_depart, code_postal_depart, rue_depart,
+                        ville_arrivee, code_postal_arrivee, rue_arrivee,
+                        date_heure_depart, duree_estimee, 
+                        places_proposees, commentaires, statut_flag
+                    ) VALUES (
+                        :conducteur, :vehicule, 
+                        :ville_dep, :cp_dep, :rue_dep, 
+                        :ville_arr, :cp_arr, :rue_arr, 
+                        :dateheure, :duree,
+                        :places, :desc, 'A'
+                    )";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                ':conducteur' => $userId,
+                ':vehicule'   => $vehicule['id_vehicule'],
+                ':ville_dep'  => $ville_dep,
+                ':cp_dep'     => $cp_dep,
+                ':rue_dep'    => $rue_dep,
+                ':ville_arr'  => $ville_arr,
+                ':cp_arr'     => $cp_arr,
+                ':rue_arr'    => $rue_arr,
+                ':dateheure'  => $dateDebut->format('Y-m-d H:i:s'),
+                ':duree'      => $data->duree_calc,
+                ':places'     => (int)$data->places,
+                ':desc'       => $data->description
+            ]);
+
+            $id_trajet_cree = $db->lastInsertId();
+
+            // 2. MESSAGE SYSTÈME
+            $msgContent = "::sys_create:: Trajet publié.";
+            $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
+            $stmtMsg->execute([
+                ':id_t'    => $id_trajet_cree,
+                ':id_u'    => $userId,
+                ':contenu' => $msgContent
+            ]);
+
+            $compteur++;
+            if ($data->regulier === 'Y') $dateDebut->modify('+1 week');
+            else break;
+        }
+
+        $db->commit();
+
+        $_SESSION['flash_success'] = $compteur > 1
+            ? "$compteur trajets créés jusqu'au " . $dateFin->format('d/m/Y') . " !"
+            : "Trajet publié avec succès !";
+
+        Flight::redirect('/');
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        Flight::render('trajet/proposer_trajet.tpl', [
+            'error' => "Erreur : " . $e->getMessage(),
+            'titre' => 'Proposer un trajet'
+        ]);
+    }
+});
+
 
 // TRAITEMENT CRÉATION (POST)
 Flight::route('POST /trajet/nouveau', function(){
@@ -312,7 +407,6 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // ... (Tout le bloc de vérification reste identique) ...
     $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
     $stmtVerif->execute([':id' => $id]);
     $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
@@ -320,6 +414,25 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     if (!$trajet || $trajet['id_conducteur'] != $userId) {
         $_SESSION['flash_error'] = "Action non autorisée.";
         Flight::redirect('/mes_trajets');
+        return;
+    }
+
+    // --- VERIFICATION DEPART ≠ ARRIVEE ---
+    $ville_dep = trim($data->ville_depart);
+    $cp_dep = trim($data->cp_depart);
+    $rue_dep = trim($data->rue_depart);
+
+    $ville_arr = trim($data->ville_arrivee);
+    $cp_arr = trim($data->cp_arrivee);
+    $rue_arr = trim($data->rue_arrivee);
+
+    if (
+        strtolower($ville_dep) === strtolower($ville_arr) &&
+        $cp_dep === $cp_arr &&
+        strtolower($rue_dep) === strtolower($rue_arr)
+    ) {
+        $_SESSION['flash_error'] = "Le lieu de départ et d'arrivée ne peuvent pas être identiques.";
+        Flight::redirect("/trajet/modifier/$id");
         return;
     }
 
@@ -336,12 +449,12 @@ Flight::route('POST /trajet/modifier/@id', function($id){
 
         $stmt = $db->prepare($sql);
         $stmt->execute([
-            ':ville_dep' => $data->ville_depart,
-            ':cp_dep'    => $data->cp_depart,
-            ':rue_dep'   => $data->rue_depart,
-            ':ville_arr' => $data->ville_arrivee,
-            ':cp_arr'    => $data->cp_arrivee,
-            ':rue_arr'   => $data->rue_arrivee,
+            ':ville_dep' => $ville_dep,
+            ':cp_dep'    => $cp_dep,
+            ':rue_dep'   => $rue_dep,
+            ':ville_arr' => $ville_arr,
+            ':cp_arr'    => $cp_arr,
+            ':rue_arr'   => $rue_arr,
             ':dateheure' => $dateHeure,
             ':places'    => (int)$data->places,
             ':desc'      => $data->description,
@@ -349,14 +462,12 @@ Flight::route('POST /trajet/modifier/@id', function($id){
         ]);
 
         $msgContent = "::sys_update:: Le conducteur a modifié les détails du trajet.";
-        
         $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
         $stmtMsg->execute([
             ':id_t'    => $id,
             ':id_u'    => $userId,
             ':contenu' => $msgContent
         ]);
-        // ---------------------------------------------
 
         $_SESSION['flash_success'] = "Trajet modifié avec succès !";
         Flight::redirect('/mes_trajets');

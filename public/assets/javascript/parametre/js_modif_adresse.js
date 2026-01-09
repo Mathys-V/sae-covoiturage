@@ -1,130 +1,270 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- VARIABLES GLOBALES ---
-    const rueInput = document.getElementById('rue');
-    const suggestionsList = document.getElementById('suggestions');
-    const villeInput = document.getElementById('ville');
-    const cpInput = document.getElementById('cp');
-    const form = document.getElementById('addressForm');
-    const confirmModal = document.getElementById('confirmModal');
-    
-    // NOUVEAU : On part du principe que si le champ est déjà rempli (par la BDD), c'est valide.
-    // Mais dès qu'on y touche, ça deviendra faux.
-    let isAddressSelected = (rueInput.value.trim() !== "");
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ CHARGEMENT: js_modif_adresse.js");
 
-    // --- 1. SYSTÈME D'AUTOCOMPLÉTION ---
+    // --- VARIABLES ---
+    const rueInput = document.getElementById("rue");
+    const suggestionsContainer = document.querySelector(
+        ".autocomplete-suggestions"
+    ); // La DIV
+    const villeInput = document.getElementById("ville");
+    const cpInput = document.getElementById("cp");
+    const form = document.getElementById("addressForm");
+    const confirmModal = document.getElementById("confirmModal");
 
-    // A. Quand l'utilisateur tape -> On invalide l'adresse
-    rueInput.addEventListener('input', function() {
-        // Sécurité : L'utilisateur modifie le texte, donc ce n'est plus une adresse certifiée API pour l'instant
-        isAddressSelected = false;
-        
-        const query = this.value;
+    let timeout = null;
 
-        if (query.length < 3) {
-            suggestionsList.style.display = 'none';
+    if (!rueInput || !suggestionsContainer) {
+        console.error("❌ ERREUR: Champs introuvables");
+        return;
+    }
+
+    // --- 1. AUTOCOMPLÉTION ---
+    rueInput.addEventListener("input", function () {
+        const query = this.value.trim();
+
+        // Si vide, on cache la liste
+        if (query.length === 0) {
+            suggestionsContainer.style.display = "none";
             return;
         }
 
-        // Appel API
-        fetch('https://api-adresse.data.gouv.fr/search/?q=' + query + '&limit=5')
-            .then(response => response.json())
-            .then(data => {
-                suggestionsList.innerHTML = ''; 
-                
-                if (data.features.length > 0) {
-                    suggestionsList.style.display = 'block';
-                    
-                    data.features.forEach(feature => {
-                        const li = document.createElement('li');
-                        li.className = 'suggestion-item';
-                        li.innerHTML = `<strong>${feature.properties.name}</strong><small>${feature.properties.postcode} ${feature.properties.city}</small>`;
-                        
-                        // B. Quand l'utilisateur CLIQUE -> On valide l'adresse
-                        li.addEventListener('click', function() {
-                            // Remplissage des champs
-                            rueInput.value = feature.properties.name;
-                            villeInput.value = feature.properties.city;
-                            cpInput.value = feature.properties.postcode;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            console.log("🔎 Recherche API : " + query);
 
-                            // Cacher la liste
-                            suggestionsList.style.display = 'none';
-                            
-                            // Cacher les erreurs
-                            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            // Appel API avec encodage
+            fetch(
+                "https://api-adresse.data.gouv.fr/search/?q=" +
+                    encodeURIComponent(query) +
+                    "&limit=5"
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    suggestionsContainer.innerHTML = "";
 
-                            // VALIDATION OK : L'utilisateur a bien choisi une suggestion
-                            isAddressSelected = true;
+                    if (data.features && data.features.length > 0) {
+                        suggestionsContainer.style.display = "block"; // Affiche la liste
+
+                        data.features.forEach((feature) => {
+                            const props = feature.properties;
+
+                            // CRÉATION DE LA DIV (Comme Inscription)
+                            const div = document.createElement("div");
+                            div.className = "autocomplete-suggestion";
+                            div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> <strong>${props.name}</strong> <span style="font-size:0.85em; color:#666; margin-left:5px;">(${props.postcode} ${props.city})</span>`;
+
+                            // CLIC SUR UNE SUGGESTION
+                            div.addEventListener("click", function () {
+                                rueInput.value = props.name;
+                                villeInput.value = props.city;
+                                cpInput.value = props.postcode;
+
+                                // Petit effet visuel vert
+                                villeInput.style.backgroundColor = "#d4edda";
+                                cpInput.style.backgroundColor = "#d4edda";
+                                setTimeout(() => {
+                                    villeInput.style.backgroundColor = "";
+                                    cpInput.style.backgroundColor = "";
+                                }, 500);
+
+                                suggestionsContainer.style.display = "none";
+                                // On cache les erreurs s'il y en avait
+                                document
+                                    .querySelectorAll(".error-message")
+                                    .forEach(
+                                        (el) => (el.style.display = "none")
+                                    );
+                            });
+
+                            suggestionsContainer.appendChild(div);
                         });
-
-                        suggestionsList.appendChild(li);
-                    });
-                } else {
-                    suggestionsList.style.display = 'none';
-                }
-            })
-            .catch(err => console.error(err));
+                    } else {
+                        suggestionsContainer.style.display = "none";
+                    }
+                })
+                .catch((err) => console.error("❌ Erreur API", err));
+        }, 300);
     });
 
-    // Cacher la liste au clic extérieur
-    document.addEventListener('click', function(e) {
-        if (e.target !== rueInput && e.target !== suggestionsList) {
-            suggestionsList.style.display = 'none';
+    // Fermeture au clic extérieur
+    document.addEventListener("click", function (e) {
+        if (e.target !== rueInput && e.target !== suggestionsContainer) {
+            suggestionsContainer.style.display = "none";
         }
     });
 
-    // --- 2. VALIDATION ET ENVOI ---
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        if (validateForm()) {
-            confirmModal.style.display = 'flex';
-        }
-    });
+    // --- 2. VALIDATION ---
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (validateForm()) {
+                confirmModal.style.display = "flex";
+            }
+        });
+    }
 
     function validateForm() {
         let isValid = true;
-        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+        document
+            .querySelectorAll(".error-message")
+            .forEach((el) => (el.style.display = "none"));
 
-        // 1. Vérif Rue Vide
         if (rueInput.value.trim() === "") {
-            document.getElementById('errorRue').style.display = 'block';
+            document.getElementById("errorRue").style.display = "block";
             isValid = false;
         }
-        // 2. NOUVEAU : Vérif Adresse API
-        // Si le champ n'est pas vide MAIS que l'utilisateur n'a pas cliqué sur une suggestion
-        else if (isAddressSelected === false) {
-            document.getElementById('errorRueApi').style.display = 'block';
-            isValid = false;
-        }
-
-        // 3. Vérif Ville
         if (villeInput.value.trim() === "") {
-            document.getElementById('errorVille').style.display = 'block';
+            document.getElementById("errorVille").style.display = "block";
             isValid = false;
         }
-        
-        // 4. Vérif CP
-        let rawCp = cpInput.value.replace(/[^0-9]/g, '');
-        if (rawCp.length !== 5) {
-            document.getElementById('errorCp').style.display = 'block';
+        if (cpInput.value.trim().length !== 5) {
+            document.getElementById("errorCp").style.display = "block";
             isValid = false;
-        } else {
-            cpInput.value = rawCp;
         }
-
         return isValid;
     }
-
-    cpInput.addEventListener('input', function (e) {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    });
 });
 
-// Fonctions globales pour le HTML
+// Fonctions globales (pour les onclick dans le HTML)
 function closeConfirm() {
-    document.getElementById('confirmModal').style.display = 'none';
+    document.getElementById("confirmModal").style.display = "none";
 }
 
 function submitRealForm() {
-    document.getElementById('addressForm').submit();
+    document.getElementById("addressForm").submit();
+}
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ CHARGEMENT: js_modif_adresse.js");
+
+    // --- VARIABLES ---
+    const rueInput = document.getElementById("rue");
+    const suggestionsContainer = document.querySelector(
+        ".autocomplete-suggestions"
+    ); // La DIV
+    const villeInput = document.getElementById("ville");
+    const cpInput = document.getElementById("cp");
+    const form = document.getElementById("addressForm");
+    const confirmModal = document.getElementById("confirmModal");
+
+    let timeout = null;
+
+    if (!rueInput || !suggestionsContainer) {
+        console.error("❌ ERREUR: Champs introuvables");
+        return;
+    }
+
+    // --- 1. AUTOCOMPLÉTION ---
+    rueInput.addEventListener("input", function () {
+        const query = this.value.trim();
+
+        // Si vide, on cache la liste
+        if (query.length === 0) {
+            suggestionsContainer.style.display = "none";
+            return;
+        }
+
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            console.log("🔎 Recherche API : " + query);
+
+            // Appel API avec encodage
+            fetch(
+                "https://api-adresse.data.gouv.fr/search/?q=" +
+                    encodeURIComponent(query) +
+                    "&limit=5"
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    suggestionsContainer.innerHTML = "";
+
+                    if (data.features && data.features.length > 0) {
+                        suggestionsContainer.style.display = "block"; // Affiche la liste
+
+                        data.features.forEach((feature) => {
+                            const props = feature.properties;
+
+                            // CRÉATION DE LA DIV (Comme Inscription)
+                            const div = document.createElement("div");
+                            div.className = "autocomplete-suggestion";
+                            div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> <strong>${props.name}</strong> <span style="font-size:0.85em; color:#666; margin-left:5px;">(${props.postcode} ${props.city})</span>`;
+
+                            // CLIC SUR UNE SUGGESTION
+                            div.addEventListener("click", function () {
+                                rueInput.value = props.name;
+                                villeInput.value = props.city;
+                                cpInput.value = props.postcode;
+
+                                // Petit effet visuel vert
+                                villeInput.style.backgroundColor = "#d4edda";
+                                cpInput.style.backgroundColor = "#d4edda";
+                                setTimeout(() => {
+                                    villeInput.style.backgroundColor = "";
+                                    cpInput.style.backgroundColor = "";
+                                }, 500);
+
+                                suggestionsContainer.style.display = "none";
+                                // On cache les erreurs s'il y en avait
+                                document
+                                    .querySelectorAll(".error-message")
+                                    .forEach(
+                                        (el) => (el.style.display = "none")
+                                    );
+                            });
+
+                            suggestionsContainer.appendChild(div);
+                        });
+                    } else {
+                        suggestionsContainer.style.display = "none";
+                    }
+                })
+                .catch((err) => console.error("❌ Erreur API", err));
+        }, 300);
+    });
+
+    // Fermeture au clic extérieur
+    document.addEventListener("click", function (e) {
+        if (e.target !== rueInput && e.target !== suggestionsContainer) {
+            suggestionsContainer.style.display = "none";
+        }
+    });
+
+    // --- 2. VALIDATION ---
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (validateForm()) {
+                confirmModal.style.display = "flex";
+            }
+        });
+    }
+
+    function validateForm() {
+        let isValid = true;
+        document
+            .querySelectorAll(".error-message")
+            .forEach((el) => (el.style.display = "none"));
+
+        if (rueInput.value.trim() === "") {
+            document.getElementById("errorRue").style.display = "block";
+            isValid = false;
+        }
+        if (villeInput.value.trim() === "") {
+            document.getElementById("errorVille").style.display = "block";
+            isValid = false;
+        }
+        if (cpInput.value.trim().length !== 5) {
+            document.getElementById("errorCp").style.display = "block";
+            isValid = false;
+        }
+        return isValid;
+    }
+});
+
+// Fonctions globales (pour les onclick dans le HTML)
+function closeConfirm() {
+    document.getElementById("confirmModal").style.display = "none";
+}
+
+function submitRealForm() {
+    document.getElementById("addressForm").submit();
 }

@@ -119,18 +119,25 @@ Flight::route('GET /messagerie', function(){
         // --- LOGIQUE DE CLASSEMENT DANS LES ONGLETS ---
         
         if ($isAnnule) {
-            // CAS 1 : ANNULÉ -> Onglet Terminé (Rouge)
+            // CAS 1 : ANNULÉ (Soit globalement, soit juste moi)
             $statutKey = 'termine';
             $conv['statut_visuel'] = 'annule';
             $conv['statut_libelle'] = 'Annulé';
             $conv['statut_couleur'] = 'danger';
 
         } elseif ($conv['statut_flag'] == 'T' || $now > $arrivee) {
-            // CAS 2 : TERMINÉ -> Onglet Terminé (Gris)
+            // CAS 2 : TERMINÉ (Date passée ou Flag T)
             $statutKey = 'termine';
             $conv['statut_visuel'] = 'termine';
             $conv['statut_libelle'] = 'Terminé';
             $conv['statut_couleur'] = 'secondary';
+
+// 2. ENSUITE on vérifie si c'est annulé
+} elseif ($isAnnule) {
+    $statutKey = 'termine'; // ou 'annule' si vous avez un onglet spécial
+    $conv['statut_visuel'] = 'annule';
+    $conv['statut_libelle'] = 'Annulé';
+    $conv['statut_couleur'] = 'danger';
 
         } elseif ($now >= $depart && $now <= $arrivee) {
             // CAS 3 : EN COURS -> Onglet En cours (Vert)

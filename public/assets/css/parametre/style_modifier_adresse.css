@@ -1,89 +1,193 @@
-:root { 
-    --primary-purple: #422875; 
-    --accent-purple: #8C52FF; 
-    --white: #ffffff; 
-    --error-red: #ff4444; 
+:root {
+    --primary-purple: #422875;
+    --accent-purple: #8c52ff;
+    --white: #ffffff;
+    --error-red: #ff4444;
 }
 
-body { 
-    margin: 0; font-family: 'Segoe UI', sans-serif; 
-    background-color: #f0f0f0; display: flex; flex-direction: column; min-height: 100vh; 
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-main { 
-    background-color: var(--primary-purple); flex-grow: 1; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    padding: 40px 20px; color: white; 
+main {
+    background-color: var(--primary-purple);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: white;
 }
 
-h1 { font-size: 2.5rem; margin-bottom: 30px; margin-top: 0; text-align: center; }
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    margin-top: 0;
+    text-align: center;
+}
 
-form { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+form {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-.input-group { display: flex; flex-direction: column; position: relative; } /* Relative pour le menu déroulant */
-.input-group label { font-size: 1.1rem; margin-bottom: 8px; font-weight: bold; }
-.required-star { color: var(--error-red); }
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+.input-group label {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+.required-star {
+    color: var(--error-red);
+}
 
 .input-group input {
-    width: 100%; padding: 12px 15px; border-radius: 8px; border: none; font-size: 1rem; box-sizing: border-box;
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    box-sizing: border-box;
 }
 
-.error-message { color: var(--error-red); font-size: 0.85rem; margin-top: 5px; display: none; }
+.error-message {
+    color: var(--error-red);
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: none;
+}
 
 .btn-confirm {
-    background: var(--accent-purple); color: white; border: none; padding: 15px; border-radius: 30px;
-    font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 20px; width: 200px; align-self: center;
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 200px;
+    align-self: center;
     transition: background 0.3s;
 }
-.btn-confirm:hover { background: #7a42ea; }
+.btn-confirm:hover {
+    background: #7a42ea;
+}
 
-/* --- STYLE AUTOCOMPLÉTION (NOUVEAU) --- */
-/* C'est ce qui crée la liste blanche sous le champ */
-.suggestions-list {
+/* =========================================================
+STYLE AUTOCOMPLÉTION (Style Inscription + Fix Z-Index)
+   ========================================================= */
+.autocomplete-wrapper {
+    position: relative !important;
+    width: 100%;
+    /* INDISPENSABLE : Fait passer la liste au-dessus du champ suivant */
+    z-index: 1050 !important;
+}
+
+.autocomplete-suggestions {
     position: absolute;
-    top: 75px; /* Ajuster selon la hauteur de votre label+input */
+    top: 100%;
     left: 0;
     right: 0;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 100;
+    border: 2px solid #8c52ff; /* Bordure violette */
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    z-index: 9999;
     max-height: 200px;
     overflow-y: auto;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: none; /* Caché par défaut */
-    color: #333;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: none;
 }
 
-.suggestion-item {
-    padding: 10px 15px;
+.autocomplete-suggestion {
+    padding: 12px 15px;
     cursor: pointer;
-    border-bottom: 1px solid #eee;
     font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    text-align: left;
 }
 
-.suggestion-item:last-child { border-bottom: none; }
-.suggestion-item:hover { background-color: #f0f0ff; color: var(--accent-purple); }
-.suggestion-item strong { display: block; font-weight: bold; }
-.suggestion-item small { color: #666; }
-
-
-/* --- MODALES (Styles existants) --- */
-.custom-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 99999;
+.autocomplete-suggestion i {
+    margin-right: 10px;
+    color: #8c52ff;
 }
-.show-custom-modal { display: flex !important; }
 
-.custom-modal-box { 
-    background: #ffffff; padding: 30px; border-radius: 20px; text-align: center; 
-    width: 90%; max-width: 400px; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+.autocomplete-suggestion:hover {
+    background-color: #f3efff !important;
+    color: #452b85;
+}
+
+.autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
+/* --- MODALES --- */
+.custom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+.show-custom-modal {
+    display: flex !important;
+}
+
+.custom-modal-box {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    color: #333;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     display: block !important;
 }
-.custom-modal-box h2 { margin-top: 0; color: var(--primary-purple); }
+.custom-modal-box h2 {
+    margin-top: 0;
+    color: var(--primary-purple);
+}
 
-.modal-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-.custom-btn { background: var(--accent-purple); color: white; border: none; padding: 10px 30px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-.custom-btn-cancel { background: #ddd; color: #333; }
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+.custom-btn {
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.custom-btn-cancel {
+    background: #ddd;
+    color: #333;
+}

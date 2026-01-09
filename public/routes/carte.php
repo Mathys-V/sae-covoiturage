@@ -9,7 +9,6 @@ Flight::route('/carte', function(){
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 2. Recherche Publique (Stricte : Futur + Actif + Pas moi)
-    // On force l'exclusion du conducteur connecté
     $sqlPublic = "SELECT * FROM TRAJETS 
                   WHERE statut_flag = 'A' 
                   AND date_heure_depart >= NOW() 
@@ -19,38 +18,39 @@ Flight::route('/carte', function(){
     $stmt2->execute([':uid' => $userId]);
     $trajets = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Mes Données (Si connecté)
+    // 3. Mes Données (Pour l'initialisation)
     $mesAnnonces = [];     
     $mesReservations = []; 
 
     if ($userId > 0) {
-        // A. Mes Annonces (Tous les trajets de l'utilisateur, sans filtre de statut)
-        // Même logique que dans mes_trajets.php
+        // A. Mes Annonces (Filtre FUTUR ajouté)
         $stmtCond = $db->prepare("
             SELECT *, 'conducteur' as mon_role 
             FROM TRAJETS 
             WHERE id_conducteur = :uid 
-            ORDER BY date_heure_depart DESC
+            AND date_heure_depart >= NOW() 
+            ORDER BY date_heure_depart ASC
         ");
         $stmtCond->execute([':uid' => $userId]);
         $mesAnnonces = $stmtCond->fetchAll(PDO::FETCH_ASSOC);
 
-        // B. Mes Réservations (Tout l'historique validé)
+        // B. Mes Réservations (Filtre FUTUR ajouté)
         $stmtPass = $db->prepare("
             SELECT t.*, 'passager' as mon_role, r.nb_places_reservees
             FROM RESERVATIONS r
             JOIN TRAJETS t ON r.id_trajet = t.id_trajet
             WHERE r.id_passager = :uid
             AND r.statut_code = 'V'
-            ORDER BY t.date_heure_depart DESC
+            AND t.date_heure_depart >= NOW()
+            ORDER BY t.date_heure_depart ASC
         ");
         $stmtPass->execute([':uid' => $userId]);
         $mesReservations = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Gestion des coordonnées (simplifié ici pour la lisibilité, gardez votre bloc foreach existant)
+    // Gestion des coordonnées
     foreach($lieux as &$lieu) {
-        if(!$lieu['latitude']) { // Fallback simple si pas de coordonnée
+        if(!$lieu['latitude']) { 
              $lieu['latitude'] = 49.89407; 
              $lieu['longitude'] = 2.29575; 
         }
@@ -61,7 +61,46 @@ Flight::route('/carte', function(){
         'lieux_frequents' => $lieux,
         'trajets' => $trajets,
         'mes_annonces' => $mesAnnonces, 
-        'mes_reservations' => $mesReservations 
+        'mes_reservations' => $mesReservations,
+        'user' => isset($_SESSION['user']) ? $_SESSION['user'] : null
+    ]);
+});
+
+// ============================================================
+// ROUTE API POUR LES BOUTONS (Avec filtre temporel)
+// ============================================================
+Flight::route('GET /api/mes-trajets-carte', function(){
+    if(!isset($_SESSION['user'])) { Flight::json(['annonces' => [], 'reservations' => []]); return; }
+
+    $db = Flight::get('db');
+    $userId = $_SESSION['user']['id_utilisateur'];
+
+    // 1. Mes Annonces : Uniquement dans le futur
+    $stmtA = $db->prepare("
+        SELECT *, 'conducteur' as mon_role 
+        FROM TRAJETS 
+        WHERE id_conducteur = :uid 
+        AND date_heure_depart >= NOW() 
+        ORDER BY date_heure_depart ASC
+    ");
+    $stmtA->execute([':uid' => $userId]);
+    
+    // 2. Mes Réservations : Uniquement dans le futur
+    $stmtR = $db->prepare("
+        SELECT t.*, 'passager' as mon_role, r.nb_places_reservees
+        FROM RESERVATIONS r 
+        JOIN TRAJETS t ON r.id_trajet = t.id_trajet 
+        WHERE r.id_passager = :uid 
+        AND r.statut_code = 'V' 
+        AND t.date_heure_depart >= NOW() 
+        ORDER BY t.date_heure_depart ASC
+    ");
+    $stmtR->execute([':uid' => $userId]);
+
+    Flight::json([
+        'success' => true,
+        'annonces' => $stmtA->fetchAll(PDO::FETCH_ASSOC),
+        'reservations' => $stmtR->fetchAll(PDO::FETCH_ASSOC)
     ]);
 });
 ?>

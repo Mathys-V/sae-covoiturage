@@ -80,16 +80,13 @@
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
 <script>
-    // Initialisation des variables globales
     var lieuxFrequents = [];
     var tousLesTrajets = [];
-    var mesAnnonces = [];
-    var mesReservations = [];
     var userId = 0;
 
-    // On utilise json_encode directement sans les guillemets JS autour
-    // Smarty va écrire directement le tableau JS valide 
+    // Initialisation sécurisée
     try {
+        // Injection directe JSON (plus robuste)
         lieuxFrequents = {$lieux_frequents|json_encode|default:'[]'};
         tousLesTrajets = {$trajets|json_encode|default:'[]'};
         
@@ -97,28 +94,8 @@
             userId = {$user.id_utilisateur|default:0};
         {/if}
         
-        {if isset($mes_annonces)}
-            mesAnnonces = {$mes_annonces|json_encode|default:'[]'};
-        {else}
-            mesAnnonces = [];
-        {/if}
-        
-        {if isset($mes_reservations)}
-            mesReservations = {$mes_reservations|json_encode|default:'[]'};
-        {else}
-            mesReservations = [];
-        {/if}
-
-        console.log("Données chargées :", {
-            lieux: lieuxFrequents.length,
-            publics: tousLesTrajets.length,
-            annonces: mesAnnonces.length,
-            reservations: mesReservations.length,
-            userId: userId
-        });
-
     } catch(e) { 
-        console.error("Erreur critique chargement données :", e); 
+        console.error("Erreur chargement données :", e); 
     }
 </script>
 

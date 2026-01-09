@@ -9,6 +9,9 @@ var frequentLayer = L.layerGroup().addTo(map);
 var routeMarkersLayer = L.layerGroup().addTo(map);
 var currentRoutingControl = null;
 
+// Variable cache pour stocker les résultats de l'API
+var mesTrajetsCache = null; 
+
 function createCustomMarker(color, icon = "fa-location-dot") {
   return L.divIcon({
     className: "custom-div-icon",
@@ -22,7 +25,7 @@ var goldIcon = createCustomMarker("marker-gold", "fa-star");
 var greenIcon = createCustomMarker("marker-green", "fa-car");
 var redIcon = createCustomMarker("marker-red", "fa-flag-checkered");
 
-// --- 2. AUTOCOMPLÉTION ---
+// --- 2. AUTOCOMPLÉTION (INCHANGÉ) ---
 function setupMapAutocomplete(inputId, resultsId) {
   const input = document.getElementById(inputId);
   const results = document.getElementById(resultsId);
@@ -44,7 +47,7 @@ function setupMapAutocomplete(inputId, resultsId) {
         const div = document.createElement("div");
         div.className = "autocomplete-suggestion is-frequent";
         div.innerHTML = `<div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
-                                    <div class="sugg-text"><span class="sugg-main">${lieu.nom_lieu}</span><span class="sugg-sub">${lieu.ville}</span></div>`;
+                                        <div class="sugg-text"><span class="sugg-main">${lieu.nom_lieu}</span><span class="sugg-sub">${lieu.ville}</span></div>`;
         div.addEventListener("click", function () {
           input.value = lieu.nom_lieu;
           results.innerHTML = "";
@@ -89,7 +92,7 @@ function setupMapAutocomplete(inputId, resultsId) {
 setupMapAutocomplete("departInput", "suggestions-depart");
 setupMapAutocomplete("arriveeInput", "suggestions-arrivee");
 
-// --- 3. AFFICHAGE LIEUX FREQUENTS ---
+// --- 3. AFFICHAGE LIEUX FREQUENTS (INCHANGÉ) ---
 function afficherLieuxFrequents() {
   lieuxFrequents.forEach(function (lieu) {
     if (lieu.latitude && lieu.longitude) {
@@ -105,7 +108,7 @@ function afficherLieuxFrequents() {
 }
 afficherLieuxFrequents();
 
-// --- 4. GÉOCODAGE HYBRIDE ---
+// --- 4. GÉOCODAGE HYBRIDE (INCHANGÉ) ---
 async function geocodeVille(nomVille) {
   const lieuConnu = lieuxFrequents.find((l) => {
     let dbName = l.nom_lieu.toLowerCase().trim();
@@ -140,7 +143,7 @@ async function geocodeVille(nomVille) {
   }
 }
 
-// --- 5. FILTRAGE TRAJETS FUTURS ---
+// --- 5. FILTRAGE TRAJETS FUTURS (INCHANGÉ) ---
 function filtrerTrajetsFuturs(trajets) {
   const maintenant = new Date();
   return trajets.filter(t => {
@@ -149,7 +152,7 @@ function filtrerTrajetsFuturs(trajets) {
   });
 }
 
-// --- 6. RECHERCHE INTELLIGENTE ---
+// --- 6. RECHERCHE INTELLIGENTE (INCHANGÉ) ---
 function rechercherTrajet() {
   var departTxt = document
     .getElementById("departInput")
@@ -169,7 +172,6 @@ function rechercherTrajet() {
   statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
   var resultats = tousLesTrajets.filter(function (trajet) {
-    // Exclure les trajets de l'utilisateur connecté
     if (typeof userId !== 'undefined' && userId > 0 && trajet.id_conducteur == userId) {
       return false;
     }
@@ -181,17 +183,14 @@ function rechercherTrajet() {
     var matchArrivee = true;
 
     if (departTxt !== "") {
-      matchDepart =
-        dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
+      matchDepart = dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
     }
     if (arriveeTxt !== "") {
-      matchArrivee =
-        dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
+      matchArrivee = dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
     }
     return matchDepart && matchArrivee;
   });
 
-  // Filtrage des trajets passés
   resultats = filtrerTrajetsFuturs(resultats);
 
   var modeAlternatif = false;
@@ -199,10 +198,7 @@ function rechercherTrajet() {
   if (resultats.length === 0 && arriveeTxt !== "") {
     modeAlternatif = true;
     resultats = tousLesTrajets.filter((t) => {
-      // Exclure les trajets de l'utilisateur connecté
-      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-        return false;
-      }
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
       var dbArrivee = t.ville_arrivee.toLowerCase();
       return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
     });
@@ -212,10 +208,7 @@ function rechercherTrajet() {
   if (resultats.length === 0 && departTxt !== "") {
     modeAlternatif = true;
     resultats = tousLesTrajets.filter((t) => {
-      // Exclure les trajets de l'utilisateur connecté
-      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-        return false;
-      }
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
       var dbDepart = t.ville_depart.toLowerCase();
       return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
     });
@@ -225,10 +218,7 @@ function rechercherTrajet() {
   if (resultats.length === 0) {
     modeAlternatif = true;
     resultats = filtrerTrajetsFuturs(tousLesTrajets).filter((t) => {
-      // Exclure les trajets de l'utilisateur connecté
-      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-        return false;
-      }
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
       return true;
     }).slice(0, 10);
   }
@@ -241,30 +231,48 @@ function rechercherTrajet() {
 
   if (resultats.length > 0) {
     if (modeAlternatif) {
-      statusDiv.innerHTML =
-        '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</span>';
+      statusDiv.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable.</span>';
     } else {
-      statusDiv.innerHTML =
-        '<span class="text-success fw-bold">' +
-        resultats.length +
-        " trajet(s) trouvé(s).</span>";
+      statusDiv.innerHTML = '<span class="text-success fw-bold">' + resultats.length + " trajet(s) trouvé(s).</span>";
     }
-    afficherResultatsSidebar(resultats, modeAlternatif);
+    afficherResultatsSidebar(resultats, modeAlternatif, false, "Résultats");
   } else {
-    statusDiv.innerHTML =
-      '<span class="text-danger">Aucun trajet trouvé.</span>';
+    statusDiv.innerHTML = '<span class="text-danger">Aucun trajet trouvé.</span>';
     document.getElementById("infoSidebar").classList.remove("active");
   }
 }
 
-// --- 7. AFFICHAGE ITINÉRAIRE ---
+// --- 7. CHARGEMENT API ---
+async function chargerDonneesPerso() {
+    if (mesTrajetsCache) return mesTrajetsCache;
+
+    try {
+        const response = await fetch('/sae-covoiturage/public/api/mes-trajets-carte');
+        const data = await response.json();
+        
+        if (data.success) {
+            mesTrajetsCache = data;
+            return data;
+        }
+    } catch (error) {
+        console.error("Erreur API :", error);
+    }
+    return { annonces: [], reservations: [] };
+}
+
+// --- 8. AFFICHAGE ITINÉRAIRE ---
 async function afficherItineraire(idTrajet) {
   var trajet = tousLesTrajets.find((t) => t.id_trajet == idTrajet);
+  
+  if (!trajet && mesTrajetsCache) {
+      trajet = mesTrajetsCache.annonces.find(t => t.id_trajet == idTrajet) || 
+               mesTrajetsCache.reservations.find(t => t.id_trajet == idTrajet);
+  }
+
   if (!trajet) return;
 
   var statusDiv = document.getElementById("searchStatus");
-  statusDiv.innerHTML =
-    '<i class="fas fa-spinner fa-spin"></i> Calcul itinéraire...';
+  statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calcul itinéraire...';
 
   try {
     if (currentRoutingControl) map.removeControl(currentRoutingControl);
@@ -276,8 +284,7 @@ async function afficherItineraire(idTrajet) {
     ]);
 
     if (!departLatLng || !arriveeLatLng) {
-      statusDiv.innerHTML =
-        '<span class="text-danger">Localisation impossible.</span>';
+      statusDiv.innerHTML = '<span class="text-danger">Localisation impossible.</span>';
       return;
     }
 
@@ -301,147 +308,155 @@ async function afficherItineraire(idTrajet) {
       },
     }).addTo(map);
 
-    statusDiv.innerHTML =
-      '<span class="text-success">Itinéraire affiché !</span>';
+    statusDiv.innerHTML = '<span class="text-success">Itinéraire affiché !</span>';
     highlightSelectedCard(idTrajet);
   } catch (error) {
     statusDiv.innerHTML = '<span class="text-warning">Erreur calcul.</span>';
   }
 }
 
-// --- 8. AFFICHAGE SIDEBAR ---
-function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
+// --- 9. AFFICHAGE SIDEBAR (CORRIGÉ POUR TITRE) ---
+function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, titrePersonnalise = null) {
   var container = document.getElementById("listeTrajetsContainer");
   var html = "";
-
-  if (isAlternative) {
-    html +=
-      '<div class="alert alert-warning small mb-3"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</div>';
+  
+  // Titre par défaut
+  var titre = "Résultats";
+  
+  // Si on a fourni un titre personnalisé, on l'utilise
+  if (titrePersonnalise) {
+      titre = titrePersonnalise;
+  } 
+  // Sinon on devine comme avant (fallback)
+  else if (isPerso) {
+      titre = "Mes Trajets";
+  } else if (isAlternative) {
+      titre = "Suggestions";
   }
 
-  resultats.forEach(function (t) {
-    var dateObj = new Date(t.date_heure_depart.replace(" ", "T"));
-    var heure =
-      ("0" + dateObj.getHours()).slice(-2) +
-      ":" +
-      ("0" + dateObj.getMinutes()).slice(-2);
-    var date =
-      ("0" + dateObj.getDate()).slice(-2) +
-      "/" +
-      ("0" + (dateObj.getMonth() + 1)).slice(-2);
+  if (isAlternative) {
+    html += '<div class="alert alert-warning small mb-3"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</div>';
+  }
 
-    var cardClass = isAlternative ? "trip-card alternative" : "trip-card";
-    var badgeClass = "badge bg-success rounded-pill px-3";
-    var badgeText = t.places_proposees + " pl.";
+  if (!resultats || resultats.length === 0) {
+      html += '<div class="text-center text-muted mt-4">Aucun trajet à afficher.</div>';
+  } else {
+      resultats.forEach(function (t) {
+        var dateObj = new Date(t.date_heure_depart.replace(" ", "T"));
+        var heure = ("0" + dateObj.getHours()).slice(-2) + ":" + ("0" + dateObj.getMinutes()).slice(-2);
+        var date = ("0" + dateObj.getDate()).slice(-2) + "/" + ("0" + (dateObj.getMonth() + 1)).slice(-2);
 
-    if (isPerso) {
-      if (t.mon_role === "conducteur") {
-        badgeClass = "badge bg-primary rounded-pill px-3";
-        badgeText = "Conducteur";
-      } else if (t.mon_role === "passager") {
-        badgeClass = "badge bg-info text-dark rounded-pill px-3";
-        badgeText = "Passager";
-      }
-    } else if (isAlternative) {
-      badgeClass = "badge badge-alternative rounded-pill px-3";
-    }
+        var cardClass = isAlternative ? "trip-card alternative" : "trip-card";
+        var badgeClass = "badge bg-success rounded-pill px-3";
+        var badgeText = t.places_proposees + " pl.";
 
-    html += `
-        <div class="${cardClass}" id="card-${t.id_trajet}">
-            <div style="cursor:pointer;" onclick="afficherItineraire(${
-              t.id_trajet
-            })">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="trip-time">${heure}</span>
-                        <span class="text-muted small ms-1">(${date})</span>
+        var btnUrl = "/sae-covoiturage/public/trajet/reserver/" + t.id_trajet;
+        var btnText = 'Réserver <i class="bi bi-chevron-right"></i>';
+
+        if (isPerso) {
+          btnUrl = "/sae-covoiturage/public/trajet/consulter/" + t.id_trajet;
+          btnText = 'Voir détails';
+
+          if (t.mon_role === "conducteur") {
+            badgeClass = "badge bg-primary rounded-pill px-3";
+            badgeText = "Mon Annonce";
+          } else if (t.mon_role === "passager") {
+            badgeClass = "badge bg-info text-dark rounded-pill px-3";
+            badgeText = "Ma Réservation";
+          }
+        } else if (isAlternative) {
+          badgeClass = "badge badge-alternative rounded-pill px-3";
+        }
+
+        html += `
+            <div class="${cardClass}" id="card-${t.id_trajet}">
+                <div style="cursor:pointer;" onclick="afficherItineraire(${t.id_trajet})">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="trip-time">${heure}</span>
+                            <span class="text-muted small ms-1">(${date})</span>
+                        </div>
+                        <span class="${badgeClass}">${badgeText}</span>
                     </div>
-                    <span class="${badgeClass}">${badgeText}</span>
-                </div>
-                <div class="mt-2">
-                    <strong>${t.ville_depart.split(",")[0]}</strong> 
-                    <i class="bi bi-arrow-right text-muted mx-1"></i> 
-                    <strong>${t.ville_arrivee.split(",")[0]}</strong>
+                    <div class="mb-2">
+                        <strong>${t.ville_depart.split(",")[0]}</strong> 
+                        <i class="bi bi-arrow-right text-muted mx-1"></i> 
+                        <strong>${t.ville_arrivee.split(",")[0]}</strong>
+                    </div>
                 </div>
                 
-                <div class="trip-meta">
-                    <span><i class="bi bi-car-front-fill me-1"></i> Voiture</span>
-                    ${
-                      !isPerso || t.mon_role !== "conducteur"
-                        ? '<span><i class="bi bi-person-fill me-1"></i> Conducteur</span>'
-                        : ""
-                    }
+                <div class="mt-2 pt-2 border-top d-flex justify-content-end">
+                    <a href="${btnUrl}" class="btn btn-sm btn-purple rounded-pill text-white fw-bold px-3">
+                        ${btnText}
+                    </a>
                 </div>
-            </div>
-            
-            <div class="mt-3 pt-2 border-top d-flex justify-content-end">
-                <a href="/sae-covoiturage/public/trajet/reserver/${
-                  t.id_trajet
-                }" class="btn btn-sm btn-purple rounded-pill text-white fw-bold px-3">
-                    ${
-                      isPerso
-                        ? "Voir détails"
-                        : 'Réserver <i class="bi bi-chevron-right"></i>'
-                    }
-                </a>
-            </div>
-        </div>`;
-  });
+            </div>`;
+      });
+  }
 
   container.innerHTML = html;
-
-  var titre = "Résultats";
-  if (isPerso) titre = "Mes Trajets";
-  else if (isAlternative) titre = "Suggestions";
-
   document.getElementById("sidebarTitle").innerText = titre;
-  document.getElementById("sidebarSubtitle").innerText =
-    resultats.length + " trajet(s)";
+  document.getElementById("sidebarSubtitle").innerText = (resultats ? resultats.length : 0) + " trajet(s)";
   document.getElementById("infoSidebar").classList.add("active");
 }
 
-// --- 9. BOUTONS ---
-function afficherMesAnnonces() {
+// --- 10. BOUTONS (TITRES PERSONNALISÉS) ---
+async function afficherMesAnnonces() {
   var statusDiv = document.getElementById("searchStatus");
-  
-  // Afficher tous les trajets (passés et futurs) pour "Mes annonces"
-  // L'utilisateur veut voir tous ses trajets, pas seulement les futurs
-  if (!mesAnnonces || mesAnnonces.length === 0) {
-    statusDiv.innerHTML =
-      '<span class="text-muted">Aucune annonce publiée.</span>';
-    return;
+  statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+
+  if (currentRoutingControl) {
+    map.removeControl(currentRoutingControl);
+    currentRoutingControl = null;
+  }
+  routeMarkersLayer.clearLayers();
+
+  const data = await chargerDonneesPerso();
+  const annonces = data.annonces || [];
+
+  if (annonces.length === 0) {
+    statusDiv.innerHTML = '<span class="text-muted">Aucune annonce trouvée.</span>';
+  } else {
+    statusDiv.innerHTML = `<span class="text-primary fw-bold">Vos ${annonces.length} annonces.</span>`;
   }
   
-  statusDiv.innerHTML =
-    '<span class="text-primary fw-bold">Vos ' +
-    mesAnnonces.length +
-    " annonce(s).</span>";
-  afficherResultatsSidebar(mesAnnonces, false, true);
+  // On passe "Mes Annonces" comme titre explicite
+  afficherResultatsSidebar(annonces, false, true, "Mes Annonces");
 }
 
-function afficherMesReservations() {
+async function afficherMesReservations() {
   var statusDiv = document.getElementById("searchStatus");
-  
-  // Afficher toutes les réservations (passées et futures) pour "Mes réservations"
-  if (!mesReservations || mesReservations.length === 0) {
-    statusDiv.innerHTML = '<span class="text-muted">Aucune réservation.</span>';
-    return;
+  statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+
+  if (currentRoutingControl) {
+    map.removeControl(currentRoutingControl);
+    currentRoutingControl = null;
+  }
+  routeMarkersLayer.clearLayers();
+
+  const data = await chargerDonneesPerso();
+  const reservations = data.reservations || [];
+
+  if (reservations.length === 0) {
+    statusDiv.innerHTML = '<span class="text-muted">Aucune réservation trouvée.</span>';
+  } else {
+    statusDiv.innerHTML = `<span class="text-info fw-bold">Vos ${reservations.length} réservations.</span>`;
   }
   
-  statusDiv.innerHTML =
-    '<span class="text-info fw-bold">Vos ' +
-    mesReservations.length +
-    " réservation(s).</span>";
-  afficherResultatsSidebar(mesReservations, false, true);
+  // On passe "Mes Réservations" comme titre explicite
+  afficherResultatsSidebar(reservations, false, true, "Mes Réservations");
 }
 
-// --- 10. UTILITAIRES ---
+// --- 11. UTILITAIRES ---
 function highlightSelectedCard(id) {
   document
     .querySelectorAll(".trip-card")
     .forEach((c) => c.classList.remove("selected"));
   const card = document.getElementById("card-" + id);
-  if (card) card.classList.add("selected");
+  if (card) {
+      card.classList.add("selected");
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function closeSidebar() {

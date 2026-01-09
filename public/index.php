@@ -54,7 +54,7 @@ Flight::map('render', function($template, $data){
             
             $sqlIds = "SELECT t.id_trajet FROM TRAJETS t
                        LEFT JOIN RESERVATIONS r ON t.id_trajet = r.id_trajet
-                       WHERE t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code = 'V')
+                       WHERE t.id_conducteur = :uid OR (r.id_passager = :uid AND r.statut_code IN ('V', 'A', 'R'))
                        GROUP BY t.id_trajet";
             
             $stmtIds = $db->prepare($sqlIds);

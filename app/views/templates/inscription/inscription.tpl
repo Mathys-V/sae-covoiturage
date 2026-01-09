@@ -129,13 +129,19 @@
                         <div class="mb-5 text-center"><h3 style="color: #8c52ff;">Parlez-nous de votre voiture</h3></div>
                         <div class="mb-4">
                             <label for="marqueInput" class="form-label marque-texte fw-bold mb-3">La marque ? <span class="asterisque">*</span></label>
+                            
+                            {* CORRECTION ICI : BOUCLE SMARTY *}
                             <select name="marque" id="marqueInput" class="form-control" required>
                                 <option value="" selected disabled>Sélectionner...</option>
-                                <option value="Peugeot">Peugeot</option>
-                                <option value="Renault">Renault</option>
-                                <option value="Citroen">Citroen</option>
-                                <option value="Volkswagen">Volkswagen</option>
+                                {if isset($marques)}
+                                    {foreach from=$marques item=m}
+                                        <option value="{$m}">{$m}</option>
+                                    {/foreach}
+                                {else}
+                                    <option value="Autre">Autre</option>
+                                {/if}
                             </select>
+
                         </div>
                         <div class="mb-4">
                             <label for="modelInput" class="form-label model-texte fw-bold mb-3">Le modèle ? <span class="asterisque">*</span></label>
@@ -148,14 +154,19 @@
                         </div>
                         <div class="mb-4">
                             <label for="couleurInput" class="form-label couleur-texte fw-bold mb-3">La couleur ?</label>
+                            
+                            {* CORRECTION ICI : BOUCLE SMARTY *}
                             <select name="couleur" id="couleurInput" class="form-control" required>
                                 <option value="" selected disabled>Sélectionner...</option>
-                                <option value="Blanc">Blanc</option>
-                                <option value="Noir">Noir</option>
-                                <option value="Gris">Gris</option>
-                                <option value="Bleu">Bleu</option>
-                                <option value="Rouge">Rouge</option>
+                                {if isset($couleurs)}
+                                    {foreach from=$couleurs item=c}
+                                        <option value="{$c}">{$c}</option>
+                                    {/foreach}
+                                {else}
+                                    <option value="Autre">Autre</option>
+                                {/if}
                             </select>
+
                         </div>
                         <div class="mb-4">
                             <label class="form-label adresse-texte fw-bold mb-3">Nombre de places? <span class="asterisque">*</span></label>

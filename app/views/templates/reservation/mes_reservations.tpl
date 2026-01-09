@@ -10,7 +10,8 @@
 
     {if isset($reservations) && $reservations|@count > 0}
         {foreach from=$reservations item=reservation}
-        <div class="card border-0 shadow-sm mb-3" style="background-color: #f0ebf8; border-radius: 20px; transition: transform 0.2s;">
+        {* AJOUT DE L'ID POUR L'ANCRE *}
+        <div class="card border-0 shadow-sm mb-3" id="trajet-{$reservation.id_trajet}" style="background-color: #f0ebf8; border-radius: 20px; transition: transform 0.2s;">
             <div class="card-body p-4">
                 <div class="row">
 

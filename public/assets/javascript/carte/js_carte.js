@@ -365,8 +365,7 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
             var badgeClass = "badge bg-success rounded-pill px-3";
             var badgeText = t.places_proposees + " pl.";
 
-            // --- LIENS DES BOUTONS ---
-            // Par défaut (Public) : On va vers la page de réservation
+            // URL par défaut (Public)
             var btnUrl = "/sae-covoiturage/public/trajet/reserver/" + t.id_trajet;
             var btnText = 'Réserver <i class="bi bi-chevron-right"></i>';
 
@@ -374,13 +373,15 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
                 btnText = 'Voir détails';
 
                 if (t.mon_role === "conducteur") {
-                    // SI CONDUCTEUR -> On retourne vers la liste "Mes Trajets"
-                    btnUrl = "/sae-covoiturage/public/mes_trajets";
+                    // SI CONDUCTEUR -> Page mes trajets + Ancre (#)
+                    // AJOUT ICI : #trajet-{id}
+                    btnUrl = "/sae-covoiturage/public/mes_trajets#trajet-" + t.id_trajet;
                     badgeClass = "badge bg-primary rounded-pill px-3";
                     badgeText = "Mon Annonce";
                 } else {
-                    // SI PASSAGER -> On retourne vers la liste "Mes Réservations"
-                    btnUrl = "/sae-covoiturage/public/mes_reservations";
+                    // SI PASSAGER -> Page mes réservations + Ancre (#)
+                    // AJOUT ICI : #trajet-{id}
+                    btnUrl = "/sae-covoiturage/public/mes_reservations#trajet-" + t.id_trajet;
                     badgeClass = "badge bg-info text-dark rounded-pill px-3";
                     badgeText = "Ma Réservation";
                 }

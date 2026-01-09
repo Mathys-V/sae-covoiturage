@@ -39,8 +39,9 @@
                 </h3>
                 
                 {foreach $trajets_actifs as $trajet}
-                    <div class="card border-0 rounded-5 mb-4 card-trajet p-4">
-                        {* ... CONTENU DE LA CARTE ... *}
+                    {* AJOUT DE L'ID ICI POUR L'ANCRE DEPUIS LA CARTE *}
+                    <div class="card border-0 rounded-5 mb-4 card-trajet p-4" id="trajet-{$trajet.id_trajet}">
+                        
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
                             <div class="d-flex align-items-center gap-3">
                                 <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-3 py-2">
@@ -140,9 +141,8 @@
                 <h3 class="text-white-50 mb-4 ps-2 border-start border-4 border-secondary">Historique</h3>
                 {foreach $trajets_archives as $trajet}
                     <div style="opacity: 0.8;"> 
-                        <div class="card border-0 rounded-5 mb-4 card-trajet p-4">
-                            {* ... MEME STRUCTURE DE CARTE QUE CI-DESSUS (simplifiée pour l'archive) ... *}
-                            {* NOTE : J'ai gardé le bouton signaler ici aussi car on peut signaler après coup *}
+                        {* AJOUT DE L'ID ICI AUSSI *}
+                        <div class="card border-0 rounded-5 mb-4 card-trajet p-4" id="trajet-{$trajet.id_trajet}">
                             <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
                                 <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-3 py-2">
                                     {$trajet.statut_libelle}

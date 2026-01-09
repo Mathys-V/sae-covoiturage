@@ -1,20 +1,26 @@
-/* ==========================================
-   1. GESTION DES ÉTAPES & BOUTON GLOBAL
-   ========================================== */
+/*
+ * Gère l'affichage dynamique des différentes étapes du formulaire d'inscription.
+ * Cette fonction agit comme un "routeur visuel" côté client :
+ * 1. Elle masque toutes les sections (divs avec la classe .bloc-etape).
+ * 2. Elle affiche uniquement la section correspondant au numéro d'étape demandé.
+ * 3. Elle gère la visibilité des éléments contextuels comme le bouton "Retour",
+ * le titre fixe en haut de la carte, et les mentions légales en bas.
+ * 4. Elle réinitialise le scroll de la carte pour que l'utilisateur arrive toujours en haut de la nouvelle étape.
+ */
 let etapeActuelle = 1;
 
 function changerEtape(numeroEtape) {
     etapeActuelle = numeroEtape;
 
-    // 1. Hide all steps
+    // Masquage de toutes les étapes
     let toutesLesEtapes = document.querySelectorAll(".bloc-etape");
     toutesLesEtapes.forEach((div) => div.classList.add("d-none"));
 
-    // 2. Show target step
+    // Affichage de l'étape cible
     let etapeVisee = document.getElementById("step-" + numeroEtape);
     if (etapeVisee) etapeVisee.classList.remove("d-none");
 
-    // 3. Manage Global Back Button
+    // Gestion du bouton retour (caché à l'étape 1 et à la fin)
     const btnRetour = document.getElementById("btnRetourGlobal");
     if (btnRetour) {
         if (numeroEtape === 1 || numeroEtape === 8) {
@@ -24,7 +30,7 @@ function changerEtape(numeroEtape) {
         }
     }
 
-    // 4. Manage Header/Footer Visibility
+    // Gestion de la visibilité Header/Footer pour l'immersion
     let headerFixe = document.querySelector(".card > div.text-center");
     let footerText = document.querySelector(".texte-champ");
 
@@ -42,21 +48,25 @@ function changerEtape(numeroEtape) {
             footerText.parentElement.classList.remove("d-none");
     }
 
-    // Reset Scroll
+    // Reset du scroll vers le haut
     const cardScrollable = document.querySelector(".card-scrollable");
     if (cardScrollable) cardScrollable.scrollTop = 0;
 }
 
-// Function called by the global back button
+// Fonction appelée par le bouton retour global
 function retourArriere() {
     if (etapeActuelle > 1) {
         changerEtape(etapeActuelle - 1);
     }
 }
 
-/* ==========================================
-   2. AUTOCOMPLÉTION ADRESSE (VERSION API GOUV)
-   ========================================== */
+/*
+ * Met en place l'autocomplétion sur le champ "Rue" en utilisant l'API Adresse du gouvernement français.
+ * Le script crée dynamiquement un conteneur pour les suggestions sous l'input.
+ * À la frappe (événement 'input'), il interroge l'API avec un délai (debounce) pour éviter de spammer les requêtes.
+ * Au clic sur une suggestion, il remplit automatiquement les champs Rue, Ville et Code Postal,
+ * et ajoute un feedback visuel (clignotement couleur) pour confirmer le remplissage à l'utilisateur.
+ */
 function setupAddressAutocomplete() {
     const rueInput = document.getElementById("rueInput");
     const villeInput = document.getElementById("villeInput");
@@ -64,6 +74,7 @@ function setupAddressAutocomplete() {
 
     if (!rueInput) return;
 
+    // Création ou récupération du conteneur de suggestions
     let suggestionsContainer = document.querySelector(
         ".autocomplete-suggestions"
     );
@@ -78,12 +89,14 @@ function setupAddressAutocomplete() {
 
     rueInput.addEventListener("input", function () {
         const query = this.value.trim();
+        // Pas de requête si moins de 3 caractères
         if (query.length < 3) {
             suggestionsContainer.style.display = "none";
             return;
         }
 
         clearTimeout(timeout);
+        // Debounce de 300ms
         timeout = setTimeout(() => {
             fetch(
                 `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
@@ -100,10 +113,14 @@ function setupAddressAutocomplete() {
                             const div = document.createElement("div");
                             div.className = "autocomplete-suggestion";
                             div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${props.label}`;
+
+                            // Remplissage des champs au clic
                             div.addEventListener("click", function () {
                                 rueInput.value = props.name;
+
                                 if (villeInput) {
                                     villeInput.value = props.city;
+                                    // Feedback visuel
                                     villeInput.style.backgroundColor =
                                         "#e8f0fe";
                                     setTimeout(
@@ -113,6 +130,7 @@ function setupAddressAutocomplete() {
                                         500
                                     );
                                 }
+
                                 if (postInput) {
                                     postInput.value = props.postcode;
                                     postInput.style.backgroundColor = "#e8f0fe";
@@ -127,6 +145,7 @@ function setupAddressAutocomplete() {
                                         document.getElementById("error-post");
                                     if (errDiv) errDiv.classList.add("d-none");
                                 }
+
                                 suggestionsContainer.style.display = "none";
                             });
                             suggestionsContainer.appendChild(div);
@@ -139,6 +158,7 @@ function setupAddressAutocomplete() {
         }, 300);
     });
 
+    // Fermeture des suggestions si clic en dehors
     document.addEventListener("click", function (e) {
         if (e.target !== rueInput && e.target !== suggestionsContainer) {
             suggestionsContainer.style.display = "none";
@@ -146,9 +166,12 @@ function setupAddressAutocomplete() {
     });
 }
 
-/* ==========================================
-   3. VALIDATIONS
-   ========================================== */
+/*
+ * Vérifie la validité de l'email saisi avant de passer à l'étape suivante.
+ * Effectue d'abord une validation de format standard HTML5.
+ * Si le format est bon, envoie une requête asynchrone au serveur pour vérifier si l'email existe déjà en base de données (doublon).
+ * Affiche les erreurs correspondantes ou passe à l'étape 2.
+ */
 async function verifierEmail() {
     const emailInput = document.getElementById("emailInput");
     const errorFormat = document.getElementById("error-email");
@@ -177,13 +200,20 @@ async function verifierEmail() {
             changerEtape(2);
         }
     } catch (error) {
+        // En cas d'erreur serveur, on laisse passer (fail-open) ou on gère l'erreur différemment
         changerEtape(2);
     }
 }
 
+/*
+ * Valide le mot de passe et sa confirmation.
+ * Applique des règles de complexité (longueur, caractères spéciaux, chiffres).
+ * Si tout est conforme, passe à l'étape suivante, sinon affiche un message d'erreur.
+ */
 function verifierMDP() {
     const mdp = document.getElementById("mdpInput").value;
     const conf = document.getElementById("confMdpInput").value;
+
     if (mdp !== conf)
         return afficherErreur("Les mots de passe ne correspondent pas.");
     if (mdp.length < 8) return afficherErreur("8 caractères minimum.");
@@ -206,6 +236,7 @@ function afficherErreur(msg) {
     err.classList.remove("d-none");
 }
 
+// Bascule l'affichage du mot de passe (texte clair <-> masqué)
 function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
@@ -214,6 +245,7 @@ function togglePassword(inputId, iconId) {
     icon.classList.toggle("bi-eye-slash");
 }
 
+// Validations intermédiaires simples (champs non vides) pour avancer dans les étapes
 function validerEtape3() {
     if (
         document.getElementById("nomInput").value.trim() &&
@@ -244,6 +276,11 @@ function choisirVoiture() {
     changerEtape(7);
 }
 
+/*
+ * Soumission du formulaire pour un utilisateur SANS véhicule.
+ * Désactive les champs liés à la voiture pour éviter qu'ils ne soient traités ou validés par le serveur,
+ * définit un champ caché "voiture" à "non", puis soumet le formulaire.
+ */
 function soumettreSansVoiture() {
     document
         .querySelectorAll("#step-7 input, #step-7 select")
@@ -252,12 +289,18 @@ function soumettreSansVoiture() {
     document.querySelector("form").submit();
 }
 
+/*
+ * Soumission du formulaire pour un utilisateur AVEC véhicule.
+ * Vérifie d'abord la validité de la plaque d'immatriculation via une Regex.
+ * Si valide, définit "voiture" à "oui" et soumet.
+ */
 function soumettreAvecVoiture() {
     if (!validerImmatriculation()) return alert("Plaque invalide.");
     document.getElementById("voitureInput").value = "oui";
     document.querySelector("form").submit();
 }
 
+// Vérifie le format de la plaque d'immatriculation (Ancien FNI ou Nouveau SIV)
 function validerImmatriculation() {
     const val = document.getElementById("immatInput").value.toUpperCase();
     return /^([A-Z]{2}[- ]?\d{3}[- ]?[A-Z]{2})|(\d{1,4}[- ]?[A-Z]{2,3}[- ]?\d{2})$/.test(
@@ -265,14 +308,15 @@ function validerImmatriculation() {
     );
 }
 
+// Gestion des boutons +/- pour le nombre de places
 function modifierPlaces(n) {
     const input = document.getElementById("nbPlacesInput");
     let val = parseInt(input.value) + n;
     if (val >= 1 && val <= 8) input.value = val;
 }
 
-// INIT
 document.addEventListener("DOMContentLoaded", function () {
+    // Restriction de l'âge minimum (13 ans) sur le sélecteur de date
     const dateInput = document.getElementById("dateInput");
     if (dateInput) {
         const today = new Date();
@@ -283,9 +327,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     setupAddressAutocomplete();
-
     changerEtape(1);
 
+    // UX : Permettre de valider l'étape courante avec la touche "Entrée"
     document.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             event.preventDefault();

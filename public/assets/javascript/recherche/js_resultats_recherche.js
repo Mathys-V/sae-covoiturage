@@ -1,123 +1,157 @@
-/* * js_resultat_recherche.js
- * Gestion des interactions sur la liste des résultats.
- */
+document.addEventListener("DOMContentLoaded", async () => {
+    // --- Récupération des paramètres URL ---
+    // Lit les valeurs passées dans l'adresse (ex: ?depart=Paris&arrivee=Lyon)
+    const params = new URLSearchParams(window.location.search);
+    const villeDepart = params.get("depart");
+    const villeArrivee = params.get("arrivee");
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("JS Chargé"); // Pour vérifier que le fichier est bien lu
+    // Ciblage des éléments du DOM
+    const titleEl = document.getElementById("titre-resultats");
+    const containerEl = document.getElementById("liste-trajets");
+    const loadingEl = document.getElementById("loading-trajets");
 
-    // Exemple : Animation d'apparition progressive des cartes
-    const cards = document.querySelectorAll('.card-result');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
-    });
+    // --- Logique d'initialisation ---
+    if (villeDepart && villeArrivee) {
+        // Mise à jour du titre H1 pour confirmer la recherche à l'utilisateur
+        if (titleEl)
+            titleEl.textContent = `Trajets de ${villeDepart} vers ${villeArrivee}`;
 
-    // --- LOGIQUE DU SIGNALEMENT ---
-    const modalSignalement = document.getElementById('modalSignalement');
-    const formSignalement = document.getElementById('formSignalementRecherche');
-    
-    // 1. Quand on ouvre la modale, on remplit les IDs cachés
-    if (modalSignalement) {
-        modalSignalement.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // Le bouton cliqué (drapeau)
-            
-            // Sécurité si button est null
-            if (!button) return;
+        // Lancement de la recherche asynchrone
+        await rechercherTrajets(villeDepart, villeArrivee);
+    } else {
+        // Gestion d'erreur si les paramètres sont absents
+        if (containerEl)
+            containerEl.innerHTML =
+                '<div class="alert alert-warning">Veuillez préciser un départ et une arrivée.</div>';
+        if (loadingEl) loadingEl.style.display = "none";
+    }
 
-            const idTrajet = button.getAttribute('data-id-trajet');
-            const idConducteur = button.getAttribute('data-id-conducteur');
-            
-            console.log("Ouverture modal pour Trajet:", idTrajet, "Conducteur:", idConducteur);
+    /**
+     * Simule la recherche en base de données et filtre les résultats
+     */
+    async function rechercherTrajets(depart, arrivee) {
+        // Affichage du loader pendant le traitement
+        if (loadingEl) loadingEl.style.display = "block";
+        if (containerEl) containerEl.innerHTML = "";
 
-            // On remplit les inputs cachés
-            const inputTrajet = document.getElementById('signalement_id_trajet');
-            const inputConducteur = document.getElementById('signalement_id_conducteur');
+        try {
+            // Appel à la fausse API (remplace le fetch vers le serveur PHP)
+            const trajetsDisponibles = await mockApiTrajets();
 
-            if(inputTrajet) inputTrajet.value = idTrajet;
-            if(inputConducteur) inputConducteur.value = idConducteur;
+            // Filtrage des résultats : on vérifie la correspondance des villes
+            // (Note: .split(' ')[0] compare uniquement le premier mot pour être plus souple)
+            const resultats = trajetsDisponibles.filter((trajet) => {
+                const matchDepart = trajet.depart
+                    .toLowerCase()
+                    .includes(depart.toLowerCase().split(" ")[0]);
+                const matchArrivee = trajet.arrivee
+                    .toLowerCase()
+                    .includes(arrivee.toLowerCase().split(" ")[0]);
+                return matchDepart && matchArrivee;
+            });
+
+            // Masquage du loader une fois terminé
+            if (loadingEl) loadingEl.style.display = "none";
+
+            // Appel de la fonction d'affichage
+            afficherTrajets(resultats);
+        } catch (error) {
+            console.error(error);
+            if (containerEl)
+                containerEl.innerHTML =
+                    '<div class="alert alert-danger">Erreur lors de la récupération des trajets.</div>';
+        }
+    }
+
+    /**
+     * Génère le HTML des cartes de trajet et les insère dans la page
+     */
+    function afficherTrajets(trajets) {
+        // Cas où aucun trajet ne correspond
+        if (trajets.length === 0) {
+            containerEl.innerHTML = `
+                <div class="no-results">
+                    <p>Aucun covoiturage trouvé pour ce trajet 😕</p>
+                    <button class="btn btn-primary">Créer une alerte</button>
+                </div>`;
+            return;
+        }
+
+        // Boucle sur chaque trajet trouvé pour créer le HTML
+        trajets.forEach((trajet) => {
+            const card = document.createElement("div");
+            card.className = "trajet-card"; // Classe CSS pour le style
+
+            // Injection des données via Template Literal
+            card.innerHTML = `
+                <div class="trajet-info">
+                    <div class="heure-trajet">
+                        <strong>${trajet.heure_depart}</strong>
+                        <span class="duree">placeholder &rarr;</span>
+                        <strong>${trajet.heure_arrivee}</strong>
+                    </div>
+                    <div class="villes-trajet">
+                        <span>${trajet.depart}</span>
+                        <span>${trajet.arrivee}</span>
+                    </div>
+                </div>
+                <div class="conducteur-info">
+                    <div class="avatar-placeholder">${trajet.conducteur.charAt(
+                        0
+                    )}</div>
+                    <span>${trajet.conducteur}</span>
+                    <span class="rating">★ ${trajet.note}</span>
+                </div>
+                <div class="prix-action">
+                    <span class="prix">${trajet.prix} €</span>
+                    <a href="#" class="btn-reserver">Réserver</a>
+                </div>
+            `;
+
+            containerEl.appendChild(card);
         });
     }
 
-    // 2. NOUVELLE MÉTHODE : Délégation d'événement (Plus robuste)
-    // On écoute les clics sur tout le document
-    document.addEventListener('click', function(e) {
-        
-        // On vérifie si l'élément cliqué a l'ID "btnConfirmSignalement"
-        if (e.target && e.target.id === 'btnConfirmSignalement') {
-            e.preventDefault();
-            console.log("Bouton cliqué !"); // Vérif console
-
-            const btnConfirm = e.target;
-
-            // Récupération des données
-            const idTrajet = document.getElementById('signalement_id_trajet').value;
-            const idSignale = document.getElementById('signalement_id_conducteur').value;
-            const motifEl = document.getElementById('signalement_motif');
-            const descEl = document.getElementById('signalement_details');
-
-            const motif = motifEl ? motifEl.value : '';
-            const description = descEl ? descEl.value : '';
-
-            // Vérification basique
-            if (!motif) {
-                alert("Veuillez choisir un motif.");
-                return;
-            }
-
-            // Désactive le bouton
-            btnConfirm.disabled = true;
-            const originalText = btnConfirm.textContent;
-            btnConfirm.textContent = "Envoi...";
-
-            const payload = {
-                id_trajet: idTrajet,
-                id_signale: idSignale,
-                motif: motif,
-                description: description
-            };
-
-            console.log("Envoi payload:", payload);
-
-            fetch('/sae-covoiturage/public/api/signalement/nouveau', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Réactive le bouton
-                btnConfirm.disabled = false;
-                btnConfirm.textContent = originalText;
-
-                if (data.success) {
-                    alert("Signalement envoyé avec succès !");
-                    
-                    // Fermer la modale via Bootstrap
-                    const modalInstance = bootstrap.Modal.getInstance(modalSignalement);
-                    if(modalInstance) modalInstance.hide();
-                    
-                    // Vider le formulaire
-                    if(formSignalement) formSignalement.reset();
-                } else {
-                    alert("Erreur serveur : " + (data.msg || "Inconnue"));
-                }
-            })
-            .catch(error => {
-                console.error('Erreur Fetch:', error);
-                alert("Une erreur technique est survenue.");
-                btnConfirm.disabled = false;
-                btnConfirm.textContent = originalText;
-            });
-        }
-    });
+    /**
+     * Fonction de simulation d'API (Mock)
+     * Retourne une promesse avec des données JSON après un délai
+     */
+    function mockApiTrajets() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve([
+                    {
+                        id: 1,
+                        conducteur: "Thomas",
+                        note: "4.8",
+                        depart: "Gare d'Amiens",
+                        arrivee: "Paris Porte Maillot",
+                        heure_depart: "08:00",
+                        heure_arrivee: "10:30",
+                        prix: 12,
+                    },
+                    {
+                        id: 2,
+                        conducteur: "Sarah",
+                        note: "5.0",
+                        depart: "Amiens Centre",
+                        arrivee: "Paris Nord",
+                        heure_depart: "09:15",
+                        heure_arrivee: "11:00",
+                        prix: 14,
+                    },
+                    {
+                        id: 3,
+                        conducteur: "Lucas",
+                        note: "4.5",
+                        depart: "Lille Europe",
+                        arrivee: "Lyon Part-Dieu",
+                        heure_depart: "07:00",
+                        heure_arrivee: "12:00",
+                        prix: 45,
+                    },
+                ]);
+            }, 800);
+        });
+    }
 });
-
-// Ajoutons la keyframe pour l'animation JS ci-dessus
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-`;
-document.head.appendChild(styleSheet);

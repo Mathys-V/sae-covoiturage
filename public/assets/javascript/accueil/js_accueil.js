@@ -1,36 +1,44 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
+    // --- Configuration globale ---
+    const MIN_LENGTH = 2; // Nombre minimum de caractères pour déclencher la recherche
 
-    // Configuration
-    const MIN_LENGTH = 2; // Déclenche dès 2 lettres
-
+    /**
+     * Fonction principale d'autocomplétion
+     * Gère à la fois les lieux fréquents (variable JS) et l'API Gouv
+     */
     function setupAutocomplete(inputId, listId) {
         const input = document.getElementById(inputId);
         const list = document.getElementById(listId);
 
+        // Sécurité : arrêt si les éléments n'existent pas dans le DOM
         if (!input || !list) return;
 
-        input.addEventListener("input", function(e) {
+        input.addEventListener("input", function (e) {
             let val = this.value;
-            list.innerHTML = '';
-            
+            list.innerHTML = ""; // Réinitialisation de l'affichage
+
+            // On ne lance rien si la saisie est trop courte
             if (!val || val.length < MIN_LENGTH) return false;
 
-            // 1. CHERCHER DANS LES LIEUX FRÉQUENTS (BDD)
-            // On filtre les lieux qui contiennent le texte tapé
+            // --- RECHERCHE LOCALE (Lieux Fréquents / BDD) ---
+            // On filtre le tableau global window.lieuxFrequents injecté par le serveur
             let matchesDb = [];
             if (window.lieuxFrequents) {
-                matchesDb = window.lieuxFrequents.filter(lieu => 
-                    lieu.nom_lieu.toLowerCase().includes(val.toLowerCase()) || 
-                    lieu.ville.toLowerCase().includes(val.toLowerCase())
+                matchesDb = window.lieuxFrequents.filter(
+                    (lieu) =>
+                        lieu.nom_lieu
+                            .toLowerCase()
+                            .includes(val.toLowerCase()) ||
+                        lieu.ville.toLowerCase().includes(val.toLowerCase())
                 );
             }
 
-            // On affiche d'abord les résultats de la BDD (style "fréquent")
-            matchesDb.forEach(lieu => {
+            // Affichage des résultats locaux (prioritaires)
+            matchesDb.forEach((lieu) => {
                 const div = document.createElement("div");
                 div.className = "autocomplete-suggestion is-frequent";
-                
-                // Construction du HTML identique à la page Recherche
+
+                // Construction du HTML (Icône étoile pour les favoris)
                 div.innerHTML = `
                     <div class="sugg-icon"><i class="bi bi-star-fill"></i></div>
                     <div class="sugg-text">
@@ -39,26 +47,33 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 `;
 
-                div.addEventListener("click", function() {
-                    input.value = lieu.nom_lieu; // On remplit avec le nom du lieu
-                    list.innerHTML = '';
+                // Au clic : remplissage du champ et fermeture de la liste
+                div.addEventListener("click", function () {
+                    input.value = lieu.nom_lieu;
+                    list.innerHTML = "";
                 });
                 list.appendChild(div);
             });
 
-            // 2. CHERCHER DANS L'API GOUV (Adresse)
-            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(val)}&limit=5`)
-                .then(response => response.json())
-                .then(data => {
-                    // On n'efface pas la liste, on ajoute à la suite des lieux fréquents
-                    
-                    data.features.forEach(feature => {
+            // --- RECHERCHE DISTANTE (API Adresse Gouv) ---
+            // Appel asynchrone pour compléter les résultats locaux
+            fetch(
+                `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
+                    val
+                )}&limit=5`
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    // Les résultats de l'API s'ajoutent à la suite des favoris existants
+
+                    data.features.forEach((feature) => {
                         let label = feature.properties.label;
-                        let context = feature.properties.context || ""; 
-                        
+                        let context = feature.properties.context || "";
+
                         const div = document.createElement("div");
-                        div.className = "autocomplete-suggestion is-api"; // Style standard
-                        
+                        div.className = "autocomplete-suggestion is-api"; // Style standard API
+
+                        // Construction du HTML (Icône localisation pour l'API)
                         div.innerHTML = `
                             <div class="sugg-icon"><i class="bi bi-geo-alt-fill"></i></div>
                             <div class="sugg-text">
@@ -66,26 +81,28 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <span class="sugg-sub">${context}</span>
                             </div>
                         `;
-                        
-                        div.addEventListener("click", function() {
+
+                        div.addEventListener("click", function () {
                             input.value = label;
-                            list.innerHTML = '';
+                            list.innerHTML = "";
                         });
-                        
+
                         list.appendChild(div);
                     });
                 })
-                .catch(err => console.error("Erreur API:", err));
+                .catch((err) => console.error("Erreur API:", err));
         });
 
-        // Fermeture au clic extérieur
-        document.addEventListener("click", function(e) {
+        // --- Gestion de la fermeture ---
+        // Masque la liste si l'utilisateur clique ailleurs sur la page
+        document.addEventListener("click", function (e) {
             if (e.target !== input) {
-                list.innerHTML = '';
+                list.innerHTML = "";
             }
         });
     }
 
+    // Lancement de l'autocomplétion sur les champs Départ et Arrivée
     setupAutocomplete("depart", "depart-list");
     setupAutocomplete("arrivee", "arrivee-list");
 });

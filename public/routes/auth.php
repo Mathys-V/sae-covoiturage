@@ -1,99 +1,112 @@
 <?php
-// Accueil
+// ============================================================
+// PARTIE 1 : PAGE D'ACCUEIL SIMPLE
+// ============================================================
 Flight::route('/', function(){
+    // Route racine : affiche simplement le template d'accueil
     Flight::render('accueil/accueil.tpl', ['nom' => 'Equipe W']);
 });
 
-// Connexion (Affichage)
+// ============================================================
+// PARTIE 2 : CONNEXION (LOGIN)
+// ============================================================
+
+// Route GET : Affichage du formulaire de connexion
 Flight::route('GET /connexion', function(){
-    // Si déjà connecté, on redirige vers l'accueil
+    // Si l'utilisateur est déjà connecté en session, inutile de se reconnecter -> redirection Accueil
     if(isset($_SESSION['user'])) Flight::redirect('/');
     Flight::render('connexion/connexion.tpl', ['titre' => 'Se connecter']);
 });
 
-
-// TRAITEMENT DU FORMULAIRE DE CONNEXION
+// Route POST : Traitement du formulaire de connexion
 Flight::route('POST /connexion', function(){
     $db = Flight::get('db');
     $email = Flight::request()->data->email;
     $password = Flight::request()->data->password;
 
-    // 1. Récupérer l'utilisateur
+    // 1. Recherche de l'utilisateur par son email
     $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE email = :email");
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // 2. Vérifications Mot de Passe
+    // 2. Vérification du mot de passe (comparaison du hash stocké en base)
     if ($user && password_verify($password, $user['mot_de_passe'])) {
         
-        // --- VÉRIFICATION BANNISSEMENT (LOGIQUE COMPLÈTE) ---
+        // --- GESTION DU BANNISSEMENT ---
+        // Si le compte est marqué comme inactif ('N')
         if ($user['active_flag'] === 'N') {
             
-            // Cas 1 : Bannissement Temporaire (il y a une date dans le token)
+            // Cas A : Bannissement temporaire (présence d'une date d'expiration)
             if (!empty($user['date_expiration_token'])) {
                 $finBan = new DateTime($user['date_expiration_token']);
                 $now = new DateTime();
 
+                // Si la date de fin de ban est passée
                 if ($now > $finBan) {
-                    // LE BAN EST FINI : On réactive le compte
+                    // LE BAN EST FINI : On réactive le compte en base de données
                     $db->prepare("UPDATE UTILISATEURS SET active_flag = 'Y', date_expiration_token = NULL WHERE id_utilisateur = :id")
-                       ->execute([':id' => $user['id_utilisateur']]);
+                        ->execute([':id' => $user['id_utilisateur']]);
                     
-                    // IMPORTANT : On met à jour la variable locale pour que la connexion continue juste après
+                    // On met à jour la variable locale pour permettre la connexion immédiate
                     $user['active_flag'] = 'Y'; 
                 } else {
-                    // BAN EN COURS (Date non dépassée)
+                    // BAN EN COURS : On affiche un message d'erreur avec la date de fin
                     $_SESSION['flash_error'] = "Compte suspendu temporairement jusqu'au " . $finBan->format('d/m/Y à H:i');
                     Flight::redirect('/connexion');
-                    return; // On arrête tout ici
+                    return; // Arrêt du script
                 }
             } 
-            // Cas 2 : Bannissement Définitif (pas de date)
+            // Cas B : Bannissement définitif (pas de date d'expiration)
             else {
                 $_SESSION['flash_error'] = "Votre compte a été suspendu définitivement par l'administration.";
                 Flight::redirect('/connexion');
-                return; // On arrête tout ici
+                return; // Arrêt du script
             }
         }
         // -----------------------------------------------------
 
-        // Si on arrive ici, c'est que l'utilisateur est Actif (Y) ou vient d'être débanni
+        // Si tout est OK (Actif ou Débanni), on enregistre l'utilisateur en session
         $_SESSION['user'] = $user;
         Flight::redirect('/'); 
 
     } else {
-        // Mauvais mot de passe ou email inconnu
+        // Echec : Email inconnu ou mot de passe incorrect
         $_SESSION['flash_error'] = "Email ou mot de passe incorrect.";
         Flight::redirect('/connexion');
     }
 });
 
-// Déconnexion
+// Route : Déconnexion
 Flight::route('/deconnexion', function(){
-    session_destroy(); // Détruit la session
+    session_destroy(); // Destruction complète de la session
     Flight::redirect('/');
 });
 
-// Inscription
+// ============================================================
+// PARTIE 3 : INSCRIPTION
+// ============================================================
+
+// Route GET : Affichage du formulaire d'inscription
 Flight::route('/inscription', function(){
     Flight::render('inscription/inscription.tpl', ['titre' => 'S\'inscrire']);
 });
 
-// TRAITEMENT DE L'INSCRIPTION
+// Route POST : Traitement de l'inscription
 Flight::route('POST /inscription', function(){
     $data = Flight::request()->data;
     $db = Flight::get('db');
 
-    // 1. Vérification Mots de passe
+    // 1. Vérification : Les deux mots de passe doivent être identiques
     if ($data->mdp !== $data->{'conf-mdp'}) {
         Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
             'error' => 'Les mots de passe ne correspondent pas.',
-            'formData' => $data
+            'formData' => $data // On renvoie les données pour ne pas tout perdre
         ]);
         return;
     }
 
+    // 2. Vérification : Âge (Doit être >= 13 ans)
     $dateNaiss = new DateTime($data->date);
     $dateMin1900 = new DateTime('1900-01-01');
     $dateLimite13ans = new DateTime('-13 years');
@@ -107,6 +120,7 @@ Flight::route('POST /inscription', function(){
         return;
     }
 
+    // 3. Vérification : Date valide (pas avant 1900)
     if ($dateNaiss < $dateMin1900) {
         Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
@@ -117,11 +131,12 @@ Flight::route('POST /inscription', function(){
     }
 
     try {
+        // Démarrage d'une transaction SQL (Tout ou rien)
         $db->beginTransaction();
 
-        // 2. Insertion Adresse
+        // A. Insertion de l'Adresse
         $stmtAddr = $db->prepare("INSERT INTO ADRESSES (voie, code_postal, ville, pays) VALUES (:voie, :cp, :ville, 'France')");
-        // Gestion du complément d'adresse s'il est vide
+        // Concaténation rue + complément
         $complement = isset($data->complement) ? $data->complement : '';
         $voie_complete = $data->rue . ($complement ? ' ' . $complement : '');
         
@@ -130,9 +145,10 @@ Flight::route('POST /inscription', function(){
             ':cp' => $data->post,
             ':ville' => $data->ville
         ]);
-        $id_adresse = $db->lastInsertId();
+        $id_adresse = $db->lastInsertId(); // Récupération de l'ID généré
 
-        // 3. Insertion Utilisateur
+        // B. Insertion de l'Utilisateur
+        // Hachage sécurisé du mot de passe
         $hash = password_hash($data->mdp, PASSWORD_BCRYPT);
         
         $stmtUser = $db->prepare("
@@ -149,19 +165,18 @@ Flight::route('POST /inscription', function(){
             ':dob' => $data->date,
             ':tel' => $data->telephone
         ]);
-        $id_utilisateur = $db->lastInsertId();
+        $id_utilisateur = $db->lastInsertId(); // Récupération de l'ID utilisateur
 
-        // 4. Insertion Véhicule (Si voiture = oui)
-        // On vérifie que la variable existe ET qu'elle vaut 'oui'
+        // C. Insertion du Véhicule (Optionnel, si voiture = 'oui')
         if (isset($data->voiture) && $data->voiture === 'oui') {
             
             $immat = strtoupper(trim($data->immat));
 
-            // Regex de validation (Identique à celle du JS pour cohérence)
+            // Validation du format de la plaque d'immatriculation (Regex)
             $regexImmat = '~^(([A-Z]{2}[- ]?\d{3}[- ]?[A-Z]{2})|(\d{1,4}[- ]?[A-Z]{2,3}[- ]?\d{2}))$~';
 
             if (!preg_match($regexImmat, $immat)) {
-                $db->rollBack();
+                $db->rollBack(); // Annulation de TOUTES les requêtes précédentes
                 Flight::render('inscription/inscription.tpl', [
                     'titre' => 'S\'inscrire',
                     'error' => 'Format de plaque invalide. Ex: AA-123-AA',
@@ -170,52 +185,52 @@ Flight::route('POST /inscription', function(){
                 return;
             }
 
+            // Insertion dans la table VEHICULES
             $stmtCar = $db->prepare("
                 INSERT INTO VEHICULES (marque, modele, nb_places_totales, couleur, immatriculation, type_vehicule, details_supplementaires) 
                 VALUES (:marque, :modele, :places, :couleur, :immat, 'voiture', ' ')
             ");
             
-            // CORRECTION ICI : On utilise $data->model (nom du champ HTML) et pas $data->modele
             $stmtCar->execute([
                 ':marque' => $data->marque,
-                ':modele' => $data->model, // <--- C'était l'erreur (model vs modele)
+                ':modele' => $data->model, 
                 ':places' => (int)$data->nb_places,
-                ':couleur' => isset($data->couleur) ? $data->couleur : '', // Gestion si couleur vide
+                ':couleur' => isset($data->couleur) ? $data->couleur : '',
                 ':immat' => $immat
             ]);
             $id_vehicule = $db->lastInsertId();
 
+            // Liaison Utilisateur <-> Véhicule (Table POSSESSIONS)
             $stmtPoss = $db->prepare("INSERT INTO POSSESSIONS (id_utilisateur, id_vehicule) VALUES (:id_user, :id_car)");
             $stmtPoss->execute([':id_user' => $id_utilisateur, ':id_car' => $id_vehicule]);
         }
 
+        // Validation finale de la transaction
         $db->commit();
 
-        // Succès : Redirection avec paramètre de succès
+        // Succès : Redirection vers connexion
         Flight::redirect('/connexion?success=inscription');
 
     } catch (PDOException $e) {
-        $db->rollBack();
+        $db->rollBack(); // Annulation en cas d'erreur SQL
         
-        // Debug : Décommentez la ligne suivante si l'erreur persiste pour voir le message exact
-        // die($e->getMessage()); 
-
         $errorMsg = "Une erreur est survenue lors de l'inscription.";
         
+        // Gestion spécifique des erreurs de doublons (Email ou Tel déjà pris)
         if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
             $errorMsg = "Cette adresse email ou ce numéro de téléphone existe déjà.";
         }
 
         Flight::render('inscription/inscription.tpl', [
             'titre' => 'S\'inscrire',
-            'error' => $errorMsg, // Le message s'affichera dans le TPL
+            'error' => $errorMsg,
             'formData' => $data
         ]);
     }
 });
 
 // ============================================================
-// GESTION MOT DE PASSE OUBLIÉ
+// PARTIE 4 : MOT DE PASSE OUBLIÉ (Flux en 3 étapes)
 // ============================================================
 
 // ÉTAPE 1 : DEMANDER L'EMAIL
@@ -233,22 +248,22 @@ Flight::route('POST /mot-de-passe-oublie', function(){
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // 2. Génération du code
+        // 2. Génération d'un code à 6 chiffres
         $code = rand(100000, 999999);
         $expiration = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-        // 3. Mise à jour BDD
+        // 3. Stockage du code en base de données
         $update = $db->prepare("UPDATE UTILISATEURS SET token_recuperation = :code, date_expiration_token = :exp WHERE email = :email");
         $update->execute([':code' => $code, ':exp' => $expiration, ':email' => $email]);
 
-        // 4. Simulation LOG (Fichier texte)
+        // 4. Simulation d'envoi de mail (Stockage dans un fichier txt pour démo)
         file_put_contents('../code_mail.txt', "Le code pour $email est : $code");
         
-        // 5. Mise en session et redirection
+        // 5. Mise en session de l'email pour l'étape suivante
         $_SESSION['reset_email'] = $email;
         Flight::redirect('/mot-de-passe-oublie/code');
     } else {
-        // CORRECTION : Si l'email n'existe pas, on affiche l'erreur ici et on ne redirige PAS.
+        // Email inconnu
         Flight::render('mdp/etape1_email.tpl', [
             'titre' => 'Mot de passe oublié',
             'error' => 'Aucun compte associé à cet email.'
@@ -258,7 +273,7 @@ Flight::route('POST /mot-de-passe-oublie', function(){
 
 // ÉTAPE 2 : SAISIR LE CODE
 Flight::route('GET /mot-de-passe-oublie/code', function(){
-    // Si on n'a pas fait l'étape 1 (pas d'email en session), on redirige au début
+    // Sécurité : On ne peut pas accéder ici sans avoir fait l'étape 1
     if(!isset($_SESSION['reset_email'])) {
         Flight::redirect('/mot-de-passe-oublie');
         return;
@@ -272,13 +287,14 @@ Flight::route('POST /mot-de-passe-oublie/verify', function(){
     $email = $_SESSION['reset_email'] ?? '';
     $db = Flight::get('db');
 
+    // Vérification : Le code doit correspondre ET la date ne doit pas être expirée
     $stmt = $db->prepare("SELECT nom, prenom FROM UTILISATEURS WHERE email = :email AND token_recuperation = :code AND date_expiration_token > NOW()");
     $stmt->execute([':email' => $email, ':code' => $code]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
+        // Code valide : On autorise l'étape suivante
         $_SESSION['reset_authorized'] = true;
-        // On stocke le nom/prénom pour l'afficher à l'étape d'après (rassurant)
         $_SESSION['reset_user_name'] = $user['prenom'] . ' ' . substr($user['nom'], 0, 1) . '.';
         Flight::redirect('/mot-de-passe-oublie/nouveau');
     } else {
@@ -288,14 +304,13 @@ Flight::route('POST /mot-de-passe-oublie/verify', function(){
 
 // ÉTAPE 3 : NOUVEAU MOT DE PASSE
 Flight::route('GET /mot-de-passe-oublie/nouveau', function(){
+    // Sécurité : Vérification de l'autorisation de l'étape 2
     if(!isset($_SESSION['reset_authorized'])) {
         Flight::redirect('/mot-de-passe-oublie');
         return;
     }
     
-    // On passe le nom censuré à la vue
     $nomAffiche = $_SESSION['reset_user_name'] ?? 'Utilisateur';
-    
     Flight::render('mdp/etape3_nouveau.tpl', ['titre' => 'Nouveau mot de passe', 'nom_user' => $nomAffiche]);
 });
 
@@ -304,25 +319,27 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
     $confirm = Flight::request()->data->confirm_mdp;
     $email = $_SESSION['reset_email'];
 
+    // Vérification correspondance
     if ($mdp !== $confirm) {
         Flight::render('mdp/etape3_nouveau.tpl', ['error' => 'Les mots de passe ne correspondent pas.']);
         return;
     }
 
-    // VERIFICATION COMPLEXITE
+    // Vérification complexité (Regex : 8 chars, 1 chiffre, 1 spécial)
     $regexMdp = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/';
     if (!preg_match($regexMdp, $mdp)) {
         Flight::render('mdp/etape3_nouveau.tpl', ['error' => 'Le mot de passe doit contenir 8 caractères, 1 chiffre et 1 caractère spécial (@$!%*#?&).']);
         return;
     }
 
+    // Mise à jour du mot de passe et nettoyage du token
     $hash = password_hash($mdp, PASSWORD_BCRYPT);
     $db = Flight::get('db');
 
     $stmt = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :hash, token_recuperation = NULL, date_expiration_token = NULL WHERE email = :email");
     $stmt->execute([':hash' => $hash, ':email' => $email]);
 
-    // Nettoyage complet
+    // Nettoyage de la session de réinitialisation
     unset($_SESSION['reset_email']);
     unset($_SESSION['reset_authorized']);
     unset($_SESSION['reset_user_name']);
@@ -330,8 +347,4 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
 
     Flight::redirect('/connexion?msg=mdp_updated');
 });
-
-
-
-
 ?>

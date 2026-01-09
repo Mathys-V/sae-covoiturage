@@ -1,7 +1,10 @@
 <?php
 
-// AFFICHER LA PAGE DE RÉSERVATION
+// ============================================================
+// PARTIE 1 : PAGE DE RÉSERVATION (FORMULAIRE)
+// ============================================================
 Flight::route('GET /trajet/reserver/@id', function($id){
+    // Vérification de connexion
     if(!isset($_SESSION['user'])) {
         $_SESSION['flash_error'] = "Veuillez vous connecter pour réserver un trajet.";
         Flight::redirect('/connexion');
@@ -11,7 +14,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // Récupérer le trajet
+    // 1. Récupération des détails du trajet, conducteur et véhicule
     $sql = "SELECT t.*, u.prenom, u.nom, u.photo_profil, v.marque, v.modele, v.nb_places_totales
             FROM TRAJETS t
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
@@ -22,6 +25,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $stmt->execute([':id' => $id]);
     $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Sécurités
     if (!$trajet) {
         $_SESSION['flash_error'] = "Ce trajet n'existe pas.";
         Flight::redirect('/recherche');
@@ -34,7 +38,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
         return;
     }
 
-    // Calcul places prises
+    // 2. Calcul des places déjà prises
     $sqlPlaces = "SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
                   FROM RESERVATIONS
                   WHERE id_trajet = :id AND statut_code = 'V'";
@@ -46,7 +50,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     $trajet['places_prises'] = $placesData['places_prises'];
     $trajet['places_disponibles'] = $trajet['places_proposees'] - $trajet['places_prises'];
 
-    // Vérif si déjà réservé
+    // 3. Vérification si l'utilisateur a déjà réservé ce trajet
     $sqlCheck = "SELECT * FROM RESERVATIONS 
                  WHERE id_trajet = :id 
                  AND id_passager = :user 
@@ -62,6 +66,7 @@ Flight::route('GET /trajet/reserver/@id', function($id){
         return;
     }
 
+    // Formatage des dates pour l'affichage
     $dateObj = new DateTime($trajet['date_heure_depart']);
     $trajet['date_fmt'] = $dateObj->format('d/m/Y');
     $trajet['heure_fmt'] = $dateObj->format('H:i');
@@ -72,27 +77,30 @@ Flight::route('GET /trajet/reserver/@id', function($id){
     ]);
 });
 
-// TRAITEMENT DE LA RÉSERVATION
+// ============================================================
+// PARTIE 2 : TRAITEMENT DE LA RÉSERVATION (POST)
+// ============================================================
 Flight::route('POST /trajet/reserver/@id', function($id){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
     
-    // Récupération du nombre de places demandé (1 par défaut)
+    // Récupération du nombre de places souhaitées
     $nbPlacesDemandees = isset(Flight::request()->data->nb_places) ? (int)Flight::request()->data->nb_places : 1;
     if ($nbPlacesDemandees < 1) $nbPlacesDemandees = 1;
 
     try {
-        $db->beginTransaction();
+        $db->beginTransaction(); // Début de transaction (pour éviter les conflits de places)
 
+        // A. Vérification de l'existence du trajet
         $stmt = $db->prepare("SELECT * FROM TRAJETS WHERE id_trajet = :id");
         $stmt->execute([':id' => $id]);
         $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$trajet) throw new Exception("Trajet introuvable.");
 
-        // Calcul des places disponibles
+        // B. Recalcul temps réel des places disponibles (Crucial pour éviter le surbooking)
         $stmtPlaces = $db->prepare("
             SELECT COALESCE(SUM(nb_places_reservees), 0) as places_prises
             FROM RESERVATIONS
@@ -107,7 +115,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             throw new Exception("Pas assez de places disponibles !");
         }
 
-        // Réservation avec le bon nombre de places
+        // C. Insertion de la réservation
         $stmtReserve = $db->prepare("
             INSERT INTO RESERVATIONS 
             (id_trajet, id_passager, nb_places_reservees, statut_code, date_reservation)
@@ -119,15 +127,14 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             ':nb' => $nbPlacesDemandees
         ]);
 
-        // Si le trajet est maintenant complet, changer statut
+        // D. Mise à jour du statut du trajet si COMPLET
         if (($placesDisponibles - $nbPlacesDemandees) == 0) {
             $stmtUpdate = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = :id");
             $stmtUpdate->execute([':id' => $id]);
         }
 
-        // Message système "A rejoint" avec le nombre de places (ex: ::sys_join::2)
+        // E. Envoi d'un message système dans le chat ("X a rejoint le trajet")
         $contenuMsg = "::sys_join::" . $nbPlacesDemandees;
-        
         $stmtMsg = $db->prepare("
             INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi)
             VALUES (:tid, :uid, :contenu, NOW())
@@ -138,7 +145,7 @@ Flight::route('POST /trajet/reserver/@id', function($id){
             ':contenu' => $contenuMsg
         ]);
 
-        $db->commit();
+        $db->commit(); // Validation
         $_SESSION['flash_success'] = "Réservation confirmée pour " . $nbPlacesDemandees . " place(s) !";
         Flight::redirect('/mes_reservations');
 
@@ -149,14 +156,17 @@ Flight::route('POST /trajet/reserver/@id', function($id){
     }
 });
 
-// LISTE DES RÉSERVATIONS (TRIÉE INTELLIGEMMENT)
+// ============================================================
+// PARTIE 3 : LISTE "MES RÉSERVATIONS" (TRIÉE)
+// ============================================================
 Flight::route('GET /mes_reservations', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
     
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupération SQL (Sans ORDER BY, car on trie en PHP)
+    // 1. Récupération des réservations (Uniquement les validées 'V')
+    // On ne fait pas de ORDER BY SQL ici car le tri est complexe et sera fait en PHP
     $sql = "SELECT r.*, t.*, 
             u.prenom as conducteur_prenom, u.nom as conducteur_nom, u.photo_profil as conducteur_photo,
             v.marque, v.modele, v.nb_places_totales
@@ -174,7 +184,7 @@ Flight::route('GET /mes_reservations', function(){
     $participants = [];
     $now = new DateTime();
 
-    // 2. Calcul des statuts et données d'affichage
+    // 2. Traitement des données (Calcul des statuts visuels)
     foreach ($reservations as &$r) {
         $participants[$r['id_trajet']] = [];
 
@@ -182,7 +192,7 @@ Flight::route('GET /mes_reservations', function(){
         $r['date_fmt'] = $dateObj->format('d/m/Y');
         $r['heure_fmt'] = $dateObj->format('H\hi');
 
-        // --- Statut du trajet ---
+        // --- Détermination du statut (À venir / En cours / Terminé) ---
         $duree = isset($r['duree_estimee']) && is_numeric($r['duree_estimee']) ? (int)$r['duree_estimee'] : 0;
         $end = (clone $dateObj)->add(new DateInterval('PT'.$duree.'M'));
 
@@ -201,15 +211,15 @@ Flight::route('GET /mes_reservations', function(){
             $r['statut_libelle'] = 'Terminé';
             $r['statut_couleur'] = 'secondary';
         }
-        // --- /Statut du trajet ---
 
-        // Participants (SQL)
+        // --- Récupération de la liste des participants pour l'affichage ---
         $participants[$r['id_trajet']][] = [
             'id'=>$r['id_conducteur'],
             'nom'=>$r['conducteur_prenom'].' '.$r['conducteur_nom'],
             'role'=>'Conducteur'
         ];
 
+        // On récupère les autres passagers du même trajet
         $ps = $db->prepare("SELECT u.id_utilisateur, u.prenom, u.nom FROM RESERVATIONS r JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur WHERE r.id_trajet = :t AND r.statut_code='V' AND u.id_utilisateur != :me");
         $ps->execute([':t'=>$r['id_trajet'], ':me'=>$userId]);
 
@@ -222,34 +232,31 @@ Flight::route('GET /mes_reservations', function(){
         }
     }
 
-    // 3. LE TRI HYBRIDE (C'est ce qui fait ta demande spécifique)
+    // 3. LOGIQUE DE TRI INTELLIGENT
     usort($reservations, function($a, $b) {
-        // A. Ordre des catégories
-        // 1. En cours, 2. À venir, 3. Terminé
+        // A. Priorité par catégorie (En cours > À venir > Terminé)
         $order = ['encours' => 1, 'avenir' => 2, 'termine' => 3, 'annule' => 4];
         
         $weightA = $order[$a['statut_visuel']] ?? 99;
         $weightB = $order[$b['statut_visuel']] ?? 99;
 
-        // Si catégories différentes, on trie par catégorie
         if ($weightA !== $weightB) {
             return $weightA - $weightB;
         }
 
-        // B. Tri par date (différent selon la catégorie)
+        // B. Tri par date selon la catégorie
         $timeA = strtotime($a['date_heure_depart']);
         $timeB = strtotime($b['date_heure_depart']);
 
         if ($a['statut_visuel'] === 'avenir' || $a['statut_visuel'] === 'encours') {
-            // Pour 'À venir' : CROISSANT (Le plus proche en haut)
+            // Pour le futur : Ordre chronologique (Le plus proche d'abord)
             return $timeA - $timeB;
         } else {
-            // Pour 'Terminé' : DÉCROISSANT (Le plus récent en haut de l'historique)
+            // Pour le passé : Ordre anté-chronologique (Le plus récent d'abord)
             return $timeB - $timeA;
         }
     });
 
-    // 4. Envoi à la vue
     Flight::render('reservation/mes_reservations.tpl', [
         'titre'=>'Mes réservations',
         'reservations'=>$reservations,
@@ -258,7 +265,9 @@ Flight::route('GET /mes_reservations', function(){
 });
 
 
-// SIGNALEMENT
+// ============================================================
+// PARTIE 4 : SIGNALEMENT (API)
+// ============================================================
 Flight::route('POST /api/signalement/nouveau', function() {
     if(!isset($_SESSION['user'])) Flight::json(['success'=>false, 'msg'=>'Non connecté']);
 
@@ -271,6 +280,7 @@ Flight::route('POST /api/signalement/nouveau', function() {
         Flight::json(['success'=>false,'msg'=>'Champs manquants']);
     }
 
+    // Vérification que les deux utilisateurs sont bien liés au trajet
     $check = $db->prepare("
         SELECT 1 FROM TRAJETS WHERE id_trajet = :t AND id_conducteur = :u
         UNION
@@ -282,6 +292,7 @@ Flight::route('POST /api/signalement/nouveau', function() {
         Flight::json(['success'=>false,'msg'=>'Utilisateur non lié au trajet']);
     }
 
+    // Enregistrement du signalement
     $stmt = $db->prepare("
         INSERT INTO SIGNALEMENTS (id_signaleur, id_signale, id_trajet, motif, description)
         VALUES (:me,:sig,:t,:motif,:desc)
@@ -297,7 +308,9 @@ Flight::route('POST /api/signalement/nouveau', function() {
     Flight::json(['success'=>true]);
 });
 
-// ANNULER UNE RÉSERVATION
+// ============================================================
+// PARTIE 5 : ANNULATION D'UNE RÉSERVATION
+// ============================================================
 Flight::route('POST /reservation/annuler/@id', function($id){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -313,17 +326,17 @@ Flight::route('POST /reservation/annuler/@id', function($id){
 
         if (!$reservation) throw new Exception("Réservation introuvable.");
 
-        // Mettre le statut à A pour annulé
+        // 1. Passage du statut à 'A' (Annulé)
         $sqlUpdate = "UPDATE RESERVATIONS SET statut_code = 'A' WHERE id_reservation = :id";
         $stmtUpdate = $db->prepare($sqlUpdate);
         $stmtUpdate->execute([':id' => $id]);
 
-        // Si le trajet était complet, le réouvrir
+        // 2. Si le trajet était Complet ('C'), on le repasse en Actif ('A') car une place se libère
         $sqlTrajet = "UPDATE TRAJETS SET statut_flag = 'A' WHERE id_trajet = :trajet AND statut_flag = 'C'";
         $stmtTrajet = $db->prepare($sqlTrajet);
         $stmtTrajet->execute([':trajet' => $reservation['id_trajet']]);
 
-        // Message système "A quitté"
+        // 3. Notification système dans le chat ("A quitté")
         $msgContent = "::sys_leave::";
         $sqlMsg = "INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :content, NOW())";
         $stmtMsg = $db->prepare($sqlMsg);

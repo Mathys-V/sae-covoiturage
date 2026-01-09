@@ -1,13 +1,16 @@
 <?php
 
-// 1. CHOISIR QUI NOTER (Liste des participants du trajet)
+// ============================================================
+// PARTIE 1 : PAGE DE SÉLECTION DU DESTINATAIRE (QUI NOTER ?)
+// ============================================================
 Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
+    // Vérification de connexion
     if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
     
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // Récupérer le trajet et le conducteur
+    // 1. Récupération des infos du trajet et du conducteur
     $sqlTrajet = "SELECT t.*, u.id_utilisateur as id_cond, u.prenom, u.nom, u.photo_profil 
                   FROM TRAJETS t 
                   JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur 
@@ -20,8 +23,9 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
 
     $participants = [];
 
-    // --- FONCTION D'AIDE POUR VÉRIFIER SI DÉJÀ NOTÉ ---
-    // Puisque AVIS n'a pas id_trajet, on joint avec RESERVATIONS
+    // --- FONCTION UTILITAIRE INTERNE ---
+    // Vérifie si l'utilisateur courant a DÉJÀ laissé un avis à cette personne pour ce trajet.
+    // La liaison se fait via la table RESERVATIONS car AVIS n'a pas id_trajet direct.
     $checkAvis = function($destinataireId) use ($db, $id_trajet, $userId) {
         $sql = "SELECT COUNT(*) 
                 FROM AVIS a 
@@ -33,7 +37,7 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
     };
     // --------------------------------------------------
 
-    // Si JE SUIS passager -> Je peux noter le conducteur
+    // A. Si je suis PASSAGER, je peux noter le CONDUCTEUR (sauf si déjà fait)
     if ($userId != $trajet['id_cond']) {
         if(!$checkAvis($trajet['id_cond'])) {
             $participants[] = [
@@ -46,7 +50,7 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
         }
     }
 
-    // Récupérer les passagers
+    // B. Récupération de TOUS les passagers validés (Statut 'V')
     $sqlPass = "SELECT u.id_utilisateur, u.prenom, u.nom, u.photo_profil 
                 FROM RESERVATIONS r
                 JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
@@ -55,9 +59,12 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
     $stmtPass->execute([$id_trajet]);
     $passagers = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
 
+    // C. Ajout des passagers à la liste des personnes à noter
     foreach($passagers as $p) {
-        if ($p['id_utilisateur'] == $userId) continue; // On ne se note pas soi-même
+        // On ne peut pas se noter soi-même
+        if ($p['id_utilisateur'] == $userId) continue; 
 
+        // Si pas encore noté, on l'ajoute
         if(!$checkAvis($p['id_utilisateur'])) {
             $participants[] = [
                 'id' => $p['id_utilisateur'],
@@ -69,18 +76,21 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
         }
     }
 
+    // Cas 1 : Tout le monde a déjà été noté
     if(empty($participants)) {
         $_SESSION['flash_success'] = "Vous avez noté tous les participants !";
         Flight::redirect('/profil');
         return;
     }
 
-    // S'il ne reste qu'une personne, on va direct au formulaire
+    // Cas 2 : Il ne reste qu'une seule personne à noter
+    // -> UX : On redirige directement vers le formulaire pour gagner un clic
     if(count($participants) == 1) {
         Flight::redirect("/avis/laisser/$id_trajet/" . $participants[0]['id']);
         return;
     }
 
+    // Cas 3 : Plusieurs personnes restantes -> Affichage de la liste de choix
     Flight::render('avis/choix.tpl', [
         'titre' => 'Qui voulez-vous noter ?',
         'participants' => $participants,
@@ -88,11 +98,14 @@ Flight::route('GET /avis/choix/@id_trajet', function($id_trajet) {
     ]);
 });
 
-// 2. FORMULAIRE D'AVIS
+// ============================================================
+// PARTIE 2 : FORMULAIRE DE SAISIE DE L'AVIS
+// ============================================================
 Flight::route('GET /avis/laisser/@id_trajet/@id_dest', function($id_trajet, $id_dest) {
     if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
     $db = Flight::get('db');
     
+    // Récupération des infos de la personne qu'on va noter (pour afficher sa photo/nom)
     $stmt = $db->prepare("SELECT prenom, nom, photo_profil FROM UTILISATEURS WHERE id_utilisateur = ?");
     $stmt->execute([$id_dest]);
     $destinataire = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -105,7 +118,9 @@ Flight::route('GET /avis/laisser/@id_trajet/@id_dest', function($id_trajet, $id_
     ]);
 });
 
-// 3. ENREGISTREMENT (CORRIGÉ : GESTION ID_RESERVATION + VÉRIF PROFIL)
+// ============================================================
+// PARTIE 3 : TRAITEMENT DE L'ENREGISTREMENT
+// ============================================================
 Flight::route('POST /avis/ajouter', function() {
     if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
@@ -118,14 +133,16 @@ Flight::route('POST /avis/ajouter', function() {
     $note = (int)$data->note;
     $commentaire = htmlspecialchars($data->commentaire);
 
-    // 1. Déterminer qui est le conducteur
+    // 1. Déterminer le rôle de la personne NOTÉE (Conducteur ou Passager ?)
     $stmtRole = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = ?");
     $stmtRole->execute([$id_trajet]);
     $idConducteur = $stmtRole->fetchColumn();
 
     $roleDestinataire = ($id_dest == $idConducteur) ? 'C' : 'P';
 
-    // 2. TROUVER LA RÉSERVATION ASSOCIÉE
+    // 2. Retrouver l'ID de la RÉSERVATION qui lie ces deux personnes
+    // - Si je note le conducteur -> C'est MA réservation
+    // - Si je note un passager -> C'est SA réservation
     $id_passager_concerne = ($id_dest == $idConducteur) ? $id_auteur : $id_dest;
 
     $stmtRes = $db->prepare("SELECT id_reservation FROM RESERVATIONS WHERE id_trajet = ? AND id_passager = ?");
@@ -141,7 +158,7 @@ Flight::route('POST /avis/ajouter', function() {
     try {
         $db->beginTransaction();
 
-        // A. Insérer l'avis
+        // A. Insertion de l'avis en base
         $sql = "INSERT INTO AVIS (id_reservation, id_auteur, id_destinataire, role_destinataire, note, commentaire, date_avis) 
                 VALUES (:res, :aut, :dest, :role, :note, :comm, NOW())";
         
@@ -155,14 +172,15 @@ Flight::route('POST /avis/ajouter', function() {
             ':comm' => $commentaire
         ]);
 
-        // B. Passer le profil du destinataire en "Vérifié" (verified_flag = 'Y')
-        // Car il vient de recevoir un avis
+        // B. Mise à jour du statut "Vérifié" du destinataire
+        // Recevoir un avis prouve qu'il a bien participé à un trajet -> Compte vérifié
         $stmtVerif = $db->prepare("UPDATE UTILISATEURS SET verified_flag = 'Y' WHERE id_utilisateur = :dest");
         $stmtVerif->execute([':dest' => $id_dest]);
 
         $db->commit();
 
         $_SESSION['flash_success'] = "Avis publié avec succès !";
+        // Retour à la liste de choix pour noter les autres participants s'il en reste
         Flight::redirect("/avis/choix/$id_trajet");
 
     } catch (Exception $e) {

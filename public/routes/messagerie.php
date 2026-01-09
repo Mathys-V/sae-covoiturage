@@ -11,8 +11,6 @@ Flight::route('GET /messagerie', function(){
     $userId = $_SESSION['user']['id_utilisateur'];
 
     // --- RÉCUPÉRATION DES TRAJETS ---
-    // On sélectionne les trajets où l'utilisateur est soit Conducteur, soit Passager (Validé, Annulé ou Refusé)
-    // On a besoin de récupérer le statut de réservation 'mon_statut_reservation' pour savoir si l'utilisateur a annulé sa propre place.
     $sql = "SELECT t.id_trajet, t.id_conducteur, t.ville_depart, t.ville_arrivee, t.date_heure_depart, 
                    t.duree_estimee, t.statut_flag,
                    u.prenom as conducteur_prenom, u.nom as conducteur_nom,
@@ -28,7 +26,7 @@ Flight::route('GET /messagerie', function(){
     $stmt->execute([':uid' => $userId]);
     $rawConversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Initialisation des groupes pour l'affichage (En cours, À venir, Terminé)
+    // Initialisation des groupes
     $groupes = ['encours' => [], 'avenir'  => [], 'termine' => []];
     $notifs = ['encours' => 0, 'avenir'  => 0, 'termine' => 0];
 
@@ -43,33 +41,23 @@ Flight::route('GET /messagerie', function(){
             $arrivee = clone $depart;
             $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
         } else {
-            // Fallback : Si pas de durée, on ajoute 1h par défaut
             $arrivee = clone $depart; 
             $arrivee->modify('+1 hour');
         }
 
         // --- DÉTECTION DU STATUT ANNULÉ ---
-        // 1. Vérification si un message système d'annulation globale existe
         $stmtCancel = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu LIKE '::sys_cancel::%'");
         $stmtCancel->execute([$id]);
         $hasCancelMessage = $stmtCancel->fetchColumn() > 0;
         
-        // 2. Le trajet est annulé globalement SI message système OU flag 'S' (Supprimé)
         $isGlobalCancel = ($hasCancelMessage || $conv['statut_flag'] == 'S');
-        
-        // 3. Annulation personnelle : L'utilisateur a annulé SA réservation ('A') ou a été refusé ('R')
         $isMyCancel = ($conv['mon_statut_reservation'] == 'A' || $conv['mon_statut_reservation'] == 'R');
-
         $isAnnule = ($isGlobalCancel || $isMyCancel);
 
         // --- AUTOMATISATION FIN DE TRAJET ---
-        // Si la date d'arrivée est passée et que le trajet n'est pas déjà marqué comme terminé ou annulé
         if (!$isAnnule && $conv['statut_flag'] != 'T' && $now > $arrivee) {
-            // On vérifie si le message de fin "::sys_end::" existe déjà
             $stmtCheckEnd = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu = '::sys_end::'");
             $stmtCheckEnd->execute([$id]);
-            
-            // S'il n'existe pas, on l'ajoute automatiquement pour clore la conversation
             if ($stmtCheckEnd->fetchColumn() == 0) {
                 $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, '::sys_end::', NOW())")
                     ->execute([$id, $conv['id_conducteur']]);
@@ -77,7 +65,6 @@ Flight::route('GET /messagerie', function(){
         }
 
         // --- RÉCUPÉRATION DU DERNIER MESSAGE ---
-        // Pour afficher un aperçu dans la liste
         $stmtMsg = $db->prepare("
             SELECT m.contenu, m.date_envoi, u.prenom 
             FROM MESSAGES m 
@@ -90,7 +77,6 @@ Flight::route('GET /messagerie', function(){
         
         if ($lastMsg) {
             $contenu = $lastMsg['contenu'];
-            // Traduction des messages système pour l'affichage
             if (strpos($contenu, '::sys_') === 0) {
                 if (strpos($contenu, '::sys_cancel::') === 0) {
                     $contenu = "Le trajet a été annulé.";
@@ -110,61 +96,48 @@ Flight::route('GET /messagerie', function(){
             }
             $conv['dernier_message'] = $contenu;
             $conv['dernier_auteur'] = $lastMsg['prenom'];
-            $conv['date_tri'] = $lastMsg['date_envoi']; // Utilisé pour le tri
+            $conv['date_tri'] = $lastMsg['date_envoi'];
         } else {
             $conv['dernier_message'] = null;
             $conv['date_tri'] = null;
         }
 
-        // --- LOGIQUE DE CLASSEMENT DANS LES ONGLETS ---
-        
+        // --- LOGIQUE DE CLASSEMENT ---
         if ($isAnnule) {
-            // CAS 1 : ANNULÉ (Soit globalement, soit juste moi)
+            // CAS 1 : ANNULÉ
             $statutKey = 'termine';
             $conv['statut_visuel'] = 'annule';
             $conv['statut_libelle'] = 'Annulé';
             $conv['statut_couleur'] = 'danger';
 
         } elseif ($conv['statut_flag'] == 'T' || $now > $arrivee) {
-            // CAS 2 : TERMINÉ (Date passée ou Flag T)
+            // CAS 2 : TERMINÉ
             $statutKey = 'termine';
             $conv['statut_visuel'] = 'termine';
             $conv['statut_libelle'] = 'Terminé';
             $conv['statut_couleur'] = 'secondary';
 
-// 2. ENSUITE on vérifie si c'est annulé
-} elseif ($isAnnule) {
-    $statutKey = 'termine'; // ou 'annule' si vous avez un onglet spécial
-    $conv['statut_visuel'] = 'annule';
-    $conv['statut_libelle'] = 'Annulé';
-    $conv['statut_couleur'] = 'danger';
-
         } elseif ($now >= $depart && $now <= $arrivee) {
-            // CAS 3 : EN COURS -> Onglet En cours (Vert)
+            // CAS 3 : EN COURS
             $statutKey = 'encours';
             $conv['statut_visuel'] = 'encours';
             $conv['statut_libelle'] = 'En cours';
             $conv['statut_couleur'] = 'success';
-            
-            // Calcul du temps restant
             $diff = $now->diff($arrivee);
             $conv['temps_restant'] = ($diff->h > 0) ? $diff->format('%hh %Im') : $diff->format('%I min');
 
         } else {
-            // CAS 4 : À VENIR -> Onglet À venir (Bleu ou Jaune si complet)
+            // CAS 4 : À VENIR
             $statutKey = 'avenir';
             $conv['statut_visuel'] = 'avenir';
             $conv['statut_libelle'] = ($conv['statut_flag'] == 'C') ? 'Complet' : 'À venir';
             $conv['statut_couleur'] = ($conv['statut_flag'] == 'C') ? 'warning' : 'primary';
         }
 
-        // --- GESTION DES NOTIFICATIONS (NON LUS) ---
-        // On utilise un COOKIE pour stocker la date de dernière lecture de chaque trajet
+        // --- GESTION DES NOTIFICATIONS ---
         $cookieName = 'last_read_' . $userId . '_' . $id;
         $lastReadDate = isset($_COOKIE[$cookieName]) ? $_COOKIE[$cookieName] : '2000-01-01 00:00:00';
         
-        // On compte les messages envoyés APRÈS la date du cookie
-        // On exclut nos propres messages (sauf si ce sont des messages système qu'on a déclenché)
         $sqlCount = "SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND date_envoi > ? AND (id_expediteur != ? OR contenu LIKE '::sys_%')"; 
         $stmtCount = $db->prepare($sqlCount);
         $stmtCount->execute([$id, $lastReadDate, $userId]);
@@ -175,7 +148,7 @@ Flight::route('GET /messagerie', function(){
         $groupes[$statutKey][] = $conv;
     }
 
-    // Fonction de tri : Messages récents en premier, sinon par date de départ
+    // Tri
     $sortFunction = function($a, $b) {
         $hasMsgA = !empty($a['dernier_message']);
         $hasMsgB = !empty($b['dernier_message']);
@@ -204,7 +177,7 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // Vérification des droits d'accès au trajet + Récupération infos
+    // Vérification des droits d'accès
     $sqlCheck = "SELECT t.*, u.prenom as cond_prenom, u.nom as cond_nom, u.id_utilisateur as cond_id,
                         r.statut_code as mon_statut_reservation
                  FROM TRAJETS t 
@@ -220,7 +193,7 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
 
     if (!$trajet) { $_SESSION['flash_error'] = "Accès refusé."; Flight::redirect('/messagerie'); return; }
 
-    // Récupération des participants (Conducteur + Passagers Validés) pour l'affichage à droite
+    // Participants
     $participants = [];
     if ($trajet['cond_id'] != $userId) $participants[] = ['id' => $trajet['cond_id'], 'nom' => $trajet['cond_prenom'] . ' ' . $trajet['cond_nom'], 'role' => 'Conducteur'];
     
@@ -230,11 +203,59 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
         if ($p['id_utilisateur'] != $userId) $participants[] = ['id' => $p['id_utilisateur'], 'nom' => $p['prenom'] . ' ' . $p['nom'], 'role' => 'Passager']; 
     }
 
-    // ... (Logique de statut identique à la liste pour l'affichage du bandeau haut) ...
-    // [CODE SIMPLIFIÉ POUR LA LISIBILITÉ, LA LOGIQUE EST LA MÊME QUE CI-DESSUS]
-    // ...
+    // --- RE-CALCUL DU STATUT POUR L'AFFICHAGE UNIQUE ---
+    // C'EST CE BLOC QUI MANQUAIT ET CAUSAIT L'ERREUR 500
+    
+    // 1. Détection Annulation
+    $stmtCancel = $db->prepare("SELECT COUNT(*) FROM MESSAGES WHERE id_trajet = ? AND contenu LIKE '::sys_cancel::%'");
+    $stmtCancel->execute([$id]);
+    $hasCancelMessage = $stmtCancel->fetchColumn() > 0;
+    
+    $isGlobalCancel = ($hasCancelMessage || $trajet['statut_flag'] == 'S');
+    $isMyCancel = ($trajet['mon_statut_reservation'] == 'A' || $trajet['mon_statut_reservation'] == 'R');
+    $isAnnule = ($isGlobalCancel || $isMyCancel);
 
-    // Mise à jour du COOKIE de lecture (Marque la conversation comme lue maintenant)
+    // 2. Dates
+    $now = new DateTime();
+    $depart = new DateTime($trajet['date_heure_depart']);
+    if(isset($trajet['duree_estimee'])) {
+        $dureeParts = explode(':', $trajet['duree_estimee']);
+        $arrivee = clone $depart;
+        $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
+    } else {
+        $arrivee = clone $depart;
+        $arrivee->modify('+1 hour');
+    }
+
+    // 3. Définition des variables visuelles (statut_visuel est requis par le TPL)
+    if ($isAnnule) {
+        $trajet['statut_visuel'] = 'annule'; 
+        $trajet['statut_libelle'] = 'Annulé'; 
+        $trajet['statut_couleur'] = 'danger';
+    } elseif ($trajet['statut_flag'] == 'T' || $now > $arrivee) {
+        $trajet['statut_visuel'] = 'termine'; 
+        $trajet['statut_libelle'] = 'Terminé'; 
+        $trajet['statut_couleur'] = 'secondary';
+    } elseif ($now >= $depart && $now <= $arrivee) {
+        $trajet['statut_visuel'] = 'encours'; 
+        $trajet['statut_libelle'] = 'En cours'; 
+        $trajet['statut_couleur'] = 'success';
+        $diff = $now->diff($arrivee);
+        $trajet['temps_restant'] = ($diff->h > 0) ? $diff->format('%hh %Im') : $diff->format('%I min');
+    } else {
+        if ($trajet['statut_flag'] == 'C') { 
+            $trajet['statut_visuel'] = 'complet'; 
+            $trajet['statut_libelle'] = 'Complet'; 
+            $trajet['statut_couleur'] = 'warning'; 
+        } else { 
+            $trajet['statut_visuel'] = 'avenir'; 
+            $trajet['statut_libelle'] = 'À venir'; 
+            $trajet['statut_couleur'] = 'primary'; 
+        }
+    }
+    // ---------------------------------------------------
+
+    // Mise à jour du COOKIE de lecture
     setcookie('last_read_' . $userId . '_' . $id, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
 
     // Récupération des messages
@@ -244,21 +265,27 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
     $messages = [];
     $lastDate = null;
     foreach($messagesBruts->fetchAll(PDO::FETCH_ASSOC) as $msg) {
-        // Ajout d'un séparateur de date si changement de jour
         $dateObj = new DateTime($msg['date_envoi']);
         $dateJour = $dateObj->format('d/m/Y');
         if ($dateJour !== $lastDate) { $messages[] = ['type' => 'separator', 'date' => $dateJour]; $lastDate = $dateJour; }
         
-        // Traitement des messages système pour l'affichage dans la bulle
         if (strpos($msg['contenu'], '::sys_') === 0) {
             $msg['type'] = 'system';
-            // ... (Traduction des messages système comme ci-dessus) ...
             if (strpos($msg['contenu'], '::sys_join::') === 0) {
-                // ...
+                $parts = explode('::', $msg['contenu']);
+                $nbPlaces = isset($parts[2]) && is_numeric($parts[2]) ? (int)$parts[2] : 1;
+                $msg['text_affiche'] = $msg['prenom'] . ' a rejoint le trajet';
+                if ($nbPlaces > 1) { $msg['text_affiche'] .= ' (et a réservé ' . $nbPlaces . ' places)'; } else { $msg['text_affiche'] .= '.'; }
             }
-            // ...
+            elseif (strpos($msg['contenu'], '::sys_update::') === 0) {
+                $parts = explode('::', $msg['contenu']);
+                $msg['text_affiche'] = isset($parts[2]) ? trim($parts[2]) : "Le conducteur a modifié le trajet.";
+            }
+            elseif ($msg['contenu'] == '::sys_leave::') { $msg['text_affiche'] = $msg['prenom'] . ' a quitté le trajet.'; }
+            elseif ($msg['contenu'] == '::sys_end::') { $msg['text_affiche'] = 'Le trajet est terminé.'; }
+            elseif (strpos($msg['contenu'], '::sys_cancel::') === 0) { $msg['text_affiche'] = 'Le trajet a été annulé.'; }
+            elseif (strpos($msg['contenu'], '::sys_create::') === 0) { $msg['text_affiche'] = 'Trajet publié.'; }
         } else {
-            // Message classique : Définition de l'alignement (Moi = droite, Autre = gauche)
             $msg['type'] = ($msg['id_expediteur'] == $userId) ? 'self' : 'other';
             $msg['nom_affiche'] = ($msg['type'] == 'self') ? 'Moi' : $msg['prenom'] . ' ' . substr($msg['nom'], 0, 1) . '.';
         }
@@ -273,7 +300,7 @@ Flight::route('GET /messagerie/conversation/@id', function($id){
 });
 
 // ============================================================
-// PARTIE 3 : API ENVOI DE MESSAGE (POST via AJAX)
+// PARTIE 3 : API ENVOI DE MESSAGE
 // ============================================================
 Flight::route('POST /api/messagerie/send', function(){
     if(!isset($_SESSION['user'])) Flight::json(['success' => false], 401);
@@ -284,7 +311,6 @@ Flight::route('POST /api/messagerie/send', function(){
     $trajetId = $data['trajet_id'];
     $contenu = htmlspecialchars(trim($data['message']));
     
-    // Sécurité : Interdiction d'envoyer des messages commençant par ::sys_ (réservé système)
     if (strpos($contenu, '::sys_') === 0) {
         Flight::json(['success' => false, 'msg' => 'Contenu interdit']);
         return;
@@ -293,7 +319,6 @@ Flight::route('POST /api/messagerie/send', function(){
     if(!empty($contenu)) {
         $stmt = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:tid, :uid, :msg, NOW())");
         if($stmt->execute([':tid' => $trajetId, ':uid' => $userId, ':msg' => $contenu])) {
-            // Mise à jour du cookie de lecture pour l'expéditeur (il a lu son propre message)
             setcookie('last_read_' . $userId . '_' . $trajetId, date('Y-m-d H:i:s'), time() + (86400 * 30), "/");
             Flight::json(['success' => true]);
         } else { Flight::json(['success' => false]); }

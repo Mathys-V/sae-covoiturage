@@ -85,6 +85,7 @@
     var tousLesTrajets = [];
     var mesAnnonces = [];
     var mesReservations = [];
+    var userId = 0;
 
     // On utilise json_encode directement sans les guillemets JS autour
     // Smarty va écrire directement le tableau JS valide 
@@ -92,19 +93,28 @@
         lieuxFrequents = {$lieux_frequents|json_encode|default:'[]'};
         tousLesTrajets = {$trajets|json_encode|default:'[]'};
         
+        {if isset($user)}
+            userId = {$user.id_utilisateur|default:0};
+        {/if}
+        
         {if isset($mes_annonces)}
             mesAnnonces = {$mes_annonces|json_encode|default:'[]'};
+        {else}
+            mesAnnonces = [];
         {/if}
         
         {if isset($mes_reservations)}
             mesReservations = {$mes_reservations|json_encode|default:'[]'};
+        {else}
+            mesReservations = [];
         {/if}
 
         console.log("Données chargées :", {
             lieux: lieuxFrequents.length,
             publics: tousLesTrajets.length,
             annonces: mesAnnonces.length,
-            reservations: mesReservations.length
+            reservations: mesReservations.length,
+            userId: userId
         });
 
     } catch(e) { 

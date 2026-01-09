@@ -169,6 +169,11 @@ function rechercherTrajet() {
   statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
   var resultats = tousLesTrajets.filter(function (trajet) {
+    // Exclure les trajets de l'utilisateur connecté
+    if (typeof userId !== 'undefined' && userId > 0 && trajet.id_conducteur == userId) {
+      return false;
+    }
+    
     var dbDepart = trajet.ville_depart.toLowerCase();
     var dbArrivee = trajet.ville_arrivee.toLowerCase();
 
@@ -194,6 +199,10 @@ function rechercherTrajet() {
   if (resultats.length === 0 && arriveeTxt !== "") {
     modeAlternatif = true;
     resultats = tousLesTrajets.filter((t) => {
+      // Exclure les trajets de l'utilisateur connecté
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
+        return false;
+      }
       var dbArrivee = t.ville_arrivee.toLowerCase();
       return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
     });
@@ -203,6 +212,10 @@ function rechercherTrajet() {
   if (resultats.length === 0 && departTxt !== "") {
     modeAlternatif = true;
     resultats = tousLesTrajets.filter((t) => {
+      // Exclure les trajets de l'utilisateur connecté
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
+        return false;
+      }
       var dbDepart = t.ville_depart.toLowerCase();
       return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
     });
@@ -211,7 +224,13 @@ function rechercherTrajet() {
 
   if (resultats.length === 0) {
     modeAlternatif = true;
-    resultats = filtrerTrajetsFuturs(tousLesTrajets).slice(0, 10);
+    resultats = filtrerTrajetsFuturs(tousLesTrajets).filter((t) => {
+      // Exclure les trajets de l'utilisateur connecté
+      if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
+        return false;
+      }
+      return true;
+    }).slice(0, 10);
   }
 
   if (currentRoutingControl) {
@@ -384,33 +403,36 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
 // --- 9. BOUTONS ---
 function afficherMesAnnonces() {
   var statusDiv = document.getElementById("searchStatus");
-  var trajetsFuturs = filtrerTrajetsFuturs(mesAnnonces);
-
-  if (trajetsFuturs.length === 0) {
+  
+  // Afficher tous les trajets (passés et futurs) pour "Mes annonces"
+  // L'utilisateur veut voir tous ses trajets, pas seulement les futurs
+  if (!mesAnnonces || mesAnnonces.length === 0) {
     statusDiv.innerHTML =
       '<span class="text-muted">Aucune annonce publiée.</span>';
     return;
   }
+  
   statusDiv.innerHTML =
     '<span class="text-primary fw-bold">Vos ' +
-    trajetsFuturs.length +
-    " annonces.</span>";
-  afficherResultatsSidebar(trajetsFuturs, false, true);
+    mesAnnonces.length +
+    " annonce(s).</span>";
+  afficherResultatsSidebar(mesAnnonces, false, true);
 }
 
 function afficherMesReservations() {
   var statusDiv = document.getElementById("searchStatus");
-  var trajetsFuturs = filtrerTrajetsFuturs(mesReservations);
-
-  if (trajetsFuturs.length === 0) {
+  
+  // Afficher toutes les réservations (passées et futures) pour "Mes réservations"
+  if (!mesReservations || mesReservations.length === 0) {
     statusDiv.innerHTML = '<span class="text-muted">Aucune réservation.</span>';
     return;
   }
+  
   statusDiv.innerHTML =
     '<span class="text-info fw-bold">Vos ' +
-    trajetsFuturs.length +
-    " réservations.</span>";
-  afficherResultatsSidebar(trajetsFuturs, false, true);
+    mesReservations.length +
+    " réservation(s).</span>";
+  afficherResultatsSidebar(mesReservations, false, true);
 }
 
 // --- 10. UTILITAIRES ---

@@ -24,12 +24,12 @@ Flight::route('/carte', function(){
     $mesReservations = []; 
 
     if ($userId > 0) {
-        // A. Mes Annonces (Tout l'historique sauf supprimé)
+        // A. Mes Annonces (Tous les trajets de l'utilisateur, sans filtre de statut)
+        // Même logique que dans mes_trajets.php
         $stmtCond = $db->prepare("
             SELECT *, 'conducteur' as mon_role 
             FROM TRAJETS 
             WHERE id_conducteur = :uid 
-            AND statut_flag != 'S'
             ORDER BY date_heure_depart DESC
         ");
         $stmtCond->execute([':uid' => $userId]);

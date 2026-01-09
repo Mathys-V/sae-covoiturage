@@ -1,7 +1,12 @@
 <?php
 
+// ============================================================
+// PARTIE 1 : PROPOSER UN TRAJET (CREATE)
+// ============================================================
+
 // AFFICHER LE FORMULAIRE DE CRÉATION
 Flight::route('GET /trajet/nouveau', function(){
+    // Vérification de connexion
     if(!isset($_SESSION['user'])) {
         $_SESSION['flash_error'] = "Veuillez vous connecter pour proposer un trajet.";
         Flight::redirect('/connexion');
@@ -11,7 +16,7 @@ Flight::route('GET /trajet/nouveau', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
     
-    // Vérif voiture
+    // 1. Vérification : L'utilisateur doit avoir une voiture
     $stmt = $db->prepare("SELECT COUNT(*) FROM POSSESSIONS WHERE id_utilisateur = :id");
     $stmt->execute([':id' => $userId]);
     if ($stmt->fetchColumn() == 0) {
@@ -20,23 +25,20 @@ Flight::route('GET /trajet/nouveau', function(){
         return;
     }
 
-    // --- CORRECTION ICI : Récupération et FORMATAGE des lieux globaux ---
+    // 2. Récupération et Formatage des Lieux Fréquents pour l'autocomplétion JS
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS ORDER BY nom_lieu ASC");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
-    // On prépare une chaîne 'full_address' pour que le JavaScript puisse faire la recherche dessus
+    // On prépare une chaîne 'full_address' concaténée pour faciliter la recherche côté client
     foreach ($lieux as &$lieu) {
-        // On crée un champ 'label' (le nom du lieu)
         $lieu['label'] = $lieu['nom_lieu']; 
         
-        // On crée l'adresse complète pour la recherche et l'affichage
         // Ex: "Gare du Nord Rue de Maubeuge 75010 Paris"
         $lieu['full_address'] = $lieu['nom_lieu'] . ' ' . 
                                 ($lieu['rue'] ? $lieu['rue'] . ' ' : '') . 
                                 $lieu['code_postal'] . ' ' . 
                                 $lieu['ville'];
     }
-    // -------------------------------------------------------------------
 
     Flight::render('trajet/proposer_trajet.tpl', [
         'titre' => 'Proposer un trajet',
@@ -44,7 +46,7 @@ Flight::route('GET /trajet/nouveau', function(){
     ]);
 });
 
-// TRAITEMENT CRÉATION (POST)
+// TRAITEMENT DU FORMULAIRE DE CRÉATION (POST)
 Flight::route('POST /trajet/nouveau', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -52,7 +54,7 @@ Flight::route('POST /trajet/nouveau', function(){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // Récupérer le véhicule
+    // 1. Récupérer le véhicule associé à l'utilisateur
     $stmtVehicule = $db->prepare("SELECT id_vehicule FROM POSSESSIONS WHERE id_utilisateur = :id LIMIT 1");
     $stmtVehicule->execute([':id' => $userId]);
     $vehicule = $stmtVehicule->fetch(PDO::FETCH_ASSOC);
@@ -65,18 +67,21 @@ Flight::route('POST /trajet/nouveau', function(){
     try {
         $db->beginTransaction();
 
+        // 2. Gestion de la récurrence (Trajet régulier ou unique)
         $dateDebut = new DateTime($data->date . ' ' . $data->heure);
         
         if ($data->regulier === 'Y' && !empty($data->date_fin)) {
             $dateFin = new DateTime($data->date_fin . ' 23:59:59');
         } else {
-            $dateFin = clone $dateDebut;
+            $dateFin = clone $dateDebut; // Si unique, date fin = date début
         }
 
         $compteur = 0;
         
+        // Boucle pour créer les trajets (1 seul tour si unique, plusieurs si régulier)
         while ($dateDebut <= $dateFin) {
-            // 1. CRÉATION DU TRAJET
+            
+            // A. Insertion du trajet en base
             $sql = "INSERT INTO TRAJETS (
                         id_conducteur, id_vehicule, 
                         ville_depart, code_postal_depart, rue_depart,
@@ -107,35 +112,32 @@ Flight::route('POST /trajet/nouveau', function(){
                 ':desc'       => $data->description
             ]);
             
-            // --- AJOUT IMPORTANT : RÉCUPÉRATION DE L'ID ET CRÉATION MESSAGE ---
             $id_trajet_cree = $db->lastInsertId();
 
-            // 2. CRÉATION AUTOMATIQUE DU MESSAGE SYSTÈME / CONVERSATION
-            // On insère un premier message pour "initialiser" la conversation du trajet
+            // B. Initialisation du chat avec un message système
+            // Cela permet de créer la "conversation" vide dès le départ
             $msgContent = "::sys_create:: Trajet publié.";
             
-            // Si tu utilises un code spécial pour les messages système (ex: ::sys_create::) :
-            // $msgContent = "::sys_create:: Trajet publié.";
-
             $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
             $stmtMsg->execute([
                 ':id_t'    => $id_trajet_cree,
                 ':id_u'    => $userId,
                 ':contenu' => $msgContent
             ]);
-            // ------------------------------------------------------------------
 
             $compteur++;
 
+            // Incrémentation de la date pour la prochaine itération (si régulier)
             if ($data->regulier === 'Y') {
-                $dateDebut->modify('+1 week');
+                $dateDebut->modify('+1 week'); // Ajoute 1 semaine
             } else {
-                break;
+                break; // Sort de la boucle si trajet unique
             }
         }
 
         $db->commit();
 
+        // Message de succès adapté
         if ($compteur > 1) {
             $_SESSION['flash_success'] = "$compteur trajets créés jusqu'au " . $dateFin->format('d/m/Y') . " !";
         } else {
@@ -153,6 +155,10 @@ Flight::route('POST /trajet/nouveau', function(){
     }
 });
 
+// ============================================================
+// PARTIE 2 : GERER MES TRAJETS (CONDUCTEUR)
+// ============================================================
+
 // AFFICHER MES TRAJETS
 Flight::route('GET /mes_trajets', function(){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
@@ -160,7 +166,7 @@ Flight::route('GET /mes_trajets', function(){
     $db = Flight::get('db');
     $idUser = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Récupération des trajets du conducteur
+    // 1. Récupération des trajets créés par l'utilisateur
     $sql = "SELECT t.*, v.marque, v.modele, v.immatriculation, v.nb_places_totales 
             FROM TRAJETS t
             JOIN VEHICULES v ON t.id_vehicule = v.id_vehicule
@@ -172,10 +178,10 @@ Flight::route('GET /mes_trajets', function(){
 
     $now = new DateTime();
 
-    // 2. Enrichissement des données
+    // 2. Enrichissement des données (Calcul places, statuts, dates)
     foreach ($trajets as &$trajet) {
         
-        // --- RECUPERATION PASSAGERS AVEC ID (POUR SIGNALEMENT) ---
+        // Récupération des passagers validés pour ce trajet
         $sqlPass = "SELECT u.id_utilisateur, u.nom, u.prenom, u.photo_profil, r.nb_places_reservees
                     FROM RESERVATIONS r
                     JOIN UTILISATEURS u ON r.id_passager = u.id_utilisateur
@@ -186,26 +192,27 @@ Flight::route('GET /mes_trajets', function(){
         $stmtPass->execute([':id_trajet' => $trajet['id_trajet']]);
         $trajet['passagers'] = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
 
-        // Calcul des places
+        // Calcul des places restantes
         $nb_occupes = 0;
         foreach($trajet['passagers'] as $p) { $nb_occupes += $p['nb_places_reservees']; }
         $trajet['places_prises'] = $nb_occupes;
         $trajet['places_restantes'] = $trajet['places_proposees'] - $nb_occupes;
         
-        // Formatage Dates
+        // Formatage Dates & Durée
         $depart = new DateTime($trajet['date_heure_depart']);
         $trajet['date_fmt'] = $depart->format('d / m / Y');
         $trajet['heure_fmt'] = $depart->format('H\hi');
         
-        // Durée
         $dureeParts = explode(':', $trajet['duree_estimee']);
         $trajet['duree_fmt'] = (int)$dureeParts[0] . 'h' . $dureeParts[1];
 
-        // --- STATUT VISUEL ---
+        // --- DÉTERMINATION DU STATUT VISUEL ---
         $arrivee = clone $depart;
         $arrivee->add(new DateInterval('PT' . $dureeParts[0] . 'H' . $dureeParts[1] . 'M'));
 
-        if ($trajet['statut_flag'] == 'C') {
+        if ($trajet['statut_flag'] == 'C') { // C = Annulé/Complet selon contexte, ici C pour Cancelled dans la logique d'affichage inversée
+             // NOTE : Attention, statut_flag 'C' peut vouloir dire COMPLET ou CANCEL selon ton implémentation.
+             // Dans le code d'annulation plus bas, tu mets 'C'.
             $trajet['statut_visuel'] = 'annule';
             $trajet['statut_libelle'] = 'Annulé';
             $trajet['statut_couleur'] = 'danger';
@@ -219,8 +226,7 @@ Flight::route('GET /mes_trajets', function(){
             $trajet['statut_couleur'] = 'success';
             
             $diff = $now->diff($arrivee);
-            if ($diff->h > 0) $trajet['temps_restant'] = $diff->format('%hh %Im');
-            else $trajet['temps_restant'] = $diff->format('%I min');
+            $trajet['temps_restant'] = ($diff->h > 0) ? $diff->format('%hh %Im') : $diff->format('%I min');
         } else {
             $trajet['statut_visuel'] = 'avenir';
             $trajet['statut_libelle'] = 'À venir';
@@ -228,7 +234,7 @@ Flight::route('GET /mes_trajets', function(){
         }
     }
 
-    // 3. Séparation Actifs / Archives
+    // 3. Séparation en deux listes : Actifs (Futurs/En cours) et Archives (Passés/Annulés)
     $trajets_actifs = [];
     $trajets_archives = [];
 
@@ -240,13 +246,15 @@ Flight::route('GET /mes_trajets', function(){
         }
     }
 
-    // 4. Tris
+    // 4. Tris spécifiques
+    // Actifs : En cours d'abord, puis chronologique
     usort($trajets_actifs, function($a, $b) {
         if ($a['statut_visuel'] === 'encours' && $b['statut_visuel'] !== 'encours') return -1;
         if ($b['statut_visuel'] === 'encours' && $a['statut_visuel'] !== 'encours') return 1;
         return strtotime($a['date_heure_depart']) - strtotime($b['date_heure_depart']);
     });
 
+    // Archives : Anté-chronologique (le plus récent en haut)
     usort($trajets_archives, function($a, $b) {
         return strtotime($b['date_heure_depart']) - strtotime($a['date_heure_depart']);
     });
@@ -258,33 +266,35 @@ Flight::route('GET /mes_trajets', function(){
     ]);
 });
 
+// ============================================================
+// PARTIE 3 : MODIFIER UN TRAJET
+// ============================================================
+
 // AFFICHER LE FORMULAIRE DE MODIFICATION
 Flight::route('GET /trajet/modifier/@id', function($id){
-    if(!isset($_SESSION['user'])) {
-        Flight::redirect('/connexion');
-        return;
-    }
+    if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // Récupérer le trajet
+    // 1. Récupération du trajet
     $stmt = $db->prepare("SELECT * FROM TRAJETS WHERE id_trajet = :id");
     $stmt->execute([':id' => $id]);
     $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Sécurité : Seul le conducteur peut modifier son trajet
     if (!$trajet || $trajet['id_conducteur'] != $userId) {
         $_SESSION['flash_error'] = "Vous n'avez pas le droit de modifier ce trajet.";
         Flight::redirect('/mes_trajets');
         return;
     }
 
-// Formater date/heure
+    // Pré-remplissage des champs date/heure
     $dateObj = new DateTime($trajet['date_heure_depart']);
     $trajet['date_seule'] = $dateObj->format('Y-m-d');
     $trajet['heure_seule'] = $dateObj->format('H:i');
 
-    // --- CORRECTION ICI AUSSI ---
+    // Récupération des lieux pour l'autocomplétion (idem création)
     $stmtLieux = $db->query("SELECT * FROM LIEUX_FREQUENTS ORDER BY nom_lieu ASC");
     $lieux = $stmtLieux->fetchAll(PDO::FETCH_ASSOC);
 
@@ -295,7 +305,6 @@ Flight::route('GET /trajet/modifier/@id', function($id){
                                 $lieu['code_postal'] . ' ' . 
                                 $lieu['ville'];
     }
-    // ----------------------------
 
     Flight::render('trajet/modifier_trajet.tpl', [
         'titre' => 'Modifier un trajet',
@@ -304,7 +313,7 @@ Flight::route('GET /trajet/modifier/@id', function($id){
     ]);
 });
 
-// TRAITEMENT MODIFICATION (POST)
+// TRAITEMENT DE LA MODIFICATION (POST)
 Flight::route('POST /trajet/modifier/@id', function($id){
     if(!isset($_SESSION['user'])) Flight::redirect('/connexion');
 
@@ -312,7 +321,7 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // ... (Tout le bloc de vérification reste identique) ...
+    // Vérification de sécurité (Droits)
     $stmtVerif = $db->prepare("SELECT id_conducteur FROM TRAJETS WHERE id_trajet = :id");
     $stmtVerif->execute([':id' => $id]);
     $trajet = $stmtVerif->fetch(PDO::FETCH_ASSOC);
@@ -326,6 +335,7 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     try {
         $dateHeure = $data->date . ' ' . $data->heure . ':00';
 
+        // 1. Mise à jour des données en base
         $sql = "UPDATE TRAJETS SET 
                 ville_depart = :ville_dep, code_postal_depart = :cp_dep, rue_depart = :rue_dep,
                 ville_arrivee = :ville_arr, code_postal_arrivee = :cp_arr, rue_arrivee = :rue_arr,
@@ -348,15 +358,14 @@ Flight::route('POST /trajet/modifier/@id', function($id){
             ':id'        => $id
         ]);
 
+        // 2. Notification aux passagers via le chat
         $msgContent = "::sys_update:: Le conducteur a modifié les détails du trajet.";
-        
         $stmtMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (:id_t, :id_u, :contenu, NOW())");
         $stmtMsg->execute([
             ':id_t'    => $id,
             ':id_u'    => $userId,
             ':contenu' => $msgContent
         ]);
-        // ---------------------------------------------
 
         $_SESSION['flash_success'] = "Trajet modifié avec succès !";
         Flight::redirect('/mes_trajets');
@@ -367,7 +376,9 @@ Flight::route('POST /trajet/modifier/@id', function($id){
     }
 });
 
-// ANNULER UN TRAJET
+// ============================================================
+// PARTIE 4 : ANNULER UN TRAJET (CONDUCTEUR)
+// ============================================================
 Flight::route('POST /trajet/annuler', function(){
     if (!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
     
@@ -375,6 +386,7 @@ Flight::route('POST /trajet/annuler', function(){
     $id_trajet = Flight::request()->data->id_trajet;
     $id_user = $_SESSION['user']['id_utilisateur'];
 
+    // Vérification : Seul le conducteur peut annuler
     $stmt = $db->prepare("SELECT id_conducteur, statut_flag FROM TRAJETS WHERE id_trajet = ?");
     $stmt->execute([$id_trajet]);
     $trajet = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -394,15 +406,16 @@ Flight::route('POST /trajet/annuler', function(){
     try {
         $db->beginTransaction();
 
-        // 1. Update Trajet
+        // 1. Passage du trajet en statut 'C' (Annulé)
         $updTrajet = $db->prepare("UPDATE TRAJETS SET statut_flag = 'C' WHERE id_trajet = ?");
         $updTrajet->execute([$id_trajet]);
 
-        // 2. Update Reservations
+        // 2. Annulation automatique de toutes les réservations validées ('V' -> 'R')
+        // 'R' pour Refusé/Annulé par conducteur
         $updRes = $db->prepare("UPDATE RESERVATIONS SET statut_code = 'R' WHERE id_trajet = ? AND statut_code = 'V'");
         $updRes->execute([$id_trajet]);
 
-        // 3. Message système
+        // 3. Envoi d'un message système d'annulation
         $msgContent = "::sys_cancel:: Le conducteur a annulé ce trajet.";
         $insMsg = $db->prepare("INSERT INTO MESSAGES (id_trajet, id_expediteur, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
         $insMsg->execute([$id_trajet, $id_user, $msgContent]);

@@ -1,14 +1,22 @@
 <?php
 
+// ============================================================
+// PARTIE 1 : AFFICHAGE DE LA CARTE (Route Principale)
+// ============================================================
 Flight::route('/carte', function(){
     $db = Flight::get('db');
+    // Récupération de l'ID utilisateur s'il est connecté, sinon 0
     $userId = isset($_SESSION['user']) ? $_SESSION['user']['id_utilisateur'] : 0;
 
-    // 1. Lieux
+    // 1. Récupération des Lieux Fréquents (Gares, Campus...)
     $stmt = $db->query("SELECT * FROM LIEUX_FREQUENTS");
     $lieux = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Recherche Publique (Stricte : Futur + Actif + Pas moi)
+    // 2. Récupération des Trajets Publics (Pour la recherche)
+    // Filtres stricts : 
+    // - Statut 'A' (Actif)
+    // - Date > Maintenant (Futurs uniquement)
+    // - Conducteur != Moi (On ne s'affiche pas soi-même dans la recherche publique)
     $sqlPublic = "SELECT * FROM TRAJETS 
                   WHERE statut_flag = 'A' 
                   AND date_heure_depart >= NOW() 
@@ -18,12 +26,13 @@ Flight::route('/carte', function(){
     $stmt2->execute([':uid' => $userId]);
     $trajets = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Mes Données (Pour l'initialisation)
+    // 3. Récupération des données personnelles (Si connecté)
     $mesAnnonces = [];     
     $mesReservations = []; 
 
     if ($userId > 0) {
-        // A. Mes Annonces (Filtre FUTUR ajouté)
+        // A. Mes Annonces (Je suis conducteur)
+        // On filtre aussi pour ne garder que les trajets futurs
         $stmtCond = $db->prepare("
             SELECT *, 'conducteur' as mon_role 
             FROM TRAJETS 
@@ -34,7 +43,8 @@ Flight::route('/carte', function(){
         $stmtCond->execute([':uid' => $userId]);
         $mesAnnonces = $stmtCond->fetchAll(PDO::FETCH_ASSOC);
 
-        // B. Mes Réservations (Filtre FUTUR ajouté)
+        // B. Mes Réservations (Je suis passager)
+        // On récupère uniquement les réservations validées ('V') et futures
         $stmtPass = $db->prepare("
             SELECT t.*, 'passager' as mon_role, r.nb_places_reservees
             FROM RESERVATIONS r
@@ -48,7 +58,8 @@ Flight::route('/carte', function(){
         $mesReservations = $stmtPass->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Gestion des coordonnées
+    // Gestion de sécurité des coordonnées
+    // Si un lieu n'a pas de latitude/longitude en base, on place un point par défaut (Centre Amiens)
     foreach($lieux as &$lieu) {
         if(!$lieu['latitude']) { 
              $lieu['latitude'] = 49.89407; 
@@ -56,26 +67,28 @@ Flight::route('/carte', function(){
         }
     }
 
+    // Envoi des données au template Smarty
     Flight::render('carte/carte.tpl', [
         'titre' => 'Carte interactive',
         'lieux_frequents' => $lieux,
-        'trajets' => $trajets,
-        'mes_annonces' => $mesAnnonces, 
-        'mes_reservations' => $mesReservations,
+        'trajets' => $trajets,          // Trajets publics
+        'mes_annonces' => $mesAnnonces, // Mes trajets conducteur
+        'mes_reservations' => $mesReservations, // Mes trajets passager
         'user' => isset($_SESSION['user']) ? $_SESSION['user'] : null
     ]);
 });
 
 // ============================================================
-// ROUTE API POUR LES BOUTONS (Avec filtre temporel)
+// PARTIE 2 : API POUR LES FILTRES DYNAMIQUES (AJAX)
 // ============================================================
+// Cette route est appelée par le JavaScript pour rafraîchir "Mes Trajets" sans recharger la page
 Flight::route('GET /api/mes-trajets-carte', function(){
     if(!isset($_SESSION['user'])) { Flight::json(['annonces' => [], 'reservations' => []]); return; }
 
     $db = Flight::get('db');
     $userId = $_SESSION['user']['id_utilisateur'];
 
-    // 1. Mes Annonces : Uniquement dans le futur
+    // 1. API : Mes Annonces (Futurs uniquement)
     $stmtA = $db->prepare("
         SELECT *, 'conducteur' as mon_role 
         FROM TRAJETS 
@@ -85,7 +98,7 @@ Flight::route('GET /api/mes-trajets-carte', function(){
     ");
     $stmtA->execute([':uid' => $userId]);
     
-    // 2. Mes Réservations : Uniquement dans le futur
+    // 2. API : Mes Réservations (Futurs uniquement)
     $stmtR = $db->prepare("
         SELECT t.*, 'passager' as mon_role, r.nb_places_reservees
         FROM RESERVATIONS r 
@@ -97,6 +110,7 @@ Flight::route('GET /api/mes-trajets-carte', function(){
     ");
     $stmtR->execute([':uid' => $userId]);
 
+    // Retour au format JSON pour consommation par Leaflet (JS)
     Flight::json([
         'success' => true,
         'annonces' => $stmtA->fetchAll(PDO::FETCH_ASSOC),

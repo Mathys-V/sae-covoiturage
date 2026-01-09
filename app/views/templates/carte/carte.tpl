@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/carte/style_carte.css">
 
 <style>
+    /* Cache les listes d'autocomplétion vides pour éviter les bordures fantômes */
     .autocomplete-suggestions:empty { display: none !important; border: none !important; padding: 0 !important; }
 </style>
 
@@ -50,8 +51,7 @@
     </div>
 
     <div id="map-container">
-        <div id="map"></div>
-        <div id="infoSidebar" class="info-sidebar">
+        <div id="map"></div> <div id="infoSidebar" class="info-sidebar">
             <div class="sidebar-header">
                 <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
                 <h4 class="m-0 fw-bold" id="sidebarTitle">Résultats</h4>
@@ -68,13 +68,14 @@
 <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
 <script>
+    // Variables globales pour le fichier JS externe
     var lieuxFrequents = [];
     var tousLesTrajets = [];
     var userId = 0;
 
-    // Initialisation sécurisée
+    // Injection sécurisée des données PHP vers JS
     try {
-        // Injection directe JSON (plus robuste)
+        // Transformation des tableaux PHP en objets JSON valides
         lieuxFrequents = {$lieux_frequents|json_encode|default:'[]'};
         tousLesTrajets = {$trajets|json_encode|default:'[]'};
         

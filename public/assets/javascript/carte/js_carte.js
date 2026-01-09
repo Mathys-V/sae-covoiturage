@@ -1,20 +1,24 @@
 // ============================================================
-// 1. INITIALISATION
+// 1. INITIALISATION DE LA CARTE LEAFLET
 // ============================================================
+// Centrage par défaut sur Amiens
 var map = L.map("map").setView([49.89407, 2.29575], 12);
 
+// Chargement des tuiles OpenStreetMap
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap",
 }).addTo(map);
 
-var frequentLayer = L.layerGroup().addTo(map);
-var routeMarkersLayer = L.layerGroup().addTo(map);
-var currentRoutingControl = null;
+// Couches pour organiser les marqueurs
+var frequentLayer = L.layerGroup().addTo(map); // Lieux fréquents (étoiles dorées)
+var routeMarkersLayer = L.layerGroup().addTo(map); // Marqueurs départ/arrivée d'un itinéraire
+var currentRoutingControl = null; // Contrôleur de l'itinéraire tracé
 
-// Variable cache pour stocker les résultats de l'API
+// Cache pour éviter de rappeler l'API "Mes Trajets" inutilement
 var mesTrajetsCache = null;
 
+// Création d'icônes personnalisées via HTML/CSS
 function createCustomMarker(color, icon = "fa-location-dot") {
     return L.divIcon({
         className: "custom-div-icon",
@@ -30,7 +34,7 @@ var greenIcon = createCustomMarker("marker-green", "fa-car");
 var redIcon = createCustomMarker("marker-red", "fa-flag-checkered");
 
 // ============================================================
-// 2. AUTOCOMPLÉTION
+// 2. SYSTÈME D'AUTOCOMPLÉTION (HYBRIDE)
 // ============================================================
 function setupMapAutocomplete(inputId, resultsId) {
     const input = document.getElementById(inputId);
@@ -41,10 +45,10 @@ function setupMapAutocomplete(inputId, resultsId) {
         const query = this.value.toLowerCase().trim();
         results.innerHTML = "";
         
-        if (query.length < 2) {
-            return;
-        }
+        if (query.length < 2) { return; }
 
+        // ÉTAPE 1 : Recherche dans les Lieux Fréquents (Données locales)
+        // C'est instantané et prioritaire
         const matchesLocal = lieuxFrequents.filter(
             (lieu) =>
             lieu.nom_lieu.toLowerCase().includes(query) ||
@@ -66,6 +70,8 @@ function setupMapAutocomplete(inputId, resultsId) {
             });
         }
 
+        // ÉTAPE 2 : Recherche via API Adresse Gouv (Si > 3 caractères)
+        // On attend 300ms après la frappe pour éviter de spammer l'API (Debounce)
         if (query.length > 3) {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
@@ -93,6 +99,7 @@ function setupMapAutocomplete(inputId, resultsId) {
         }
     });
 
+    // Fermeture de la liste si on clique ailleurs
     document.addEventListener("click", function(e) {
         if (e.target !== input && e.target !== results) {
             results.innerHTML = "";
@@ -100,11 +107,12 @@ function setupMapAutocomplete(inputId, resultsId) {
     });
 }
 
+// Activation sur les champs
 setupMapAutocomplete("departInput", "suggestions-depart");
 setupMapAutocomplete("arriveeInput", "suggestions-arrivee");
 
 // ============================================================
-// 3. LIEUX FRÉQUENTS & GÉOCODAGE
+// 3. AFFICHAGE DES LIEUX FRÉQUENTS & GÉOCODAGE
 // ============================================================
 function afficherLieuxFrequents() {
     lieuxFrequents.forEach(function(lieu) {
@@ -121,7 +129,10 @@ function afficherLieuxFrequents() {
 }
 afficherLieuxFrequents();
 
+// Fonction pour transformer une ville/adresse en coordonnées GPS
+// Vérifie d'abord en local, sinon appelle l'API
 async function geocodeVille(nomVille) {
+    // 1. Vérif Locale
     const lieuConnu = lieuxFrequents.find((l) => {
         let dbName = l.nom_lieu.toLowerCase().trim();
         let searchName = nomVille.toLowerCase().trim();
@@ -132,6 +143,7 @@ async function geocodeVille(nomVille) {
         return L.latLng(lieuConnu.latitude, lieuConnu.longitude);
     }
 
+    // 2. Appel API Gouv
     let cleanQuery = nomVille.split("(")[0].trim();
     try {
         const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cleanQuery)}&limit=1`;
@@ -140,7 +152,7 @@ async function geocodeVille(nomVille) {
         
         if (data.features && data.features.length > 0) {
             const coords = data.features[0].geometry.coordinates;
-            return L.latLng(coords[1], coords[0]);
+            return L.latLng(coords[1], coords[0]); // API renvoie [Lon, Lat], Leaflet veut [Lat, Lon]
         }
     } catch (error) {
         return null;
@@ -149,7 +161,7 @@ async function geocodeVille(nomVille) {
 }
 
 // ============================================================
-// 4. RECHERCHE INTELLIGENTE
+// 4. MOTEUR DE RECHERCHE DE TRAJETS (JS CLIENT)
 // ============================================================
 function filtrerTrajetsFuturs(trajets) {
     const maintenant = new Date();
@@ -164,7 +176,7 @@ function rechercherTrajet() {
     var arriveeTxt = document.getElementById("arriveeInput").value.toLowerCase().trim();
     var statusDiv = document.getElementById("searchStatus");
 
-    // --- SÉCURITÉ : Blocage si Départ == Arrivée ---
+    // SÉCURITÉ : Empêcher les trajets sur place
     if (departTxt !== "" && arriveeTxt !== "" && departTxt === arriveeTxt) {
         statusDiv.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Le départ et l\'arrivée ne peuvent pas être identiques.</span>';
         return;
@@ -177,7 +189,9 @@ function rechercherTrajet() {
 
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
+    // 1. Filtrage initial (Exact)
     var resultats = tousLesTrajets.filter(function(trajet) {
+        // On exclut ses propres trajets
         if (typeof userId !== 'undefined' && userId > 0 && trajet.id_conducteur == userId) {
             return false;
         }
@@ -200,49 +214,46 @@ function rechercherTrajet() {
 
     var modeAlternatif = false;
 
-    // Recherche alternative (Arrivée seule)
+    // 2. Recherche Alternative (Si aucun résultat exact)
+    // Cas A : On cherche juste par destination (Arrivée)
     if (resultats.length === 0 && arriveeTxt !== "") {
         modeAlternatif = true;
         resultats = tousLesTrajets.filter((t) => {
-            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-                return false;
-            }
+            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
             var dbArrivee = t.ville_arrivee.toLowerCase();
             return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
         });
         resultats = filtrerTrajetsFuturs(resultats);
     }
 
-    // Recherche alternative (Départ seul)
+    // Cas B : On cherche juste par départ
     if (resultats.length === 0 && departTxt !== "") {
         modeAlternatif = true;
         resultats = tousLesTrajets.filter((t) => {
-            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-                return false;
-            }
+            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
             var dbDepart = t.ville_depart.toLowerCase();
             return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
         });
         resultats = filtrerTrajetsFuturs(resultats);
     }
 
-    // Défaut (Suggestions)
+    // 3. Fallback (Si toujours rien, on affiche les prochains départs)
     if (resultats.length === 0) {
         modeAlternatif = true;
         resultats = filtrerTrajetsFuturs(tousLesTrajets).filter((t) => {
-            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) {
-                return false;
-            }
+            if (typeof userId !== 'undefined' && userId > 0 && t.id_conducteur == userId) return false;
             return true;
         }).slice(0, 10);
     }
 
+    // Nettoyage de la carte
     if (currentRoutingControl) {
         map.removeControl(currentRoutingControl);
         currentRoutingControl = null;
     }
     routeMarkersLayer.clearLayers();
 
+    // Affichage
     if (resultats.length > 0) {
         if (modeAlternatif) {
             statusDiv.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-exclamation-triangle"></i> Trajet exact introuvable. <br>Voici des alternatives :</span>';
@@ -257,7 +268,7 @@ function rechercherTrajet() {
 }
 
 // ============================================================
-// 5. CHARGEMENT API (DONNÉES PERSO)
+// 5. CHARGEMENT API ASYNCHRONE (Données Perso)
 // ============================================================
 async function chargerDonneesPerso() {
     if (mesTrajetsCache) {
@@ -280,9 +291,10 @@ async function chargerDonneesPerso() {
 }
 
 // ============================================================
-// 6. AFFICHAGE ITINÉRAIRE
+// 6. AFFICHAGE ITINÉRAIRE (ROUTING MACHINE)
 // ============================================================
 async function afficherItineraire(idTrajet) {
+    // On cherche le trajet dans la liste globale ou le cache perso
     var trajet = tousLesTrajets.find((t) => t.id_trajet == idTrajet);
 
     if (!trajet && mesTrajetsCache) {
@@ -290,9 +302,7 @@ async function afficherItineraire(idTrajet) {
                  mesTrajetsCache.reservations.find(t => t.id_trajet == idTrajet);
     }
 
-    if (!trajet) {
-        return;
-    }
+    if (!trajet) { return; }
 
     var statusDiv = document.getElementById("searchStatus");
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calcul itinéraire...';
@@ -303,6 +313,7 @@ async function afficherItineraire(idTrajet) {
         }
         routeMarkersLayer.clearLayers();
 
+        // Géocodage des points de départ et d'arrivée
         const [departLatLng, arriveeLatLng] = await Promise.all([
             geocodeVille(trajet.ville_depart),
             geocodeVille(trajet.ville_arrivee),
@@ -313,6 +324,7 @@ async function afficherItineraire(idTrajet) {
             return;
         }
 
+        // Ajout des marqueurs visuels
         L.marker(departLatLng, { icon: greenIcon })
             .addTo(routeMarkersLayer)
             .bindPopup("<b>Départ</b><br>" + trajet.ville_depart);
@@ -321,15 +333,14 @@ async function afficherItineraire(idTrajet) {
             .addTo(routeMarkersLayer)
             .bindPopup("<b>Arrivée</b><br>" + trajet.ville_arrivee);
 
+        // Tracé de la route
         currentRoutingControl = L.Routing.control({
             waypoints: [departLatLng, arriveeLatLng],
             routeWhileDragging: false,
-            show: false,
+            show: false, // On cache les instructions textuelles par défaut
             fitSelectedRoutes: true,
             lineOptions: { styles: [{ color: "#007bff", opacity: 0.7, weight: 5 }] },
-            createMarker: function() {
-                return null;
-            },
+            createMarker: function() { return null; }, // On utilise nos propres marqueurs
         }).addTo(map);
 
         statusDiv.innerHTML = '<span class="text-success">Itinéraire affiché !</span>';
@@ -341,7 +352,7 @@ async function afficherItineraire(idTrajet) {
 }
 
 // ============================================================
-// 7. AFFICHAGE SIDEBAR
+// 7. GÉNÉRATION DE LA BARRE LATÉRALE (SIDEBAR)
 // ============================================================
 function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, titrePersonnalise = null) {
     var container = document.getElementById("listeTrajetsContainer");
@@ -365,22 +376,17 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
             var badgeClass = "badge bg-success rounded-pill px-3";
             var badgeText = t.places_proposees + " pl.";
 
-            // URL par défaut (Public)
+            // URL dynamique selon le contexte (Public, Conducteur, Passager)
             var btnUrl = "/sae-covoiturage/public/trajet/reserver/" + t.id_trajet;
             var btnText = 'Réserver <i class="bi bi-chevron-right"></i>';
 
             if (isPerso) {
                 btnText = 'Voir détails';
-
                 if (t.mon_role === "conducteur") {
-                    // SI CONDUCTEUR -> Page mes trajets + Ancre (#)
-                    // AJOUT ICI : #trajet-{id}
                     btnUrl = "/sae-covoiturage/public/mes_trajets#trajet-" + t.id_trajet;
                     badgeClass = "badge bg-primary rounded-pill px-3";
                     badgeText = "Mon Annonce";
                 } else {
-                    // SI PASSAGER -> Page mes réservations + Ancre (#)
-                    // AJOUT ICI : #trajet-{id}
                     btnUrl = "/sae-covoiturage/public/mes_reservations#trajet-" + t.id_trajet;
                     badgeClass = "badge bg-info text-dark rounded-pill px-3";
                     badgeText = "Ma Réservation";
@@ -389,6 +395,7 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
                 badgeClass = "badge badge-alternative rounded-pill px-3";
             }
 
+            // Génération de la carte HTML
             html += `
                 <div class="${cardClass}" id="card-${t.id_trajet}">
                     <div style="cursor:pointer;" onclick="afficherItineraire(${t.id_trajet})">
@@ -422,12 +429,13 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false, tit
 }
 
 // ============================================================
-// 8. BOUTONS (Avec Titres)
+// 8. ACTIONS DES BOUTONS DE FILTRE
 // ============================================================
 async function afficherMesAnnonces() {
     var statusDiv = document.getElementById("searchStatus");
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
 
+    // Reset de la carte
     if (currentRoutingControl) {
         map.removeControl(currentRoutingControl);
         currentRoutingControl = null;
@@ -450,6 +458,7 @@ async function afficherMesReservations() {
     var statusDiv = document.getElementById("searchStatus");
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
 
+    // Reset de la carte
     if (currentRoutingControl) {
         map.removeControl(currentRoutingControl);
         currentRoutingControl = null;
@@ -469,13 +478,13 @@ async function afficherMesReservations() {
 }
 
 // ============================================================
-// 9. UTILITAIRES
+// 9. FONCTIONS UTILITAIRES
 // ============================================================
 function highlightSelectedCard(id) {
-    document
-        .querySelectorAll(".trip-card")
-        .forEach((c) => c.classList.remove("selected"));
+    // Retire la sélection précédente
+    document.querySelectorAll(".trip-card").forEach((c) => c.classList.remove("selected"));
         
+    // Ajoute la sélection et scrolle vers la carte
     const card = document.getElementById("card-" + id);
     if (card) {
         card.classList.add("selected");

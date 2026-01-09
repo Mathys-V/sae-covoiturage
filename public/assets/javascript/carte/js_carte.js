@@ -140,7 +140,16 @@ async function geocodeVille(nomVille) {
   }
 }
 
-// --- 5. RECHERCHE INTELLIGENTE ---
+// --- 5. FILTRAGE TRAJETS FUTURS ---
+function filtrerTrajetsFuturs(trajets) {
+  const maintenant = new Date();
+  return trajets.filter(t => {
+    const dateTrajet = new Date(t.date_heure_depart.replace(" ", "T"));
+    return dateTrajet >= maintenant;
+  });
+}
+
+// --- 6. RECHERCHE INTELLIGENTE ---
 function rechercherTrajet() {
   var departTxt = document
     .getElementById("departInput")
@@ -177,6 +186,9 @@ function rechercherTrajet() {
     return matchDepart && matchArrivee;
   });
 
+  // Filtrage des trajets passés
+  resultats = filtrerTrajetsFuturs(resultats);
+
   var modeAlternatif = false;
 
   if (resultats.length === 0 && arriveeTxt !== "") {
@@ -185,6 +197,7 @@ function rechercherTrajet() {
       var dbArrivee = t.ville_arrivee.toLowerCase();
       return dbArrivee.includes(arriveeTxt) || arriveeTxt.includes(dbArrivee);
     });
+    resultats = filtrerTrajetsFuturs(resultats);
   }
 
   if (resultats.length === 0 && departTxt !== "") {
@@ -193,11 +206,12 @@ function rechercherTrajet() {
       var dbDepart = t.ville_depart.toLowerCase();
       return dbDepart.includes(departTxt) || departTxt.includes(dbDepart);
     });
+    resultats = filtrerTrajetsFuturs(resultats);
   }
 
   if (resultats.length === 0) {
     modeAlternatif = true;
-    resultats = tousLesTrajets.slice(0, 10);
+    resultats = filtrerTrajetsFuturs(tousLesTrajets).slice(0, 10);
   }
 
   if (currentRoutingControl) {
@@ -224,7 +238,7 @@ function rechercherTrajet() {
   }
 }
 
-// --- 6. ITINÉRAIRE ---
+// --- 7. AFFICHAGE ITINÉRAIRE ---
 async function afficherItineraire(idTrajet) {
   var trajet = tousLesTrajets.find((t) => t.id_trajet == idTrajet);
   if (!trajet) return;
@@ -276,7 +290,7 @@ async function afficherItineraire(idTrajet) {
   }
 }
 
-// --- FONCTION MODIFIÉE : AFFICHER LA SIDEBAR ---
+// --- 8. AFFICHAGE SIDEBAR ---
 function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
   var container = document.getElementById("listeTrajetsContainer");
   var html = "";
@@ -301,7 +315,6 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
     var badgeClass = "badge bg-success rounded-pill px-3";
     var badgeText = t.places_proposees + " pl.";
 
-    // Logique d'affichage des badges selon le rôle
     if (isPerso) {
       if (t.mon_role === "conducteur") {
         badgeClass = "badge bg-primary rounded-pill px-3";
@@ -358,7 +371,6 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
 
   container.innerHTML = html;
 
-  // Titre dynamique selon le contexte
   var titre = "Résultats";
   if (isPerso) titre = "Mes Trajets";
   else if (isAlternative) titre = "Suggestions";
@@ -369,37 +381,39 @@ function afficherResultatsSidebar(resultats, isAlternative, isPerso = false) {
   document.getElementById("infoSidebar").classList.add("active");
 }
 
-// ... (Garde highlightSelectedCard, closeSidebar, handleEnter comme avant) ...
-
-// --- NOUVELLES FONCTIONS POUR LES BOUTONS ---
-
+// --- 9. BOUTONS ---
 function afficherMesAnnonces() {
   var statusDiv = document.getElementById("searchStatus");
-  if (mesAnnonces.length === 0) {
+  var trajetsFuturs = filtrerTrajetsFuturs(mesAnnonces);
+
+  if (trajetsFuturs.length === 0) {
     statusDiv.innerHTML =
       '<span class="text-muted">Aucune annonce publiée.</span>';
     return;
   }
   statusDiv.innerHTML =
     '<span class="text-primary fw-bold">Vos ' +
-    mesAnnonces.length +
+    trajetsFuturs.length +
     " annonces.</span>";
-  afficherResultatsSidebar(mesAnnonces, false, true);
+  afficherResultatsSidebar(trajetsFuturs, false, true);
 }
 
 function afficherMesReservations() {
   var statusDiv = document.getElementById("searchStatus");
-  if (mesReservations.length === 0) {
+  var trajetsFuturs = filtrerTrajetsFuturs(mesReservations);
+
+  if (trajetsFuturs.length === 0) {
     statusDiv.innerHTML = '<span class="text-muted">Aucune réservation.</span>';
     return;
   }
   statusDiv.innerHTML =
     '<span class="text-info fw-bold">Vos ' +
-    mesReservations.length +
+    trajetsFuturs.length +
     " réservations.</span>";
-  afficherResultatsSidebar(mesReservations, false, true);
+  afficherResultatsSidebar(trajetsFuturs, false, true);
 }
 
+// --- 10. UTILITAIRES ---
 function highlightSelectedCard(id) {
   document
     .querySelectorAll(".trip-card")
@@ -419,22 +433,4 @@ function closeSidebar() {
 
 function handleEnter(e) {
   if (e.key === "Enter") rechercherTrajet();
-}
-
-// --- 7. AFFICHER MES TRAJETS ---
-function afficherMesTrajets() {
-  var statusDiv = document.getElementById("searchStatus");
-
-  if (mesTrajets.length === 0) {
-    statusDiv.innerHTML = '<span class="text-muted">Aucun trajet prévu.</span>';
-    return;
-  }
-
-  statusDiv.innerHTML =
-    '<span class="text-primary fw-bold">Affichage de vos ' +
-    mesTrajets.length +
-    " trajets.</span>";
-
-  // On réutilise la sidebar pour afficher la liste
-  afficherResultatsSidebar(mesTrajets, false, true); // Le 3ème argument 'isPerso' est nouveau
 }

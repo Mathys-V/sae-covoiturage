@@ -193,20 +193,36 @@ Flight::route('GET /mes_reservations', function(){
         $r['heure_fmt'] = $dateObj->format('H\hi');
 
         // --- Détermination du statut (À venir / En cours / Terminé) ---
-        $duree = isset($r['duree_estimee']) && is_numeric($r['duree_estimee']) ? (int)$r['duree_estimee'] : 0;
-        $end = (clone $dateObj)->add(new DateInterval('PT'.$duree.'M'));
+        // Calcul de la date de fin en utilisant duree_estimee de la base de données (format TIME: HH:MM:SS)
+        $dateDebut = clone $dateObj; // Copie pour ne pas modifier l'original
+        $dateFin = clone $dateObj; // Copie pour calculer la date de fin
+        
+        // Parse de duree_estimee (format TIME: HH:MM:SS)
+        if (isset($r['duree_estimee']) && !empty($r['duree_estimee'])) {
+            $dureeParts = explode(':', $r['duree_estimee']);
+            $heures = isset($dureeParts[0]) ? (int)$dureeParts[0] : 0;
+            $minutes = isset($dureeParts[1]) ? (int)$dureeParts[1] : 0;
+            $dateFin->add(new DateInterval('PT' . $heures . 'H' . $minutes . 'M'));
+        } else {
+            // Fallback : Si pas de durée, on considère que le trajet dure 1h par défaut
+            $dateFin->modify('+1 hour');
+        }
 
-        if ($dateObj > $now) {
+        // Détermination du statut basé sur la date actuelle, date de départ et date de fin
+        if ($dateDebut > $now) {
+            // Le trajet n'a pas encore commencé
             $r['statut_visuel'] = 'avenir';
             $r['statut_libelle'] = 'À venir';
             $r['statut_couleur'] = 'primary';
-        } elseif ($now >= $dateObj && $now <= $end) {
+        } elseif ($now >= $dateDebut && $now <= $dateFin) {
+            // Le trajet est en cours (entre le début et la fin calculée avec duree_estimee)
             $r['statut_visuel'] = 'encours';
             $r['statut_libelle'] = 'En cours';
             $r['statut_couleur'] = 'success';
-            $interval = $now->diff($end);
+            $interval = $now->diff($dateFin);
             $r['temps_restant'] = $interval->format('%Hh %Im');
         } else {
+            // Le trajet est terminé (après la date de fin calculée avec duree_estimee)
             $r['statut_visuel'] = 'termine';
             $r['statut_libelle'] = 'Terminé';
             $r['statut_couleur'] = 'secondary';

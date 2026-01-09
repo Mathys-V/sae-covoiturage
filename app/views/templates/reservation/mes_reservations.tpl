@@ -109,13 +109,15 @@
                                 <i class="bi bi-flag-fill me-1"></i> Signaler
                             </button>
                     
-                
-                    
-
+                            {* Bouton Message - Masqué pour les trajets terminés *}
+                            {if $reservation.statut_visuel != 'termine'}
                             <a href="/sae-covoiturage/public/messagerie/conversation/{$reservation.id_trajet}" class="btn btn-custom rounded-pill px-4" style="background-color:#8c52ff; color: white;">
                                 <i class="bi bi-chat-text"></i>
                             </a>
+                            {/if}
 
+                            {* Bouton Annuler - Masqué pour les trajets terminés *}
+                            {if $reservation.statut_visuel != 'termine'}
                             <form method="POST"
                                   action="/sae-covoiturage/public/reservation/annuler/{$reservation.id_reservation}"
                                   onsubmit="return confirm('Voulez-vous vraiment annuler cette réservation ?');">
@@ -124,6 +126,7 @@
                                     <i class="bi bi-x-circle-fill me-1"></i> Annuler
                                 </button>
                             </form>
+                            {/if}
                         </div>
 
                     </div>

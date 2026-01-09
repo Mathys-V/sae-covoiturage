@@ -5,6 +5,8 @@
 {* --- VARIABLES DATES --- *}
 {$today = $smarty.now|date_format:'%Y-%m-%d'}
 {$maxDate = ($smarty.now + 63072000)|date_format:'%Y-%m-%d'}
+{* On calcule l'heure actuelle pour le min initial *}
+{$nowTime = $smarty.now|date_format:'%H:%M'}
 
 <div class="main-wrapper">
     <div class="propose-section">
@@ -65,10 +67,12 @@
                         <div class="col-7">
                             <input type="date" id="date_depart" name="date" class="form-control form-control-rounded" 
                                    value="{$today}" min="{$today}" max="{$maxDate}" onchange="updateSummary()" required>
-
                         </div>
                         <div class="col-5">
-                            <input type="time" id="heure_depart" name="heure" class="form-control form-control-rounded" onchange="updateSummary()" required>
+                            {* AJOUT ICI : min="{$nowTime}" force l'heure minimale via Smarty pour aujourd'hui *}
+                            <input type="time" id="heure_depart" name="heure" class="form-control form-control-rounded" 
+                                   onchange="updateSummary()" required
+                                   {if $today == $smarty.now|date_format:'%Y-%m-%d'}min="{$nowTime}"{/if}>
                         </div>
                     </div>
                 </div>
@@ -91,11 +95,9 @@
                         <div class="p-3 mt-3 rounded-4 border border-2 border-white" style="background-color: rgba(255,255,255,0.5);">
                             <label class="custom-label mb-2">Jusqu'à quelle date répéter ce trajet ?</label>
                             
-                            {* AJOUT : onchange pour le résumé *}
                             <input type="date" id="date_fin" name="date_fin" class="form-control form-control-rounded" 
                                    min="{$today}" max="{$maxDate}" onchange="updateSummary()">
                             
-                            {* ZONE DE RÉSUMÉ (Feedback) *}
                             <div id="summary-card" class="alert alert-info mt-3 mb-0 d-none text-start" style="font-size: 0.9rem;">
                                 <i class="bi bi-info-circle-fill me-2"></i> <span id="summary-text"></span>
                             </div>

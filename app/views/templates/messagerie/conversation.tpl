@@ -17,7 +17,15 @@
             
             {* Informations principales du trajet (Villes, Date, Statut) *}
             <div class="text-truncate">
-                <h5 class="mb-0 text-truncate fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$trajet.ville_arrivee}</h5>
+                <h5 class="mb-0 fw-bold" style="white-space: normal; font-size: 1.1rem; line-height: 1.3;">
+                    {* Départ *}
+                    {if !empty($trajet.rue_depart)}{$trajet.rue_depart}, {/if}{$trajet.code_postal_depart} {$trajet.ville_depart}
+                    
+                    <i class="bi bi-arrow-right-short text-muted mx-1"></i>
+                    
+                    {* Arrivée *}
+                    {if !empty($trajet.rue_arrivee)}{$trajet.rue_arrivee}, {/if}{$trajet.code_postal_arrivee} {$trajet.ville_arrivee}
+                </h5>
                 <div class="d-flex align-items-center gap-2 small mt-1">
                     {* Badge de statut (A venir, En cours, Terminé) *}
                     <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-2">

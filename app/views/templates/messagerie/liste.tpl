@@ -87,8 +87,9 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 {* Titre : Ville Départ -> Ville Arrivée *}
                                 <h6 class="fw-bold mb-1 text-truncate pe-2">
-                                    {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
-                                    
+                                    {if !empty($conv.rue_depart)}{$conv.rue_depart}, {/if}{$conv.code_postal_depart} {$conv.ville_depart}
+                                    <i class="bi bi-arrow-right-short text-muted"></i> 
+                                    {if !empty($conv.rue_arrivee)}{$conv.rue_arrivee}, {/if}{$conv.code_postal_arrivee} {$conv.ville_arrivee}
                                     <span class="text-muted fw-normal small ms-1">
                                         - départ le {$conv.date_heure_depart|date_format:"%d/%m à %H:%M"}
                                     </span>

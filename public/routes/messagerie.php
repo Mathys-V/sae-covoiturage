@@ -11,8 +11,10 @@ Flight::route('GET /messagerie', function(){
     $userId = $_SESSION['user']['id_utilisateur'];
 
     // --- RÉCUPÉRATION DES TRAJETS ---
-    $sql = "SELECT t.id_trajet, t.id_conducteur, t.ville_depart, t.ville_arrivee, t.date_heure_depart, 
-                   t.duree_estimee, t.statut_flag,
+    $sql = "SELECT t.id_trajet, t.id_conducteur, 
+                   t.ville_depart, t.code_postal_depart, t.rue_depart,
+                   t.ville_arrivee, t.code_postal_arrivee, t.rue_arrivee,
+                   t.date_heure_depart, t.duree_estimee, t.statut_flag,
                    u.prenom as conducteur_prenom, u.nom as conducteur_nom,
                    r.statut_code as mon_statut_reservation
             FROM TRAJETS t
@@ -20,7 +22,7 @@ Flight::route('GET /messagerie', function(){
             JOIN UTILISATEURS u ON t.id_conducteur = u.id_utilisateur
             WHERE t.id_conducteur = :uid 
             OR (r.id_passager = :uid AND r.statut_code IN ('V', 'A', 'R')) 
-            GROUP BY t.id_trajet"; 
+            GROUP BY t.id_trajet";
 
     $stmt = $db->prepare($sql);
     $stmt->execute([':uid' => $userId]);

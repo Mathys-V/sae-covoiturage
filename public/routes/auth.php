@@ -32,9 +32,18 @@ Flight::route('POST /connexion', function(){
     // 2. Vérification du mot de passe (comparaison du hash stocké en base)
     if ($user && password_verify($password, $user['mot_de_passe'])) {
         
-        // --- GESTION DU BANNISSEMENT ---
+        // --- MODIFICATION START : GESTION DES COMPTES INACTIFS ---
         // Si le compte est marqué comme inactif ('N')
         if ($user['active_flag'] === 'N') {
+            
+            // CAS 1 : Compte FERMÉ MANUELLEMENT (Marqueur 'CLOSED')
+            if ($user['token_recuperation'] === 'CLOSED') {
+                $_SESSION['flash_error'] = "Ce compte a été clôturé à votre demande. Contactez le support pour le réactiver ou réinitialisez votre mot de passe.";
+                Flight::redirect('/connexion');
+                return;
+            }
+
+            // CAS 2 : Bannissement par Admin (Le token n'est pas 'CLOSED')
             
             // Cas A : Bannissement temporaire (présence d'une date d'expiration)
             if (!empty($user['date_expiration_token'])) {
@@ -63,7 +72,7 @@ Flight::route('POST /connexion', function(){
                 return; // Arrêt du script
             }
         }
-        // -----------------------------------------------------
+        // --- MODIFICATION END ---
 
         // Si tout est OK (Actif ou Débanni), on enregistre l'utilisateur en session
         $_SESSION['user'] = $user;
@@ -242,12 +251,22 @@ Flight::route('POST /mot-de-passe-oublie', function(){
     $email = Flight::request()->data->email;
     $db = Flight::get('db');
 
-    // 1. Vérifier si l'utilisateur existe
-    $stmt = $db->prepare("SELECT id_utilisateur FROM UTILISATEURS WHERE email = :email");
+    // 1. Vérifier si l'utilisateur existe (On récupère aussi active_flag et token)
+    $stmt = $db->prepare("SELECT id_utilisateur, active_flag, token_recuperation FROM UTILISATEURS WHERE email = :email");
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
+        // --- SÉCURITÉ : Empêcher un banni de réinitialiser son mot de passe ---
+        // Sauf si c'est un compte fermé volontairement ('CLOSED'), là on l'autorise (ça réactivera le compte)
+        if ($user['active_flag'] === 'N' && $user['token_recuperation'] !== 'CLOSED') {
+            Flight::render('mdp/etape1_email.tpl', [
+                'titre' => 'Mot de passe oublié',
+                'error' => 'Ce compte est suspendu. Impossible de réinitialiser le mot de passe.'
+            ]);
+            return;
+        }
+
         // 2. Génération d'un code à 6 chiffres
         $code = rand(100000, 999999);
         $expiration = date('Y-m-d H:i:s', strtotime('+15 minutes'));
@@ -336,7 +355,9 @@ Flight::route('POST /mot-de-passe-oublie/save', function(){
     $hash = password_hash($mdp, PASSWORD_BCRYPT);
     $db = Flight::get('db');
 
-    $stmt = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :hash, token_recuperation = NULL, date_expiration_token = NULL WHERE email = :email");
+    // IMPORTANT : Si le compte était fermé manuellement (CLOSED), cette action le réactive (active_flag = 'Y')
+    // On met aussi token à NULL pour nettoyer le 'CLOSED' ou le code
+    $stmt = $db->prepare("UPDATE UTILISATEURS SET mot_de_passe = :hash, active_flag = 'Y', token_recuperation = NULL, date_expiration_token = NULL WHERE email = :email");
     $stmt->execute([':hash' => $hash, ':email' => $email]);
 
     // Nettoyage de la session de réinitialisation

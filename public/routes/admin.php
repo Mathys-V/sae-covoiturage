@@ -31,7 +31,8 @@ Flight::route('GET /moderation', function(){
             ORDER BY s.date_signalement DESC")->fetchAll(PDO::FETCH_ASSOC);
 
     // 3. Récupération des utilisateurs BANNIS (active_flag = 'N')
-    $bannis = $db->query("SELECT * FROM UTILISATEURS WHERE active_flag = 'N' ORDER BY nom ASC")->fetchAll(PDO::FETCH_ASSOC);
+    // --- MODIFICATION ICI : On exclut les comptes fermés volontairement ('CLOSED') ---
+    $bannis = $db->query("SELECT * FROM UTILISATEURS WHERE active_flag = 'N' AND (token_recuperation != 'CLOSED' OR token_recuperation IS NULL) ORDER BY nom ASC")->fetchAll(PDO::FETCH_ASSOC);
 
     // Calcul du temps restant pour chaque banni
     foreach($bannis as &$b) {
@@ -111,7 +112,8 @@ Flight::route('POST /admin/signalement/traiter', function(){
                 $db->beginTransaction();
                 
                 // On désactive le compte et on enregistre la date de fin
-                $sqlUser = "UPDATE UTILISATEURS SET active_flag = 'N', date_expiration_token = :dateFin WHERE id_utilisateur = :id";
+                // --- MODIFICATION ICI : On force token_recuperation à NULL pour effacer un éventuel 'CLOSED' ---
+                $sqlUser = "UPDATE UTILISATEURS SET active_flag = 'N', date_expiration_token = :dateFin, token_recuperation = NULL WHERE id_utilisateur = :id";
                 $db->prepare($sqlUser)->execute([':dateFin' => $dateFin, ':id' => $idCoupable]);
                 
                 // On marque tous les signalements en attente de cet utilisateur comme "Jugés" (J)

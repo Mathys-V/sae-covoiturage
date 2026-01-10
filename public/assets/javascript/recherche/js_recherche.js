@@ -10,27 +10,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (formTrajet) {
         formTrajet.addEventListener("submit", function (e) {
-            // On empêche le rechargement par défaut de la page HTML
-            e.preventDefault();
+            // Récupération et nettoyage des valeurs
+            const depart = document.getElementById("depart").value.trim().toLowerCase();
+            const arrivee = document.getElementById("arrivee").value.trim().toLowerCase();
 
-            // Récupération et nettoyage des valeurs (suppression des espaces inutiles)
-            const depart = document.getElementById("depart").value.trim();
-            const arrivee = document.getElementById("arrivee").value.trim();
-
-            // Vérification que les champs ne sont pas vides
-            if (depart && arrivee) {
-                // Création des paramètres d'URL (ex: ?depart=Paris&arrivee=Lyon)
-                const params = new URLSearchParams({
-                    depart: depart,
-                    arrivee: arrivee,
-                });
-
-                // Redirection de l'utilisateur vers la page d'affichage des résultats
-                window.location.href = `resultats_trajets.html?${params.toString()}`;
-            } else {
-                // Alerte simple si un champ est manquant
-                alert("Veuillez remplir une ville de départ et d'arrivée.");
+            // Validation : départ vs arrivée
+            if (depart && arrivee && depart === arrivee) {
+                e.preventDefault(); // On empêche l'envoi
+                alert("Attention : Le lieu de départ et la destination ne peuvent pas être identiques.");
+                return;
             }
+
+            // Si tout est bon, on laisse le formulaire s'envoyer normalement vers le serveur (PHP)
+            // car l'action est déjà définie dans le HTML.
         });
     }
 });
@@ -96,8 +88,8 @@ function setupAutocomplete(inputId, resultsId) {
             timeout = setTimeout(() => {
                 fetch(
                     "https://api-adresse.data.gouv.fr/search/?q=" +
-                        query +
-                        "&limit=5"
+                    query +
+                    "&limit=5"
                 )
                     .then((response) => response.json())
                     .then((data) => {
@@ -110,14 +102,11 @@ function setupAutocomplete(inputId, resultsId) {
                                 div.innerHTML = `
                                     <div class="sugg-icon"><i class="bi bi-geo-alt-fill text-muted"></i></div>
                                     <div class="sugg-text">
-                                        <span class="sugg-main">${
-                                            feature.properties.name
-                                        }</span>
-                                        <span class="sugg-sub">${
-                                            feature.properties.city || ""
-                                        } (${
-                                    feature.properties.postcode || ""
-                                })</span>
+                                        <span class="sugg-main">${feature.properties.name
+                                    }</span>
+                                        <span class="sugg-sub">${feature.properties.city || ""
+                                    } (${feature.properties.postcode || ""
+                                    })</span>
                                     </div>`;
 
                                 div.addEventListener("click", function () {

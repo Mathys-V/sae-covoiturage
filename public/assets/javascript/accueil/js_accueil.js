@@ -105,4 +105,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // Lancement de l'autocomplétion sur les champs Départ et Arrivée
     setupAutocomplete("depart", "depart-list");
     setupAutocomplete("arrivee", "arrivee-list");
+
+    // --- Validation Client ---
+    // On sélectionne le formulaire qui contient à la fois "depart" et "arrivee"
+    const searchForm = document.querySelector('form[action*="/recherche/resultats"]');
+    if (searchForm) {
+        searchForm.addEventListener("submit", function (e) {
+            const departInput = document.getElementById("depart");
+            const arriveeInput = document.getElementById("arrivee");
+
+            if (departInput && arriveeInput) {
+                const depart = departInput.value.trim().toLowerCase();
+                const arrivee = arriveeInput.value.trim().toLowerCase();
+
+                if (depart && arrivee && depart === arrivee) {
+                    e.preventDefault(); // On bloque l'envoi
+                    alert("Attention : Le lieu de départ et la destination ne peuvent pas être identiques.");
+                }
+            }
+        });
+    }
 });

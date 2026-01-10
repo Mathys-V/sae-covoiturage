@@ -19,7 +19,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {/if}
-            <form action="/sae-covoiturage/public/recherche/resultats" method="GET" autocomplete="off">
+            <form action="/sae-covoiturage/public/recherche/resultats" method="GET" autocomplete="off" id="form-recherche-trajet">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">
                         <label class="form-label text-white fw-bold">Départ</label>

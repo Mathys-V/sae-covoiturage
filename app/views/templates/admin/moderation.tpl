@@ -1,7 +1,9 @@
 {include file='includes/header.tpl'}
 
+{* Conteneur principal de la page d'administration *}
 <div class="container mt-5 mb-5" style="min-height: 80vh;">
     
+    {* En-tête de la page avec le titre et l'indicateur de mode Admin *}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="fw-bold text-dark"><i class="bi bi-shield-lock-fill text-danger me-2"></i>Administration</h1>
@@ -11,18 +13,23 @@
         </div>
     </div>
 
+    {* Système d'onglets pour naviguer entre les différentes vues (En attente, Historique, Bannis) *}
     <ul class="nav nav-tabs border-bottom-0 mb-3" id="adminTabs" role="tablist">
+        {* Onglet : Signalements en attente *}
         <li class="nav-item">
             <button class="nav-link active fw-bold px-4 py-2 rounded-top-4" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
                 <i class="bi bi-inbox-fill me-2"></i> En attente 
+                {* Badge affichant le nombre de signalements en attente si > 0 *}
                 {if $en_attente|@count > 0}<span class="badge bg-danger ms-2">{$en_attente|@count}</span>{/if}
             </button>
         </li>
+        {* Onglet : Historique des décisions *}
         <li class="nav-item">
             <button class="nav-link fw-bold px-4 py-2 rounded-top-4" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
                 <i class="bi bi-clock-history me-2"></i> Historique
             </button>
         </li>
+        {* Onglet : Gestion des utilisateurs bannis *}
         <li class="nav-item">
             <button class="nav-link fw-bold px-4 py-2 rounded-top-4 text-danger" id="banned-tab" data-bs-toggle="tab" data-bs-target="#banned" type="button">
                 <i class="bi bi-slash-circle me-2"></i> Utilisateurs Bannis
@@ -30,8 +37,10 @@
         </li>
     </ul>
 
+    {* Contenu des onglets *}
     <div class="tab-content" id="adminTabsContent">
         
+        {* CONTENU : SIGNALEMENTS EN ATTENTE *}
         <div class="tab-pane fade show active" id="pending">
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden rounded-top-0">
                 <div class="table-responsive">
@@ -47,6 +56,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {* Affichage conditionnel selon la présence de signalements *}
                             {if empty($en_attente)}
                                 <tr><td colspan="6" class="text-center py-5 text-muted">Aucun signalement en attente.</td></tr>
                             {else}
@@ -60,19 +70,22 @@
                                     </td>
                                     <td class="small text-secondary">{$sig.prenom_signaleur} {$sig.nom_signaleur}</td>
                                     <td>
+                                        {* Bouton pour déplier les détails du signalement *}
                                         <button class="btn btn-sm btn-light border text-purple fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#desc-{$sig.id_signalement}">
                                             <i class="bi bi-eye"></i> Voir
                                         </button>
                                     </td>
                                     <td class="text-end pe-4">
-    <button class="btn btn-outline-secondary btn-sm me-2" onclick="classer({$sig.id_signalement})" title="Ne pas sanctionner">
-        <i class="bi bi-archive-fill"></i> Classer sans suite
-    </button>
-    <button class="btn btn-danger btn-sm" onclick="ouvrirModalBan({$sig.id_signalement}, '{$sig.nom_signale} {$sig.prenom_signale}')" title="Sanctionner">
-        <i class="bi bi-hammer"></i> Bannir
-    </button>
-</td>
+                                        {* Actions : Classer sans suite ou Bannir *}
+                                        <button class="btn btn-outline-secondary btn-sm me-2" onclick="classer({$sig.id_signalement})" title="Ne pas sanctionner">
+                                            <i class="bi bi-archive-fill"></i> Classer sans suite
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="ouvrirModalBan({$sig.id_signalement}, '{$sig.nom_signale} {$sig.prenom_signale}')" title="Sanctionner">
+                                            <i class="bi bi-hammer"></i> Bannir
+                                        </button>
+                                    </td>
                                 </tr>
+                                {* Ligne de détails (cachée par défaut, visible au clic sur "Voir") *}
                                 <tr class="collapse bg-light border-bottom" id="desc-{$sig.id_signalement}">
                                     <td colspan="6" class="p-4">
                                         <div class="d-flex gap-3">
@@ -95,6 +108,7 @@
             </div>
         </div>
 
+        {* CONTENU : HISTORIQUE *}
         <div class="tab-pane fade" id="history">
             <div class="card border-0 shadow-sm rounded-4 rounded-top-0">
                 <div class="card-body p-0">
@@ -112,6 +126,7 @@
                                     <td>{$h.motif}</td>
                                     <td><span class="fw-bold">{$h.nom_signale}</span> <span class="text-muted small">(par {$h.nom_signaleur})</span></td>
                                     <td>
+                                        {* Affichage du statut final du signalement *}
                                         {if $h.statut_code == 'R'}<span class="badge bg-secondary">Classé sans suite</span>
                                         {elseif $h.statut_code == 'J'}<span class="badge bg-dark"><i class="bi bi-hammer"></i> Banni</span>{/if}
                                     </td>
@@ -124,6 +139,7 @@
             </div>
         </div>
 
+        {* CONTENU : UTILISATEURS BANNIS *}
         <div class="tab-pane fade" id="banned">
             <div class="card border-0 shadow-sm rounded-4 rounded-top-0 border-top border-danger border-3">
                 <div class="card-body">
@@ -157,6 +173,7 @@
                                             </div>
                                         </td>
                                         <td>
+                                            {* Distinction visuelle entre ban définitif et temporaire *}
                                             {if $b.type_ban == 'Définitif'}
                                                 <span class="badge bg-danger">DÉFINITIF</span>
                                             {else}
@@ -172,6 +189,7 @@
                                             {/if}
                                         </td>
                                         <td class="text-end">
+                                            {* Action de débannissement manuel *}
                                             <button class="btn btn-outline-success btn-sm fw-bold" onclick="debannir({$b.id_utilisateur})">
                                                 <i class="bi bi-arrow-counterclockwise"></i> Réactiver
                                             </button>
@@ -188,6 +206,7 @@
     </div>
 </div>
 
+{* Fenêtre modale de confirmation de bannissement *}
 <div class="modal fade" id="modalBan" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -201,6 +220,7 @@
         
         <input type="hidden" id="modalSigId">
         
+        {* Choix de la durée du bannissement *}
         <div class="list-group">
             <label class="list-group-item">
                 <input class="form-check-input me-1" type="radio" name="banDuration" value="1" checked>
@@ -232,6 +252,7 @@
   </div>
 </div>
 
+{* Inclusion du script JS pour gérer les actions de modération (AJAX, modals...) *}
 <script src="/sae-covoiturage/public/assets/javascript/admin/js_moderation.js"></script>
 
 {include file='includes/footer.tpl'}

@@ -1,11 +1,15 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la liste des messages *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/messagerie/style_liste.css">
 
 <div class="container my-4" style="max-width: 800px;">
     <h2 class="fw-bold text-center text-purple mb-4">Mes Discussions</h2>
 
+    {* Barre d'onglets pour filtrer les discussions par statut *}
     <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded-pill shadow-sm" id="msgTabs" role="tablist">
+        
+        {* Onglet En cours *}
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill active fw-bold position-relative" id="encours-tab" data-bs-toggle="pill" data-bs-target="#encours" type="button">
                 En cours
@@ -16,6 +20,8 @@
                 {/if}
             </button>
         </li>
+
+        {* Onglet À venir *}
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold position-relative" id="avenir-tab" data-bs-toggle="pill" data-bs-target="#avenir" type="button">
                 À venir
@@ -26,6 +32,8 @@
                 {/if}
             </button>
         </li>
+
+        {* Onglet Terminé *}
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold position-relative" id="termine-tab" data-bs-toggle="pill" data-bs-target="#termine" type="button">
                 Terminé
@@ -38,6 +46,7 @@
         </li>
     </ul>
 
+    {* Contenu des onglets (Appel de la fonction displayList) *}
     <div class="tab-content" id="msgTabsContent">
         <div class="tab-pane fade show active" id="encours" role="tabpanel">
             {call name=displayList list=$groupes.encours emptyMsg="Aucun trajet en cours."}
@@ -51,21 +60,24 @@
     </div>
 </div>
 
-{* --- FONCTION D'AFFICHAGE --- *}
+{* --- FONCTION D'AFFICHAGE REUTILISABLE (Template Function) --- *}
 {function name=displayList}
     <div class="d-flex flex-column gap-3">
         {if empty($list)}
+            {* Message affiché si la liste est vide *}
             <div class="text-center py-5 text-muted">
                 <i class="bi bi-chat-square-dots display-1 d-block mb-3 opacity-25"></i>
                 <p class="fs-5">{$emptyMsg}</p>
                 <a href="/sae-covoiturage/public/recherche" class="btn btn-sm btn-outline-purple rounded-pill mt-2">Rechercher un trajet</a>
             </div>
         {else}
+            {* Boucle sur chaque discussion *}
             {foreach $list as $conv}
             <a href="/sae-covoiturage/public/messagerie/conversation/{$conv.id_trajet}" class="text-decoration-none text-dark">
                 <div class="card border-0 shadow-sm hover-shadow transition-all">
                     <div class="card-body d-flex align-items-center p-3">
                         
+                        {* Icône visuelle (Voiture) *}
                         <div class="rounded-circle p-3 me-3 d-flex align-items-center justify-content-center flex-shrink-0" 
                              style="width: 50px; height: 50px; background-color: #f3f0ff;">
                             <i class="bi bi-car-front-fill text-purple fs-4"></i>
@@ -73,6 +85,7 @@
 
                         <div class="flex-grow-1 overflow-hidden">
                             <div class="d-flex justify-content-between align-items-start">
+                                {* Titre : Ville Départ -> Ville Arrivée *}
                                 <h6 class="fw-bold mb-1 text-truncate pe-2">
                                     {$conv.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$conv.ville_arrivee}
                                     
@@ -80,6 +93,8 @@
                                         - départ le {$conv.date_heure_depart|date_format:"%d/%m à %H:%M"}
                                     </span>
                                 </h6>
+                                
+                                {* Badge de notifications non lues *}
                                 {if $conv.nb_non_lus > 0}
                                     <span class="badge bg-danger rounded-pill">{$conv.nb_non_lus}</span>
                                 {else}
@@ -87,6 +102,7 @@
                                 {/if}
                             </div>
 
+                            {* Statut du trajet (En cours, Annulé, etc.) *}
                             <div class="mb-1 d-flex align-items-center">
                                 <span class="badge bg-{$conv.statut_couleur} bg-opacity-10 text-{$conv.statut_couleur} border border-{$conv.statut_couleur} rounded-pill px-2 py-0 small">
                                     {if $conv.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
@@ -103,6 +119,7 @@
                                 {/if}
                             </div>
 
+                            {* Aperçu du dernier message *}
                             <div class="small text-muted text-truncate">
                                 {if $conv.dernier_message}
                                     {if $conv.dernier_auteur}
@@ -126,6 +143,7 @@
     </div>
 {/function}
 
+{* Script pour gérer la logique des onglets (si besoin) *}
 <script src="/sae-covoiturage/public/assets/javascript/messagerie/js_liste.js"></script>
 
 {include file='includes/footer.tpl'}

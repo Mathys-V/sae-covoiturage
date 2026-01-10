@@ -1,18 +1,25 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la messagerie *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/messagerie/style_conversation.css">
 
 <div class="chat-wrapper" style="height: 85vh; display: flex; flex-direction: column;">
     
+    {* EN-TÊTE DE CONVERSATION *}
     <div class="chat-header p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center" style="max-width: 80%;">
+            
+            {* Bouton Retour vers la liste des conversations (ou l'historique selon statut) *}
             <a href="/sae-covoiturage/public/messagerie#{if $trajet.statut_visuel == 'complet'}avenir{else}{$trajet.statut_visuel}{/if}" 
                class="btn btn-light rounded-circle shadow-sm me-3">
                <i class="bi bi-arrow-left text-dark"></i>
             </a>
+            
+            {* Informations principales du trajet (Villes, Date, Statut) *}
             <div class="text-truncate">
                 <h5 class="mb-0 text-truncate fw-bold">{$trajet.ville_depart} <i class="bi bi-arrow-right-short text-muted"></i> {$trajet.ville_arrivee}</h5>
                 <div class="d-flex align-items-center gap-2 small mt-1">
+                    {* Badge de statut (A venir, En cours, Terminé) *}
                     <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-2">
                         {if $trajet.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
                         {elseif $trajet.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
@@ -20,6 +27,7 @@
                         {$trajet.statut_libelle}
                     </span>
 
+                    {* Indicateur de temps restant pour les trajets en cours *}
                     {if $trajet.statut_visuel == 'encours' && isset($trajet.temps_restant)}
                         <span class="text-success fw-bold">
                             <i class="bi bi-hourglass-split"></i> Arrivée dans {$trajet.temps_restant}
@@ -32,6 +40,7 @@
             </div>
         </div>
         
+        {* Bouton de signalement (visible s'il y a des participants) *}
         {if $participants|@count > 0}
         <button class="btn btn-outline-danger btn-sm rounded-pill px-3 btn-report" title="Signaler un problème" data-bs-toggle="modal" data-bs-target="#modalSignalement">
             <i class="bi bi-flag"></i>
@@ -39,8 +48,10 @@
         {/if}
     </div>
 
+    {* ZONE DES MESSAGES (Défilable) *}
     <div class="messages-container p-3" id="messagesArea" style="flex: 1; overflow-y: auto; background-color: #f8f9fa;">
         {if empty($messages)}
+            {* Message d'accueil si la conversation est vide *}
             <div class="d-flex flex-column align-items-center justify-content-center h-100 opacity-50">
                 <i class="bi bi-chat-dots display-1 text-purple mb-3"></i>
                 <p class="fw-bold fs-5">La conversation commence ici.</p>
@@ -48,14 +59,14 @@
             </div>
         {else}
             {foreach $messages as $msg}
-                {* --- SÉPARATEUR DE DATE --- *}
+                {* --- Séparateur de date --- *}
                 {if $msg.type == 'separator'}
                     <div class="date-divider"><span>{$msg.date}</span></div>
                 
-                {* --- MESSAGES SYSTÈME --- *}
+                {* --- Messages Système (Fin de trajet, Annulation, Création, Join/Leave) --- *}
                 {elseif $msg.type == 'system'}
                     
-                    {* CAS 1 : Trajet Terminé *}
+                    {* CAS 1 : Trajet Terminé (Invite à laisser un avis) *}
                     {if $msg.contenu == '::sys_end::'}
                         <div class="system-msg my-4">
                             <div class="card border-0 shadow-sm p-4 mx-auto" style="max-width: 90%; background-color: #f3f0ff;">
@@ -95,24 +106,25 @@
                             </span>
                         </div>
 
-                    {* CAS 4 : Join / Leave (C'EST ICI LA CORRECTION) *}
+                    {* CAS 4 : Notifications Join / Leave *}
                     {else}
                         <div class="text-center my-3">
                             <small class="text-muted fst-italic">
                                 <i class="bi bi-info-circle me-1"></i>
-                                {* On affiche la version traduite par PHP (text_affiche) *}
+                                {* Affiche le texte formaté par PHP (ex: "X a rejoint le trajet") *}
                                 {$msg.text_affiche|default:$msg.contenu}
                             </small>
                         </div>
                     {/if}
 
-                {* --- MESSAGES UTILISATEURS (Code CSS d'origine conservé) --- *}
+                {* --- Messages Utilisateurs (Bulles de chat) --- *}
                 {else}
                     <div class="msg-row {if $msg.type == 'self'}self{else}other{/if}">
                         <div class="msg-content shadow-sm">
                             {$msg.contenu|nl2br}
                         </div>
                         <div class="msg-info">
+                            {* Lien vers le profil si c'est un autre utilisateur *}
                             {if $msg.type == 'other'}
                                 <a href="/sae-covoiturage/public/profil/voir/{$msg.id_expediteur}" 
                                    class="text-decoration-none fw-bold" 
@@ -132,6 +144,7 @@
         {/if}
     </div>
 
+    {* ZONE DE SAISIE *}
     <div class="chat-footer p-3 bg-white border-top">
         <form id="chatForm" class="d-flex gap-2">
             <input type="text" id="messageInput" class="form-control rounded-pill bg-light border-0 px-4 py-2" placeholder="Écrivez votre message..." required autocomplete="off">
@@ -144,6 +157,7 @@
 
 </div>
 
+{* MODALE DE SIGNALEMENT *}
 <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -190,6 +204,7 @@
   </div>
 </div>
 
+{* Script JS pour la gestion du chat (envoi AJAX, polling...) *}
 <script src="/sae-covoiturage/public/assets/javascript/messagerie/js_conversation.js"></script>
 
 {include file='includes/footer.tpl'}

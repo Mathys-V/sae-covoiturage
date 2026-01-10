@@ -5,36 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MonCovoitJV</title>
     
+    {* Favicon du site *}
     <link rel="icon" type="image/png" href="/sae-covoiturage/public/assets/img/logo_MonCovoitJV.png">
     
+    {* Chargement des polices Google Fonts (Poppins) *}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    {* Bibliothèques CSS externes (Bootstrap 5 et Bootstrap Icons) *}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+    {* Feuille de style spécifique au Header *}
     <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/includes/style_header.css">
 
-    </head>
+</head>
 <body>
 
+{* Barre de navigation principale *}
 <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
   <div class="container-fluid px-4">
     
+    {* Logo et Nom du site (cliquables pour retour accueil) *}
     <a class="navbar-brand d-flex align-items-center gap-2" href="/sae-covoiturage/public/">
         <img src="/sae-covoiturage/public/assets/img/logo.png" alt="Logo">
         <span class="fw-bold fs-4" style="color: #8c52ff;">monCovoitJV</span>
     </a>
 
+    {* Bouton burger pour mobile *}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
       <span class="navbar-toggler-icon"></span>
     </button>
 
+    {* Contenu du menu (liens + actions utilisateur) *}
     <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
       
       <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-3 mt-3 mt-lg-0">
         
+        {* Bouton Administration (visible uniquement pour les admins) *}
         {if isset($user) && $user.admin_flag == 'Y'}
             <a href="/sae-covoiturage/public/moderation" class="btn btn-danger fw-bold">
                 <i class="bi bi-shield-lock-fill"></i> Espace Admin
@@ -42,30 +51,36 @@
             <div class="vr mx-2 d-none d-lg-block"></div>
         {/if}
 
+        {* Bouton Proposer un trajet (avec confirmation si non connecté) *}
         <a href="{if isset($user)}/sae-covoiturage/public/trajet/nouveau{else}/sae-covoiturage/public/connexion{/if}" 
            class="btn btn-purple w-100"
            {if !isset($user)}onclick="return confirm('Vous devez être connecté pour proposer un trajet.\n\nCliquez sur OK pour vous connecter.');"{/if}>
            Proposer un trajet
         </a>
 
+        {* Liens de navigation principaux *}
         <a href="/sae-covoiturage/public/carte" class="btn btn-purple w-100">Carte</a>
-
         <a href="/sae-covoiturage/public/recherche" class="btn btn-purple w-100">Rechercher</a>
 
+        {* Lien Mes Réservations (avec confirmation si non connecté) *}
         <a href="{if isset($user)}/sae-covoiturage/public/mes_reservations{else}/sae-covoiturage/public/connexion{/if}" 
             class="btn btn-purple w-100"
         {if !isset($user)}onclick="return confirm('Vous devez être connecté pour voir vos réservations.\n\nCliquez sur OK pour vous connecter.');"{/if}>
         Mes réservations
         </a>
 
+        {* Séparateur vertical (Desktop uniquement) *}
         <div class="vr mx-2 d-none d-lg-block"></div>
 
+        {* Menu utilisateur Desktop (Avatar + Dropdown) *}
         <div class="d-none d-lg-flex align-items-center gap-2">
             {if !isset($user)}
                 <a href="/sae-covoiturage/public/inscription" class="btn btn-outline-purple me-2">
                     S'inscrire
                 </a>
             {/if}
+            
+            {* Avatar utilisateur (cliquable vers profil ou connexion) *}
             <a href="{if isset($user)}/sae-covoiturage/public/profil{else}/sae-covoiturage/public/connexion{/if}" 
             title="{if isset($user)}Mon Profil{else}Se connecter{/if}"
             {if !isset($user)}onclick="return confirm('Vous devez être connecté pour accéder à votre profil.\n\nCliquez sur OK pour vous connecter.');"{/if}
@@ -78,6 +93,7 @@
                         <i class="bi bi-person-fill fs-4"></i>
                     {/if}
 
+                    {* Badge de notification (messages non lus) *}
                     {if isset($nb_notifs) && $nb_notifs > 0}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
                             {$nb_notifs}
@@ -85,9 +101,9 @@
                         </span>
                     {/if}
                 </div>
-
             </a>
             
+            {* Menu déroulant utilisateur *}
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none no-arrow px-2" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-caret-down-fill fs-3 big-arrow"></i>
@@ -141,6 +157,7 @@
             </div>
         </div>
 
+        {* Menu Mobile (Visible uniquement sur petits écrans) *}
         <div class="d-lg-none mt-3 pt-3 border-top">
             <p class="text-muted small fw-bold text-uppercase mb-2">Mon Compte</p>
             
@@ -174,7 +191,6 @@
             {if isset($user)}
                 <a href="/sae-covoiturage/public/deconnexion" class="mobile-link text-muted"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a>
             {else}
-                {* NOUVEAU : Lien S'inscrire mobile *}
                 <a href="/sae-covoiturage/public/inscription" class="mobile-link text-purple">
                     <i class="bi bi-person-plus-fill me-2"></i> S'inscrire
                 </a>
@@ -189,6 +205,7 @@
   </div>
 </nav>
 
+{* Affichage des messages flash (Succès) *}
 {if isset($flash_success)}
     <div class="flash-message-container">
         <div class="alert alert-success alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #198754; background-color: #d1e7dd; color: #0f5132;">
@@ -206,6 +223,8 @@
         }, 4000);
     </script>
 {/if}
+
+{* Affichage des messages flash (Erreur) *}
 {if isset($flash_error)}
     <div class="flash-message-container">
         <div class="alert alert-danger alert-dismissible fade show shadow-lg border-0" role="alert" style="border-left: 5px solid #dc3545; background-color: #f8d7da; color: #842029;">

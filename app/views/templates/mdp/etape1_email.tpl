@@ -1,5 +1,6 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la récupération de mot de passe *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/mdp/style_etape1_email.css">
 
 <div class="container d-flex justify-content-center align-items-center flex-grow-1 my-5">
@@ -8,6 +9,7 @@
         <h2 class="text-center fw-bold mb-2" style="color: #8c52ff;">Mot de passe oublié ?</h2>
         <p class="text-center text-muted mb-4">Réinitialisation du compte</p>
         
+        {* Note informative : Simulation de l'envoi d'email (Contexte SAE) *}
         <div class="simu-alert">
             <i class="bi bi-info-circle-fill fs-5 mt-1"></i>
             <div>
@@ -16,12 +18,14 @@
             </div>
         </div>
 
+        {* Affichage des erreurs éventuelles (ex: email inconnu) *}
         {if isset($error)}
             <div class="alert alert-danger text-center rounded-3 mb-4">
                 <i class="bi bi-exclamation-triangle me-2"></i>{$error}
             </div>
         {/if}
 
+        {* Formulaire de demande de réinitialisation *}
         <form action="/sae-covoiturage/public/mot-de-passe-oublie" method="POST">
             <div class="mb-4">
                 <label class="form-label fw-bold text-dark">Adresse email</label>
@@ -29,16 +33,19 @@
                     <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">
                         <i class="bi bi-envelope text-muted"></i>
                     </span>
+                    {* Champ de saisie de l'email pour recevoir le code *}
                     <input type="email" name="email" class="form-control bg-light border-start-0 rounded-end-pill py-2" 
                            placeholder="exemple@etud.u-picardie.fr" required>
                 </div>
             </div>
             
+            {* Bouton de soumission (déclenche la génération du code) *}
             <button type="submit" class="btn btn-purple w-100 py-2 rounded-pill fw-bold shadow-sm">
                 Envoyer le code (Simulé)
             </button>
         </form>
 
+        {* Lien de retour vers la page de connexion *}
         <div class="text-center mt-4">
             <a href="/sae-covoiturage/public/connexion" class="text-decoration-none text-secondary fw-semibold small hover-opacity">
                 <i class="bi bi-arrow-left me-1"></i> Retour à la connexion

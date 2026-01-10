@@ -1,5 +1,6 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la FAQ *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_faq.css">
 
 <div class="page-wrapper">
@@ -8,6 +9,7 @@
         
         <h1 class="faq-title">Questions Fréquentes</h1>
 
+        {* Item FAQ 1 : Présentation de l'équipe *}
         <div class="faq-item">
             <div class="faq-question">
                 Qui se cache derrière MonCovoitJV ?
@@ -18,6 +20,7 @@
             </div>
         </div>
 
+        {* Item FAQ 2 : Modèle économique (Gratuit) *}
         <div class="faq-item">
             <div class="faq-question">
                 Le service est-il payant ?
@@ -28,6 +31,7 @@
             </div>
         </div>
 
+        {* Item FAQ 3 : Mesures de sécurité *}
         <div class="faq-item">
             <div class="faq-question">
                 Comment la sécurité est-elle assurée ?
@@ -43,6 +47,7 @@
             </div>
         </div>
 
+        {* Item FAQ 4 : Politique d'annulation *}
         <div class="faq-item">
             <div class="faq-question">
                 Puis-je annuler une réservation ?
@@ -54,6 +59,7 @@
             </div>
         </div>
 
+        {* Item FAQ 5 : Signalement de bugs *}
         <div class="faq-item">
             <div class="faq-question">
                 J'ai rencontré un bug technique, que faire ?
@@ -70,4 +76,5 @@
 
 </div>
 
+{* Script pour gérer l'ouverture/fermeture des questions (Accordéon) *}
 <script src="/sae-covoiturage/public/assets/javascript/pages_footer/js_faq.js"></script>

@@ -1,11 +1,13 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la gestion des cookies *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_cookies.css">
 
 <div class="container mt-5 mb-5 flex-grow-1">
     
     <div class="cookie-card text-white">
         
+        {* En-tête : Titre et explication générale *}
         <div class="cookie-header">
             <h1 class="fw-bold m-0 mb-3">🍪 Paramètres des cookies</h1>
             <p class="text-white-50 mx-auto mb-0" style="max-width: 600px;">
@@ -16,9 +18,11 @@
         <div class="p-4 p-md-5">
             <form action="/sae-covoiturage/public/cookies/save" method="POST">
                 
+                {* Bloc 1 : Cookies Essentiels (Obligatoires) *}
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
                         
+                        {* Titre cliquable pour dérouler la description *}
                         <div class="col-md-6 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#descEssentiels" style="cursor: pointer;">
                             <div class="d-flex-center-v">
                                 <i class="bi bi-shield-lock-fill me-3 fs-3 text-white-50"></i>
@@ -29,6 +33,7 @@
                             </div>
                         </div>
                         
+                        {* Badge indiquant que ces cookies sont toujours actifs *}
                         <div class="col-md-6">
                             <div class="d-flex align-items-center justify-content-md-end gap-3">
                                 <span class="badge-required">
@@ -41,6 +46,7 @@
                         </div>
                     </div>
 
+                    {* Description déroulante *}
                     <div class="collapse mt-3 ps-md-5" id="descEssentiels">
                         <p class="small text-white-50 m-0 border-start border-2 border-white border-opacity-25 ps-3">
                             Ces cookies sont indispensables au bon fonctionnement du site (connexion, sécurité). Ils ne peuvent pas être désactivés.
@@ -48,6 +54,7 @@
                     </div>
                 </div>
 
+                {* Bloc 2 : Performance (Optionnel) *}
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
                         
@@ -60,6 +67,7 @@
                             </div>
                         </div>
                         
+                        {* Boutons radios Accepter / Refuser personnalisés *}
                         <div class="col-md-6">
                             <div class="d-flex align-items-center justify-content-md-end gap-3">
                                 <div class="btn-group-custom" role="group">
@@ -83,6 +91,7 @@
                     </div>
                 </div>
 
+                {* Bloc 3 : Marketing (Optionnel) *}
                 <div class="cookie-item">
                     <div class="row align-items-center g-3">
                         
@@ -118,6 +127,7 @@
                     </div>
                 </div>
 
+                {* Bouton Enregistrer *}
                 <div class="text-center mt-5">
                     <button type="submit" class="btn btn-light text-primary px-5 py-3 fw-bold fs-5 shadow-lg" style="border-radius: 50px; color: #3b2875 !important; min-width: 250px; transition: transform 0.2s;">
                         Enregistrer

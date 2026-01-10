@@ -1,5 +1,6 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la page de contact *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_contact.css">
 
 <div class="page-wrapper">
@@ -8,19 +9,22 @@
         
         <h1 class="contact-title">Contactez-nous</h1>
 
+        {* Note d'information sur la simulation d'envoi (Contexte SAE) *}
         <div class="simulation-info">
             ℹ️ <strong>Mode Démonstration :</strong> Aucun email réel ne sera envoyé. 
             Votre message sera enregistré dans un fichier texte sur le serveur.
         </div>
 
+        {* Affichage des messages de succès (Flash Message) *}
         {if isset($smarty.session.flash_success)}
             <div class="alert alert-success">
                 {$smarty.session.flash_success}
             </div>
-            {* On efface le message après affichage pour qu'il ne réapparaisse pas *}
+            {* Nettoyage de la variable de session après affichage *}
             {$smarty.session.flash_success = null} 
         {/if}
 
+        {* Affichage des messages d'erreur (Flash Message) *}
         {if isset($smarty.session.flash_error)}
             <div class="alert alert-error">
                 {$smarty.session.flash_error}
@@ -28,8 +32,10 @@
             {$smarty.session.flash_error = null}
         {/if}
 
+        {* Formulaire de contact *}
         <form class="contact-form" action="" method="POST">
             
+            {* Champ : Sujet de la demande *}
             <div class="form-group">
                 <label class="form-label" for="problem">
                     Quel est votre problème ?<span class="required-star">*</span>
@@ -37,6 +43,7 @@
                 <input type="text" id="problem" name="problem" class="form-input" required>
             </div>
 
+            {* Champ : Email de contact (Pré-rempli si l'utilisateur est connecté) *}
             <div class="form-group">
                 <label class="form-label" for="email">
                     Quel est votre e-mail ?<span class="required-star">*</span>
@@ -44,6 +51,7 @@
                 <input type="email" id="email" name="email" class="form-input" value="{if isset($smarty.session.user.email)}{$smarty.session.user.email}{/if}" required>
             </div>
 
+            {* Champ : Message détaillé *}
             <div class="form-group">
                 <label class="form-label" for="message">
                     Décrivez-nous votre demande en détail<span class="required-star">*</span>
@@ -51,6 +59,7 @@
                 <textarea id="message" name="message" class="form-textarea" required></textarea>
             </div>
 
+            {* Bouton d'envoi avec icône SVG *}
             <div class="submit-container">
                 <button type="submit" class="btn-submit">
                     Envoyer (Simulation)

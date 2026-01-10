@@ -1,41 +1,52 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la modification de mot de passe *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/parametre/style_modifier_mdp.css">
 
 <main>
     <h1>Mot de passe</h1>
+    
+    {* Rappel des règles de complexité *}
     <div class="subtitle">Il doit comporter au moins 8 caractères dont 1 lettre, 1 chiffre et 1 caractère spécial.</div>
 
+    {* Formulaire de changement de mot de passe *}
     <form action="/sae-covoiturage/public/profil/modifier_mdp" method="POST" id="mdpForm">
         
+        {* Champ : Mot de passe actuel *}
         <div class="input-group">
             <label>Entrez votre mot de passe actuel</label>
             <div class="input-wrapper">
                 <input type="password" name="current_password" id="current_password" required>
+                {* Icône pour voir/masquer le mot de passe *}
                 <svg class="toggle-password" onclick="togglePwd('current_password')" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </div>
+            {* Message d'erreur (affiché si le mot de passe actuel est incorrect) *}
             <div class="error-text {if isset($errors.current)}show-error-php{/if}" id="msg-error-current">
                 {$errors.current|default:"Le mot de passe n'est pas celui actuel"}
             </div>
         </div>
 
+        {* Champ : Nouveau mot de passe *}
         <div class="input-group">
             <label>Entrez votre nouveau mot de passe</label>
             <div class="input-wrapper">
                 <input type="password" name="new_password" id="new_password" required>
                 <svg class="toggle-password" onclick="togglePwd('new_password')" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </div>
+            {* Message d'erreur (Format invalide) *}
             <div class="error-text {if isset($errors.format)}show-error-php{/if}" id="msg-error-format">
                 Le mot de passe saisi n'est pas valide. Vérifiez qu'il ne manque pas une consigne.
             </div>
         </div>
 
+        {* Champ : Confirmation du nouveau mot de passe *}
         <div class="input-group">
             <label>Confirmez votre nouveau mot de passe</label>
             <div class="input-wrapper">
                 <input type="password" name="confirm_password" id="confirm_password" required>
                 <svg class="toggle-password" onclick="togglePwd('confirm_password')" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </div>
+            {* Message d'erreur (Non-correspondance) *}
             <div class="error-text {if isset($errors.confirm)}show-error-php{/if}" id="msg-error-confirm">
                 Les mots de passe ne correspondent pas.
             </div>
@@ -45,6 +56,7 @@
     </form>
 </main>
 
+{* Modale de confirmation avant envoi *}
 <div class="custom-overlay" id="confirmModal">
     <div class="custom-modal-box">
         <h2>Confirmation</h2>
@@ -56,6 +68,7 @@
     </div>
 </div>
 
+{* Modale de succès (affichée après validation PHP) *}
 <div class="custom-overlay {if isset($success)}show-modal{/if}">
     <div class="custom-modal-box">
         <h2>Mot de passe</h2>
@@ -66,4 +79,5 @@
 
 {include file='includes/footer.tpl'}
 
+{* Script JS pour la validation des champs et les modales *}
 <script src="/sae-covoiturage/public/assets/javascript/parametre/js_modif_mdp.js"></script>

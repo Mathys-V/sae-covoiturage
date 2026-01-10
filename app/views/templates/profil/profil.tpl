@@ -1,9 +1,11 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la page de profil *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/profil/style_profil.css">
 
 <div class="page-wrapper">
 
+    {* Système d'onglets pour basculer entre l'affichage du profil et les paramètres *}
     <div class="tabs-container">
         <div id="tab-compte" class="tab tab-active" onclick="switchTab('compte')">Compte</div>
         <div id="tab-parametres" class="tab tab-inactive" onclick="switchTab('parametres')">Paramètres</div>
@@ -11,16 +13,16 @@
 
     <main class="main-content">
 
-        {* --- ONGLET COMPTE --- *}
+        {* --- ONGLET COMPTE (Informations publiques et privées) --- *}
         <div id="section-compte">
 
             <div class="profile-header">
-                {* Formulaire caché pour l'upload de photo *}
+                {* Formulaire caché pour l'upload de photo (déclenché par clic sur l'avatar) *}
                 <form id="form-photo" action="/sae-covoiturage/public/profil/update-photo" method="POST" enctype="multipart/form-data" style="display:none;">
                     <input type="file" name="photo_profil" id="input-photo" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="document.getElementById('form-photo').submit();">
                 </form>
 
-                {* Avatar *}
+                {* Avatar utilisateur avec indicateur de modification *}
                 <div class="avatar-circle" onclick="document.getElementById('input-photo').click();" title="Modifier la photo">
                     {if !empty($user.photo_profil) && $user.photo_profil != 'default.png'}
                         <img src="/sae-covoiturage/public/uploads/{$user.photo_profil}?t={$smarty.now}" class="avatar-img">
@@ -30,14 +32,16 @@
                     <div class="avatar-overlay"><i class="bi bi-camera-fill"></i></div>
                 </div>
 
-                {* Infos Identité *}
+                {* Section Identité et Vérification *}
                 <div class="ms-md-4 text-center text-md-start flex-grow-1">
+                    
+                    {* Affichage du Nom/Prénom avec bouton d'édition *}
                     <div id="identity-display" class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start">
                         <h1 class="fw-bold mb-0">{$user.prenom} {$user.nom}</h1>
                         <i class="bi bi-pencil-fill fs-5 text-secondary" style="cursor:pointer;" title="Modifier mon nom" onclick="toggleIdentityEdit()"></i>
                     </div>
 
-                    {* Formulaire édition identité *}
+                    {* Formulaire d'édition rapide de l'identité (caché par défaut) *}
                     <form id="identity-edit" action="/sae-covoiturage/public/profil/update-identity" method="POST" class="d-none align-items-center gap-2 justify-content-center justify-content-md-start">
                         <input type="text" name="prenom" value="{$user.prenom}" class="form-control form-control-sm" style="max-width: 120px;" placeholder="Prénom" required>
                         <input type="text" name="nom" value="{$user.nom}" class="form-control form-control-sm" style="max-width: 120px;" placeholder="Nom" required>
@@ -47,7 +51,7 @@
 
                     <div class="text-white-50 fs-5">{$user.email}</div>
 
-                    {* Badge Vérification *}
+                    {* Badge de vérification du profil (Basé sur les avis reçus) *}
                     {if isset($user.verified_flag) && $user.verified_flag == 'Y'}
                         <div class="text-success fw-bold fs-5 mt-1">Profil vérifié <i class="bi bi-check-circle-fill"></i></div>
                     {else}
@@ -59,12 +63,14 @@
                         </div>
                     {/if}
 
-                    {* Notes et Avis *}
+                    {* Affichage des notes (Conducteur et Passager) *}
                     <div class="d-flex flex-column align-items-center align-items-md-start mt-3 gap-2">
+                        {* Note Conducteur *}
                         <div class="d-flex align-items-center gap-2">
                             <span class="text-white-50 small text-uppercase fw-bold" style="width: 90px; text-align:left;">Conducteur</span>
                             <div class="text-warning fs-5 d-flex align-items-center">
                                 {$noteC = $user.note_conducteur|default:0}
+                                {* Boucle d'affichage des étoiles *}
                                 {for $i=1 to 5}
                                     {if $noteC >= $i}<i class="bi bi-star-fill"></i>{elseif $noteC > ($i - 1)}<i class="bi bi-star-half"></i>{else}<i class="bi bi-star"></i>{/if}
                                 {/for}
@@ -72,6 +78,7 @@
                             </div>
                         </div>
                         
+                        {* Note Passager *}
                         <div class="d-flex align-items-center gap-2">
                             <span class="text-white-50 small text-uppercase fw-bold" style="width: 90px; text-align:left;">Passager</span>
                             <div class="text-warning fs-5 d-flex align-items-center">
@@ -87,14 +94,16 @@
                 </div>
             </div>
 
-            {* Carte Description *}
+            {* Carte : Description (Bio) avec mode Lecture/Édition *}
             <span class="card-label">Description</span>
             <div class="info-card" id="card-description">
                 <form action="/sae-covoiturage/public/profil/update-description" method="POST">
+                    {* Mode Lecture *}
                     <div class="view-content">
                         <p class="fw-bold fs-5">{if !empty($user.description)}{$user.description}{else}Une personne agréable et plutôt motivée.{/if}</p>
                         <div class="d-flex justify-content-end mt-4"><button type="button" class="btn-purple" onclick="toggleEdit('description')">Modifier</button></div>
                     </div>
+                    {* Mode Édition *}
                     <div class="edit-content edit-mode">
                         <textarea name="description" class="form-control-custom" rows="4">{$user.description|default:''}</textarea>
                         <div class="d-flex justify-content-end mt-3">
@@ -105,10 +114,11 @@
                 </form>
             </div>
 
-            {* Carte Véhicule *}
+            {* Carte : Véhicule (Affichage ou Ajout/Modification) *}
             <span class="card-label">Véhicule</span>
             <div class="info-card" id="card-vehicule">
                 <form id="form-vehicule" action="/sae-covoiturage/public/profil/update-vehicule" method="POST">
+                    {* Mode Lecture : Affichage des infos si véhicule existe *}
                     <div class="view-content">
                         {if isset($vehicule) && !empty($vehicule)}
                             <div class="fs-5 lh-lg">
@@ -125,6 +135,7 @@
                         {/if}
                     </div>
                     
+                    {* Mode Édition : Formulaire complet *}
                     <div class="edit-content edit-mode">
                         <div class="row g-3">
                             <div class="col-6">
@@ -175,15 +186,17 @@
                 </form>
             </div>
 
-            {* Historique Trajets *}
+            {* Historique des trajets *}
             <span class="card-label">Historique des trajets effectués</span>
             {if isset($historique_trajets) && $historique_trajets|@count > 0}
                 {foreach from=$historique_trajets item=trajet name=historyLoop}
+                    {* Les trajets au-delà du premier sont masqués par défaut *}
                     <div class="info-card p-4 {if $smarty.foreach.historyLoop.iteration > 1}d-none history-hidden{/if}">
                         <div class="row">
                             <div class="col-md-7 border-end-md">
                                 <h5 class="fw-bold mb-3">Informations du conducteur</h5>
                                 <div class="d-flex align-items-center mb-4">
+                                    {* Lien vers le profil du conducteur (si ce n'est pas moi) *}
                                     {if $trajet.id_conducteur != $user.id_utilisateur}
                                         <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="profile-link d-flex align-items-center">
                                     {else}
@@ -204,7 +217,9 @@
                                         </div>
 
                                     {if $trajet.id_conducteur != $user.id_utilisateur}
-                                        </a> <button class="btn-mini-dark me-2 ms-3 btn-report" 
+                                        </a> 
+                                        {* Boutons Signaler / Noter pour le conducteur *}
+                                        <button class="btn-mini-dark me-2 ms-3 btn-report" 
                                             data-trajet="{$trajet.id_trajet}" 
                                             data-concerne="{$trajet.id_conducteur}" 
                                             data-nom="{$trajet.conducteur_nom} {$trajet.conducteur_prenom}">
@@ -224,6 +239,7 @@
                                     <div class="small text-muted mt-1">Durée estimée : {$trajet.duree|default:'--'} minutes</div>
                                 </div>
 
+                                {* Liste des passagers *}
                                 <div class="mt-4">
                                     {if isset($trajet.passagers) && !empty($trajet.passagers)}
                                         {foreach from=$trajet.passagers item=passager}
@@ -244,7 +260,9 @@
                                                 <span class="fw-bold me-2">{$passager.prenom}</span>
 
                                                 {if $passager.id_utilisateur != $user.id_utilisateur}
-                                                    </a> <button class="btn-mini-dark me-2 btn-report" 
+                                                    </a> 
+                                                    {* Boutons Signaler / Noter pour les autres passagers *}
+                                                    <button class="btn-mini-dark me-2 btn-report" 
                                                             data-trajet="{$trajet.id_trajet}" 
                                                             data-concerne="{$passager.id_utilisateur}" 
                                                             data-nom="{$passager.prenom} {$passager.nom}">
@@ -264,6 +282,7 @@
                                 </div>
                             </div>
 
+                            {* Infos Véhicule et lien discussion *}
                             <div class="col-md-5 d-flex flex-column justify-content-between">
                                 <div>
                                     <h5 class="fw-bold mb-3">Informations véhicule</h5>
@@ -289,6 +308,7 @@
                         </div>
                     </div>
                 {/foreach}
+                {* Bouton pour voir plus de trajets si l'historique est long *}
                 {if $historique_trajets|@count > 1}
                     <div class="text-center mb-4"><button id="btn-see-more" class="see-more-btn" onclick="toggleHistory()">Voir plus</button></div>
                 {/if}
@@ -299,7 +319,7 @@
             {/if}
         </div>
 
-        {* Modal Signalement *}
+        {* Modal de Signalement (Fenêtre pop-up) *}
         <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -335,7 +355,7 @@
             </div>
         </div>
 
-        {* --- ONGLET PARAMETRES --- *}
+        {* --- ONGLET PARAMETRES (Menu de navigation) --- *}
         <div id="section-parametres" style="display:none;">
             <div class="settings-list">
                 <a href="/sae-covoiturage/public/profil/gestion_mdp" class="settings-item"><span>Mot de passe</span><i class="bi bi-chevron-right"></i></a>
@@ -348,11 +368,12 @@
             </div>
         </div>
 
-        {* Modal Suppression Compte *}
+        {* Modal de Suppression de Compte (2 étapes) *}
         <div class="modal fade" id="modalSuppression" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content p-4 text-center">
                     <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                    {* Étape 1 : Avertissement *}
                     <div id="step-1-content">
                         <div class="mb-3"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i></div>
                         <h3 class="fw-bold text-black mb-3">Êtes-vous sûr ?</h3>
@@ -361,6 +382,7 @@
                             <button type="button" class="btn btn-danger px-4" onclick="showStep2()">Oui, continuer</button>
                         </div>
                     </div>
+                    {* Étape 2 : Confirmation finale *}
                     <div id="step-2-content" class="d-none">
                         <h3 class="fw-bold text-danger mb-3">Vraiment sûr ?</h3>
                         <form action="/sae-covoiturage/public/profil/delete-account" method="POST">
@@ -378,4 +400,5 @@
     {include file='includes/footer.tpl'}
 </div>
 
+{* Script JS pour la gestion des onglets, de l'édition et des modales *}
 <script src="/sae-covoiturage/public/assets/javascript/profil/js_profil.js"></script>

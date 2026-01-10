@@ -1,13 +1,17 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique aux notifications push *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/preferences/style_push.css">
 
 <div class="pref-main">
+    
+    {* En-tête avec bouton de retour vers le menu des préférences *}
     <div class="header-top">
         <a href="/sae-covoiturage/public/profil/preferences" class="back-btn"><i class="bi bi-chevron-left"></i></a>
         <h2 class="title">Notifications Mobile</h2>
     </div>
 
+    {* Bloc d'information : Avertissement sur le mode simulation (App mobile fictive) *}
     <div class="sae-info">
         <i class="bi bi-info-circle sae-icon"></i>
         <div>
@@ -17,6 +21,8 @@
     </div>
 
     <form id="pushForm">
+        
+        {* Option 1 : Alertes liées au déroulement du trajet (Retards, Annulations) *}
         <div class="option-row">
             <div class="text-content">
                 <h4>Alertes de trajet</h4>
@@ -28,6 +34,7 @@
             </label>
         </div>
 
+        {* Option 2 : Notifications de messagerie privée *}
         <div class="option-row">
             <div class="text-content">
                 <h4>Messages privés</h4>
@@ -39,6 +46,7 @@
             </label>
         </div>
 
+        {* Option 3 : Offres commerciales et promotions *}
         <div class="option-row">
             <div class="text-content">
                 <h4>Offres promotionnelles</h4>
@@ -54,6 +62,7 @@
     </form>
 </div>
 
+{* Script JS pour la sauvegarde des préférences (Simulée) *}
 <script src="/sae-covoiturage/public/assets/javascript/preferences/js_push.js"></script>
 
 {include file='includes/footer.tpl'}

@@ -1,5 +1,6 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique aux mentions légales *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/pages_footer/style_mentions_legales.css">
 
 <div class="page-wrapper">
@@ -8,6 +9,7 @@
         
         <h1 class="page-title">Mentions Légales</h1>
 
+        {* Section 1 : Informations sur l'éditeur *}
         <div class="legal-section">
             <h2 class="section-title">1. Édition du site</h2>
             <div class="legal-text">
@@ -21,6 +23,7 @@
             </div>
         </div>
 
+        {* Section 2 : Informations sur l'hébergement *}
         <div class="legal-section">
             <h2 class="section-title">2. Hébergement</h2>
             <div class="legal-text">
@@ -30,6 +33,7 @@
             </div>
         </div>
 
+        {* Section 3 : Droits d'auteur et propriété *}
         <div class="legal-section">
             <h2 class="section-title">3. Propriété intellectuelle</h2>
             <div class="legal-text">
@@ -42,6 +46,7 @@
             </div>
         </div>
 
+        {* Section 4 : Données personnelles (RGPD) *}
         <div class="legal-section">
             <h2 class="section-title">4. Protection des données personnelles</h2>
             <div class="legal-text">
@@ -57,6 +62,7 @@
             </div>
         </div>
 
+        {* Section 5 : Responsabilité de la plateforme *}
         <div class="legal-section">
             <h2 class="section-title">5. Limitation de responsabilité</h2>
             <div class="legal-text">

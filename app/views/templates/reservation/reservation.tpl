@@ -1,10 +1,11 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la page de réservation *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/reservation/style_reservation.css">
 
 <div class="container mt-5 mb-5">
     
-    {* Bandeau de recherche avec les critères *}
+    {* Bandeau récapitulatif du trajet sélectionné (Départ, Arrivée, Date) *}
     <div class="card border-0 mb-4 text-white shadow-lg bg-gradient-purple">
         <div class="card-body text-center py-4">
             <h2 class="fw-bold mb-4">Résultat de la recherche</h2>
@@ -22,20 +23,22 @@
         </div>
     </div>
 
-    {* Carte de réservation *}
+    {* Carte principale contenant les détails et le formulaire *}
     <div class="card border-0 shadow-lg bg-gradient-light">
         <div class="card-body p-5">
             <div class="row g-4">
                 
-                {* COLONNE GAUCHE - Informations Conducteur *}
+                {* --- COLONNE GAUCHE : Informations Conducteur & Itinéraire --- *}
                 <div class="col-lg-5">
                     <h4 class="fw-bold mb-4" style="color: #3b2875;">
                         <i class="bi bi-person-circle me-2"></i>Informations du conducteur
                     </h4>
                     
+                    {* Bloc Conducteur (Cliquable vers profil) *}
                     <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark">
                         <div class="d-flex align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm hover-effect transition">
                             <div class="me-3">
+                                {* Affichage photo ou initiales par défaut *}
                                 {if $trajet.photo_profil && $trajet.photo_profil != ''}
                                     <img src="/sae-covoiturage/public/uploads/{$trajet.photo_profil}" alt="Avatar" class="rounded-circle avatar-img">
                                 {else}
@@ -52,7 +55,7 @@
                         </div>
                     </a>
 
-                    {* Trajet prévu *}
+                    {* Bloc Détails Itinéraire (Heures et Lieux exacts) *}
                     <div class="bg-white rounded-4 p-4 shadow-sm">
                         <h5 class="fw-bold mb-3" style="color: #8c52ff;">
                             <i class="bi bi-sign-turn-right me-2"></i>Trajet prévu
@@ -92,12 +95,13 @@
                     </div>
                 </div>
 
-                {* COLONNE DROITE - Détails voyage + Réservation *}
+                {* --- COLONNE DROITE : Détails techniques & Réservation --- *}
                 <div class="col-lg-7">
                     <h4 class="fw-bold mb-4" style="color: #3b2875;">
                         <i class="bi bi-info-circle me-2"></i>Détails du voyage
                     </h4>
 
+                    {* Indicateurs : Places et Véhicule *}
                     <div class="row g-3 mb-4">
                         <div class="col-6">
                             <div class="bg-white rounded-4 p-3 shadow-sm text-center h-100">
@@ -115,7 +119,7 @@
                         </div>
                     </div>
 
-                    {* Description *}
+                    {* Commentaire conducteur *}
                     <div class="bg-white rounded-4 p-4 mb-4 shadow-sm">
                         <h6 class="fw-bold mb-3" style="color: #8c52ff;">
                             <i class="bi bi-chat-quote-fill me-2"></i>Commentaire du conducteur
@@ -133,9 +137,11 @@
                         
                         <form method="POST" action="/sae-covoiturage/public/trajet/reserver/{$trajet.id_trajet}">
                             
+                            {* Choix du nombre de places *}
                             <div class="mb-4">
                                 <label class="fw-semibold mb-2">Nombre de places à réserver</label>
                                 <select name="nb_places" class="form-select form-select-lg border-purple bg-light" required>
+                                    {* Boucle pour afficher uniquement le nombre de places restantes *}
                                     {for $i=1 to $trajet.places_disponibles}
                                         <option value="{$i}">{$i} place{if $i > 1}s{/if}</option>
                                     {/for}
@@ -145,12 +151,14 @@
                                 </div>
                             </div>
 
+                            {* Boutons d'action (Réserver ou Retour) *}
                             <div class="d-grid gap-3">
                                 {if $trajet.places_disponibles > 0}
                                     <button type="submit" class="btn btn-lg text-white fw-bold shadow-lg btn-gradient-primary">
                                         <i class="bi bi-check-circle-fill me-2"></i>Réserver ce trajet
                                     </button>
                                 {else}
+                                    {* Bouton désactivé si complet *}
                                     <button type="button" class="btn btn-lg btn-secondary" disabled>
                                         Plus de places disponibles
                                     </button>
@@ -162,7 +170,7 @@
                         </form>
                     </div>
 
-                    {* Bouton signaler *}
+                    {* Lien pour signaler le conducteur (Ouvre la modale) *}
                     <div class="text-end mt-3">
                         <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#modalSignalement" style="text-decoration: none;">
                             <i class="bi bi-flag-fill me-1"></i> Signaler le conducteur
@@ -173,7 +181,7 @@
         </div>
     </div>
     
-    {* Modale de signalement (inchangée) *}
+    {* Modale de signalement (Pop-up) *}
     <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-lg border-0">

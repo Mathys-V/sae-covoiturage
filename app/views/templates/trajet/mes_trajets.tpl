@@ -1,8 +1,9 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la gestion des trajets *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/trajet/style_mes_trajets.css">
 
-{* --- CSS RAPIDE POUR LE MODAL --- *}
+{* Styles spécifiques pour la fenêtre modale de signalement *}
 <style>
     .modal-content { border-radius: 20px; border: none; overflow: hidden; }
     .modal-header { background-color: #452b85; color: white; border-bottom: none; }
@@ -17,7 +18,7 @@
         </div>
     </div>
 
-    {* CAS 1 : Aucun trajet *}
+    {* CAS 1 : Aucun trajet (ni actif, ni archivé) *}
     {if empty($trajets_actifs) && empty($trajets_archives)}
         <div class="text-center text-white mt-5">
             <div class="mb-3">
@@ -39,9 +40,10 @@
                 </h3>
                 
                 {foreach $trajets_actifs as $trajet}
-                    {* AJOUT DE L'ID ICI POUR L'ANCRE DEPUIS LA CARTE *}
+                    {* ID utilisé pour le défilement automatique depuis la carte *}
                     <div class="card border-0 rounded-5 mb-4 card-trajet p-4" id="trajet-{$trajet.id_trajet}">
                         
+                        {* En-tête de la carte : Statut et Temps restant *}
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
                             <div class="d-flex align-items-center gap-3">
                                 <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-3 py-2">
@@ -56,6 +58,7 @@
                         </div>
 
                         <div class="row g-0">
+                            {* Colonne Gauche : Détails de l'itinéraire *}
                             <div class="col-md-6 pe-md-4 d-flex flex-column border-end-md border-secondary-subtle">
                                 <div class="mb-3">
                                     <h3 class="fw-bold mb-3 text-dark">Trajet prévu</h3>
@@ -68,6 +71,7 @@
                                     <p class="fs-5 mb-1 text-dark">Départ : <strong>{$trajet.heure_fmt}</strong></p>
                                 </div>
 
+                                {* Liste des passagers inscrits *}
                                 <div class="mt-auto pt-3">
                                     {if $trajet.passagers|count > 0}
                                         <div class="mb-2 fw-bold text-dark">Passagers :</div>
@@ -79,6 +83,7 @@
                                                     </div>
                                                     <span class="fw-bold fs-5 text-dark">{$passager.prenom} {$passager.nom|substr:0:1}.</span>
                                                 </div>
+                                                {* Bouton pour signaler ce passager spécifique *}
                                                 <button class="btn btn-sm btn-dark-purple rounded-pill px-3" 
                                                         onclick="ouvrirSignalement({$trajet.id_trajet}, {$passager.id_utilisateur}, '{$passager.prenom|escape:'javascript'} {$passager.nom|escape:'javascript'}')">
                                                     Signaler
@@ -93,6 +98,7 @@
                                 </div>
                             </div>
 
+                            {* Colonne Droite : Infos véhicule et Boutons d'action *}
                             <div class="col-md-6 ps-md-4 d-flex flex-column justify-content-between mt-4 mt-md-0">
                                 <div>
                                     <h3 class="fw-bold mb-3 text-dark">Informations véhicule</h3>
@@ -103,12 +109,14 @@
                                 </div>
 
                                 <div class="d-flex flex-column gap-2 mt-4">
+                                    {* Bouton Discussion de groupe *}
                                     <a href="/sae-covoiturage/public/messagerie/conversation/{$trajet.id_trajet}" 
                                        class="btn btn-purple-action fw-bold py-2 w-100 shadow-sm text-decoration-none text-center">
                                         Discussion de groupe
                                     </a>
                                     
                                     <div class="d-flex gap-2 flex-wrap">
+                                        {* Bouton Modifier (Désactivé si terminé/annulé) *}
                                         <a href="/sae-covoiturage/public/trajet/modifier/{$trajet.id_trajet}" 
                                            class="btn btn-purple-action fw-bold py-2 flex-grow-1 shadow-sm text-decoration-none text-center d-flex align-items-center justify-content-center
                                            {if $trajet.statut_visuel == 'termine' || $trajet.statut_visuel == 'annule'}disabled{/if}"
@@ -118,6 +126,7 @@
                                             Modifier
                                         </a>
                                         
+                                        {* Bouton Annuler le trajet (Avec confirmation) *}
                                         {if $trajet.statut_visuel != 'termine' && $trajet.statut_visuel != 'annule'}
                                             <form action="/sae-covoiturage/public/trajet/annuler" method="POST" class="flex-grow-1" onsubmit="return confirm('⚠️ Êtes-vous sûr de vouloir ANNULER ce trajet ?');">
                                                 <input type="hidden" name="id_trajet" value="{$trajet.id_trajet}">
@@ -135,13 +144,12 @@
             </div>
         {/if}
 
-        {* SECTION 2 : HISTORIQUE *}
+        {* SECTION 2 : HISTORIQUE (Trajets passés) *}
         {if !empty($trajets_archives)}
             <div class="mt-5 mb-4">
                 <h3 class="text-white-50 mb-4 ps-2 border-start border-4 border-secondary">Historique</h3>
                 {foreach $trajets_archives as $trajet}
                     <div style="opacity: 0.8;"> 
-                        {* AJOUT DE L'ID ICI AUSSI *}
                         <div class="card border-0 rounded-5 mb-4 card-trajet p-4" id="trajet-{$trajet.id_trajet}">
                             <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
                                 <span class="badge bg-{$trajet.statut_couleur} bg-opacity-10 text-{$trajet.statut_couleur} border border-{$trajet.statut_couleur} rounded-pill px-3 py-2">
@@ -160,6 +168,7 @@
                                             {foreach $trajet.passagers as $passager}
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                                     <span class="text-dark">{$passager.prenom} {$passager.nom|substr:0:1}.</span>
+                                                    {* Signalement toujours possible dans l'historique *}
                                                     <button class="btn btn-sm btn-dark-purple rounded-pill px-3"
                                                             onclick="ouvrirSignalement({$trajet.id_trajet}, {$passager.id_utilisateur}, '{$passager.prenom|escape:'javascript'} {$passager.nom|escape:'javascript'}')">
                                                         Signaler
@@ -183,7 +192,7 @@
     {/if}
 </div>
 
-{* --- MODAL SIGNALEMENT --- *}
+{* --- MODAL SIGNALEMENT (Masqué par défaut) --- *}
 <div class="modal fade" id="signalementModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg">
@@ -216,7 +225,7 @@
     </div>
 </div>
 
-{* --- APPEL JS EXTERNE --- *}
+{* Script JS pour gérer l'ouverture du modal et l'envoi du signalement *}
 <script src="/sae-covoiturage/public/assets/javascript/trajet/js_mes_trajets.js"></script>
 
 {include file='includes/footer.tpl'}

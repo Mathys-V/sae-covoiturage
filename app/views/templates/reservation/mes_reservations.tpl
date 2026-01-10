@@ -1,5 +1,6 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique à la liste des réservations *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/reservation/style_mes_reservations.css">
 
 <div class="container my-5 flex-grow-1">
@@ -10,12 +11,13 @@
 
     {if isset($reservations) && $reservations|@count > 0}
         
-        {* Initialisation de la variable pour savoir si on a déjà affiché le titre Historique *}
+        {* Initialisation de la variable pour contrôler l'affichage unique du titre "Historique" *}
         {assign var="history_header_displayed" value=false}
 
         {foreach from=$reservations item=reservation}
 
-            {* LOGIQUE POUR LE SÉPARATEUR HISTORIQUE *}
+            {* --- SÉPARATEUR HISTORIQUE --- *}
+            {* Affiche une séparation visuelle dès qu'on rencontre le premier trajet terminé *}
             {if $reservation.statut_visuel == 'termine' && $history_header_displayed == false}
                 <div class="d-flex align-items-center mb-4 mt-5">
                     <hr class="flex-grow-1" style="border-top: 2px solid #e0e0e0;">
@@ -25,20 +27,22 @@
                 {assign var="history_header_displayed" value=true}
             {/if}
 
-            {* AJOUT DE L'ID POUR L'ANCRE ET DU STYLE GRISÉ SI TERMINÉ *}
+            {* CARTE RÉSERVATION *}
+            {* Si le trajet est terminé, on applique un style grisé et transparent *}
             <div class="card border-0 shadow-sm mb-3" id="trajet-{$reservation.id_trajet}" 
                  style="background-color: {if $reservation.statut_visuel == 'termine'}#fcfcfc; opacity: 0.75; filter: grayscale(30%);{else}#f0ebf8;{/if} border-radius: 20px; transition: transform 0.2s;">
                  
                 <div class="card-body p-4">
                     <div class="row">
 
-                        {* COLONNE GAUCHE — Conducteur & trajet *}
+                        {* --- COLONNE GAUCHE : Conducteur & Détails du trajet --- *}
                         <div class="col-md-5 border-end border-secondary border-opacity-25">
 
                             <h5 class="fw-bold mb-3" style="color: #452b85;">
                                 Conducteur
                             </h5>
 
+                            {* Lien vers le profil public du conducteur *}
                             <a href="/sae-covoiturage/public/profil/voir/{$reservation.id_conducteur}" class="text-decoration-none text-dark">
                                 <div class="d-flex align-items-center mb-4 p-2 rounded hover-bg-light transition">
                                     <div class="me-3">
@@ -63,6 +67,7 @@
                                 </div>
                             </a>
 
+                            {* Bloc d'informations : Date, Itinéraire, Heure *}
                             <div class="bg-light rounded-3 p-3">
                                 <label class="pb-3 fw-bold" style="color: #8c52ff;">Information du trajet</label>
                                 <p class="mb-2">
@@ -83,6 +88,7 @@
                                 </p>
 
                                 <p class="mt-2">
+                                    {* Badge de statut dynamique *}
                                     <span class="badge bg-{$reservation.statut_couleur} bg-opacity-10 text-{$reservation.statut_couleur} border border-{$reservation.statut_couleur} rounded-pill px-2 py-1 fw-bold">
                                         {if $reservation.statut_visuel == 'avenir'}<i class="bi bi-clock me-1"></i>
                                         {elseif $reservation.statut_visuel == 'encours'}<i class="bi bi-car-front-fill me-1"></i>
@@ -90,6 +96,7 @@
                                         {$reservation.statut_libelle}
                                     </span>
 
+                                    {* Compte à rebours pour les trajets en cours *}
                                     {if $reservation.statut_visuel == 'encours' && isset($reservation.temps_restant)}
                                         <span class="ms-2 text-success fw-semibold">
                                             <i class="bi bi-hourglass-split"></i> Arrivée dans {$reservation.temps_restant}
@@ -99,7 +106,7 @@
                             </div>
                         </div>
 
-                        {* COLONNE DROITE — Véhicule & actions *}
+                        {* --- COLONNE DROITE : Véhicule, Commentaire & Actions --- *}
                         <div class="col-md-7 d-flex flex-column justify-content-between">
 
                             <div>
@@ -113,7 +120,7 @@
                                     </span>
                                 </div>
 
-                                {* CHANGEMENT FOND COMMENTAIRE SI TERMINÉ *}
+                                {* Commentaire du conducteur *}
                                 <div class="p-3 rounded-3" style="background-color: {if $reservation.statut_visuel == 'termine'}rgba(0, 0, 0, 0.05){else}rgba(140, 82, 255, 0.1){/if};">
                                     <p class="text-muted fst-italic mb-0">
                                         <i class="bi bi-chat-quote-fill me-2 text-purple"></i>
@@ -122,20 +129,22 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-end gap-3 mt-4"> {* Boutons action *}
+                            {* Boutons d'action *}
+                            <div class="d-flex justify-content-end gap-3 mt-4"> 
+                                {* 1. Signaler le trajet *}
                                 <button class="btn btn-outline-danger btn-report rounded-pill px-4"
                                     data-trajet="{$reservation.id_trajet}">                
                                     <i class="bi bi-flag-fill me-1"></i> Signaler
                                 </button>
                     
-                                {* Bouton Message - Masqué pour les trajets terminés *}
+                                {* 2. Accès à la messagerie (Masqué si terminé) *}
                                 {if $reservation.statut_visuel != 'termine'}
                                 <a href="/sae-covoiturage/public/messagerie/conversation/{$reservation.id_trajet}" class="btn btn-custom rounded-pill px-4" style="background-color:#8c52ff; color: white;">
                                     <i class="bi bi-chat-text"></i>
                                 </a>
                                 {/if}
 
-                                {* Bouton Annuler - Masqué pour les trajets terminés *}
+                                {* 3. Annuler la réservation (Masqué si terminé) *}
                                 {if $reservation.statut_visuel != 'termine'}
                                 <form method="POST"
                                         action="/sae-covoiturage/public/reservation/annuler/{$reservation.id_reservation}"
@@ -153,6 +162,7 @@
                 </div>
             </div>
 
+            {* --- MODALE DE SIGNALEMENT --- *}
             <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -216,6 +226,7 @@
         {/foreach}
 
     {else}
+        {* Cas : Aucune réservation *}
         <div class="alert alert-info text-center rounded-4 py-5">
             <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
             <h4 class="fw-bold">Aucune réservation</h4>

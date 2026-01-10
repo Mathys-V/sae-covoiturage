@@ -1,13 +1,17 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique aux préférences email *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/preferences/style_emails.css">
 
 <div class="pref-main">
+    
+    {* En-tête avec bouton de retour vers les préférences globales *}
     <div class="header-top">
         <a href="/sae-covoiturage/public/profil/preferences" class="back-btn"><i class="bi bi-chevron-left"></i></a>
         <h2 class="title">Préférences E-mail</h2>
     </div>
 
+    {* Bloc d'information contextuel (Simulation SAE - Pas d'envoi réel) *}
     <div class="sae-info">
         <i class="bi bi-envelope-exclamation sae-icon" style="font-size: 1.5rem; color: #8C52FF;"></i>
         <div>
@@ -16,7 +20,10 @@
         </div>
     </div>
 
+    {* Formulaire de gestion des abonnements e-mail *}
     <form id="emailForm">
+        
+        {* Option 1 : Newsletter mensuelle *}
         <label class="checkbox-card">
             <input type="checkbox" id="mail_newsletter">
             <div class="indicator"></div>
@@ -26,6 +33,7 @@
             </div>
         </label>
 
+        {* Option 2 : Récapitulatif de trajet (PDF) *}
         <label class="checkbox-card">
             <input type="checkbox" id="mail_recap">
             <div class="indicator"></div>
@@ -35,6 +43,7 @@
             </div>
         </label>
 
+        {* Option 3 : Offres commerciales des partenaires *}
         <label class="checkbox-card">
             <input type="checkbox" id="mail_partenaires">
             <div class="indicator"></div>
@@ -44,10 +53,12 @@
             </div>
         </label>
 
+        {* Bouton de sauvegarde (Géré par JS) *}
         <button type="submit" class="btn-save">Enregistrer</button>
     </form>
 </div>
 
+{* Script JS pour la sauvegarde asynchrone des préférences *}
 <script src="/sae-covoiturage/public/assets/javascript/preferences/js_emails.js"></script>
 
 {include file='includes/footer.tpl'}

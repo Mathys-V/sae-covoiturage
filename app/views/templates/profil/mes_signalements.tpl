@@ -4,6 +4,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             
+            {* En-tête de la page avec bouton retour vers le profil *}
             <div class="d-flex align-items-center mb-4">
                 <a href="/sae-covoiturage/public/profil" class="text-decoration-none text-secondary me-3">
                     <i class="bi bi-arrow-left fs-4"></i>
@@ -13,18 +14,23 @@
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-0">
+                    
+                    {* Cas : Aucun signalement effectué par l'utilisateur *}
                     {if empty($signalements)}
                         <div class="text-center py-5">
                             <i class="bi bi-shield-check display-1 text-success opacity-50 mb-3"></i>
                             <h4 class="fw-bold">Aucun signalement</h4>
                             <p class="text-muted">Vous n'avez effectué aucun signalement pour le moment.</p>
                         </div>
+                    
+                    {* Cas : Affichage de la liste des signalements *}
                     {else}
                         <div class="list-group list-group-flush">
                             {foreach $signalements as $sig}
                                 <div class="list-group-item p-4 border-bottom">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
+                                            {* Badge de statut du signalement (En attente, Traité, Clôturé) *}
                                             <span class="badge {if $sig.statut_code == 'E'}bg-warning text-dark{elseif $sig.statut_code == 'T'}bg-success{else}bg-secondary{/if} mb-2">
                                                 {if $sig.statut_code == 'E'}En attente{elseif $sig.statut_code == 'T'}Traité{else}Clôturé{/if}
                                             </span>
@@ -36,6 +42,7 @@
                                         </div>
                                     </div>
                                     
+                                    {* Détails du signalement (Utilisateur concerné, Trajet, Commentaire) *}
                                     <div class="bg-light p-3 rounded-3 mt-3">
                                         <div class="d-flex align-items-center mb-2">
                                             <i class="bi bi-person-exclamation me-2 text-secondary"></i>

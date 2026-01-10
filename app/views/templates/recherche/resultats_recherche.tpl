@@ -1,14 +1,17 @@
 {include file='includes/header.tpl'}
 
+{* Inclusion de la feuille de style spécifique aux résultats de recherche *}
 <link rel="stylesheet" href="/sae-covoiturage/public/assets/css/recherche/style_resultats_recherche.css">
 
 <div class="container mt-4 flex-grow-1">
     
+    {* Carte d'en-tête : Rappel des critères de recherche et bouton de modification *}
     <div class="card border-0 mb-4 text-white shadow-lg" style="background-color: #3b2875; border-radius: 20px;">
         <div class="card-body text-center py-4">
             <h2 class="fw-bold mb-4">Résultat de la recherche</h2>
             
             <form action="/sae-covoiturage/public/recherche/resultats" method="GET" class="d-flex justify-content-center flex-wrap gap-3 align-items-center">
+                {* Champs en lecture seule pour afficher le départ et l'arrivée *}
                 <input type="text" name="depart" value="{$recherche.depart}" class="form-control rounded-pill text-center search-input-fixed" style="max-width: 250px;" readonly>
                 <input type="text" name="arrivee" value="{$recherche.arrivee}" class="form-control rounded-pill text-center search-input-fixed" style="max-width: 250px;" readonly>
                 
@@ -20,6 +23,7 @@
                     </span>
                 {/if}
                 
+                {* Bouton Modifier : Redirige vers le formulaire principal avec les paramètres pré-remplis *}
                 <a href="/sae-covoiturage/public/recherche?depart={$recherche.depart}&arrivee={$recherche.arrivee}&date={$recherche.date}&heure={$recherche.heure}&minute={$recherche.minute}" 
                    class="btn btn-sm text-white fw-bold px-4 btn-modify" 
                    style="background-color: #8c52ff; border-radius: 50px;">
@@ -29,6 +33,7 @@
         </div>
     </div>
 
+    {* Affichage des messages d'information (ex: recherche élargie) ou de succès *}
     {if isset($message_info) && $message_info}
         <div class="alert alert-custom-warning border-0 shadow-sm rounded-4 text-center py-3 mb-4" style="background-color: #fff3cd; color: #856404;">
             <div class="d-flex align-items-center justify-content-center gap-2 fs-5">
@@ -42,11 +47,14 @@
         </div>
     {/if}
 
+    {* Boucle d'affichage des trajets trouvés *}
     {if isset($trajets) && $trajets|@count > 0}
         {foreach from=$trajets item=trajet}
             <div class="card border-0 shadow-sm mb-3 card-result">
                 <div class="card-body p-4">
                     <div class="row">
+                        
+                        {* Colonne 1 : Informations sur le conducteur *}
                         <div class="col-md-4 border-end border-secondary border-opacity-25">
                             <h5 class="fw-bold mb-3 text-purple-dark">Informations du conducteur</h5>
                             <a href="/sae-covoiturage/public/profil/voir/{$trajet.id_conducteur}" class="text-decoration-none text-dark group-hover">
@@ -62,6 +70,8 @@
                                     <i class="bi bi-chevron-right ms-auto text-muted"></i>
                                 </div>
                             </a>
+                            
+                            {* Détails de l'itinéraire (Lieux et Horaires) *}
                             <div class="bg-white rounded-3 p-3 mt-3 shadow-sm">
                                 <h6 class="fw-bold mb-2 text-purple-primary">Trajet prévu</h6>
                                 <p class="mb-1"><i class="bi bi-calendar-event me-2"></i> Le {$trajet.date_heure_depart|date_format:"%d/%m/%Y"}</p>
@@ -78,6 +88,8 @@
                                 <p class="mb-0 text-success fw-bold"><i class="bi bi-clock-fill me-2"></i> Départ : {$trajet.date_heure_depart|date_format:"%H:%M"}</p>
                             </div>
                         </div>
+
+                        {* Colonne 2 : Disponibilité, Commentaire et Actions *}
                         <div class="col-md-8 ps-md-4 d-flex flex-column justify-content-between">
                             <div>
                                 <h5 class="fw-bold mb-3 text-purple-dark">Détails du voyage</h5>
@@ -91,10 +103,14 @@
                                     <p class="text-muted fst-italic mb-0"><i class="bi bi-chat-quote-fill me-2 text-purple-primary"></i> "{$trajet.commentaires|default:'Aucune description renseignée par le conducteur.'}"</p>
                                 </div>
                             </div>
+                            
+                            {* Boutons d'action *}
                             <div class="d-flex justify-content-end mt-4 gap-3 align-items-center">
                                 <button type="button" class="btn btn-outline-danger btn-report rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalSignalement" data-id-trajet="{$trajet.id_trajet}" data-id-conducteur="{$trajet.id_conducteur}" style="height: 48px;">
                                     <i class="bi bi-flag-fill me-1"></i> Signaler
                                 </button>
+                                
+                                {* Logique du bouton d'action : Déjà réservé / Réserver / Complet *}
                                 {if isset($trajet.deja_reserve) && $trajet.deja_reserve > 0}
                                     <button class="btn btn-success fw-bold px-5 fs-5 shadow-sm d-flex align-items-center justify-content-center" disabled style="height: 48px; min-width: 220px;"><i class="bi bi-check-circle-fill me-2"></i>Déjà réservé</button>
                                 {else}
@@ -110,6 +126,8 @@
                 </div>
             </div>
         {/foreach}
+    
+    {* Cas où aucun trajet n'est trouvé (Affichage d'une suggestion de création) *}
     {else}
         <div class="alert alert-custom-info text-center rounded-4 py-5 mb-5" role="alert" style="background-color: #cff4fc; color: #055160;">
             <i class="bi bi-emoji-frown fs-1 d-block mb-3"></i>
@@ -120,6 +138,7 @@
     {/if}
 </div>
 
+{* Modale de signalement spécifique à un résultat de recherche *}
 <div class="modal fade" id="modalSignalement" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -157,5 +176,6 @@
     </div>
 </div>
 
+{* Script JS pour gérer la modale de signalement *}
 <script src="/sae-covoiturage/public/assets/javascript/recherche/js_resultats_recherche.js"></script>
 {include file='includes/footer.tpl'}

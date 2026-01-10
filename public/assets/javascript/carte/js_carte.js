@@ -581,3 +581,67 @@ function handleEnter(e) {
     rechercherTrajet();
   }
 }
+
+// ============================================================
+// 10. GESTION DE LA GÉOLOCALISATION (BOUTON DÉPART)
+// ============================================================
+function setupGeolocationMap() {
+    const btnGeoloc = document.getElementById("btn-geoloc-map");
+    const inputDepart = document.getElementById("departInput");
+
+    if (!btnGeoloc || !inputDepart) return;
+
+    btnGeoloc.addEventListener("click", function () {
+        
+        // --- DÉBUT DU CHARGEMENT ---
+        // On enlève l'icône de map
+        btnGeoloc.classList.remove("bi-geo-alt-fill");
+        // On ajoute la flèche et l'animation de rotation
+        btnGeoloc.classList.add("bi-arrow-repeat", "geo-loading");
+        
+        // Placeholder d'attente
+        const originalPlace = inputDepart.placeholder;
+        inputDepart.placeholder = "Recherche en cours...";
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                // SUCCÈS
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`)
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.features && data.features.length > 0) {
+                                inputDepart.value = data.features[0].properties.label;
+                            } else {
+                                alert("Adresse introuvable.");
+                            }
+                        })
+                        .catch((err) => console.error(err))
+                        .finally(() => {
+                            // --- FIN DU CHARGEMENT ---
+                            btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                            btnGeoloc.classList.add("bi-geo-alt-fill");
+                            inputDepart.placeholder = originalPlace;
+                        });
+                },
+                // ERREUR
+                function (error) {
+                    alert("Géolocalisation impossible ou refusée.");
+                    btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                    btnGeoloc.classList.add("bi-geo-alt-fill");
+                    inputDepart.placeholder = originalPlace;
+                }
+            );
+        } else {
+            alert("Navigateur incompatible.");
+            btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+            btnGeoloc.classList.add("bi-geo-alt-fill");
+        }
+    });
+}
+
+// Lancer la fonction immédiatement
+setupGeolocationMap();

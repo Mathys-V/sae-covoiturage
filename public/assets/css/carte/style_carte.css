@@ -363,3 +363,27 @@ body {
   margin-left: 8px;
   filter: blur(2px);
 }
+
+/* ==========================================================================
+   ANIMATION GÉOLOCALISATION
+   ========================================================================== */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.geo-loading {
+    animation: spin 1s linear infinite;
+    color: #8c52ff; /* Couleur violette pendant le chargement */
+    cursor: wait !important;
+}
+
+/* Effet au survol de l'icône de géoloc */
+.input-icon-box i {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.input-icon-box i:hover {
+    transform: scale(1.2); /* Grossit un peu au survol */
+    color: #5a32a3; /* Devient plus foncé */
+}

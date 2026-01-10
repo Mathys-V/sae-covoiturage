@@ -274,12 +274,20 @@ Flight::route('POST /profil/update-photo', function(){
     Flight::redirect('/profil');
 });
 
-// SUPPRIMER LE COMPTE (Désactivation logique)
+// SUPPRIMER LE COMPTE (Désactivation logique + Marqueur 'CLOSED')
 Flight::route('POST /profil/delete-account', function(){
+    // 1. Sécurité : Si pas connecté, on vire
     if(!isset($_SESSION['user'])) { Flight::redirect('/connexion'); return; }
+
     $db = Flight::get('db');
-    // On ne supprime pas la ligne (pour garder l'historique), on passe le flag à 'N'
-    $db->prepare("UPDATE UTILISATEURS SET active_flag = 'N' WHERE id_utilisateur = ?")->execute([$_SESSION['user']['id_utilisateur']]);
+    $idUser = $_SESSION['user']['id_utilisateur'];
+
+    // 2. MODIFICATION : On passe le flag à 'N' ET on met le token à 'CLOSED'
+    // Cela permet de distinguer une fermeture volontaire d'un bannissement admin
+    $sql = "UPDATE UTILISATEURS SET active_flag = 'N', token_recuperation = 'CLOSED' WHERE id_utilisateur = ?";
+    $db->prepare($sql)->execute([$idUser]);
+
+    // 3. Destruction de la session et redirection
     session_destroy();
     Flight::redirect('/?msg=account_closed');
 });

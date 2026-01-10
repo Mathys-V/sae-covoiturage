@@ -15,7 +15,9 @@
         <div class="search-title"><i class="bi bi-map-fill"></i> Trouver un trajet</div>
         
         <div class="input-group-modern">
-            <div class="input-icon-box"><i class="bi bi-geo-alt-fill"></i></div>
+            <div class="input-icon-box">
+                <i class="bi bi-geo-alt-fill" id="btn-geoloc-map" title="Me géolocaliser" style="cursor: pointer; pointer-events: auto;"></i>
+            </div>
             <input type="text" id="departInput" class="form-control-map" placeholder="Départ (ex: Amiens)" autocomplete="off">
             <div id="suggestions-depart" class="autocomplete-suggestions"></div>
         </div>

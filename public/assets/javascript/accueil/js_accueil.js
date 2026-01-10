@@ -102,6 +102,76 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    /**
+     * GESTION DE LA GÉOLOCALISATION
+     * Récupère la position GPS et trouve l'adresse correspondante via l'API Gouv
+     */
+function setupGeolocation() {
+        const btnGeoloc = document.getElementById("btn-geoloc");
+        const inputDepart = document.getElementById("depart");
+
+        if (!btnGeoloc || !inputDepart) return;
+
+        btnGeoloc.addEventListener("click", function () {
+            
+            // --- DÉBUT DU CHARGEMENT ---
+            // On enlève l'icône de map
+            btnGeoloc.classList.remove("bi-geo-alt-fill");
+            // On ajoute la flèche et l'animation de rotation
+            btnGeoloc.classList.add("bi-arrow-repeat", "geo-loading");
+            
+            // Placeholder d'attente
+            const originalPlace = inputDepart.placeholder;
+            inputDepart.placeholder = "Recherche en cours...";
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    // SUCCÈS
+                    function (position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`)
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.features && data.features.length > 0) {
+                                    inputDepart.value = data.features[0].properties.label;
+                                } else {
+                                    alert("Adresse introuvable.");
+                                }
+                            })
+                            .catch((err) => console.error(err))
+                            .finally(() => {
+                                // --- FIN DU CHARGEMENT (Succès ou Erreur API) ---
+                                // On retire l'animation et la flèche
+                                btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                                // On remet l'icône de base
+                                btnGeoloc.classList.add("bi-geo-alt-fill");
+                                inputDepart.placeholder = originalPlace;
+                            });
+                    },
+                    // ERREUR GEOLOC (Refus ou Timeout)
+                    function (error) {
+                        alert("Géolocalisation impossible ou refusée.");
+                        
+                        // --- FIN DU CHARGEMENT (Erreur GPS) ---
+                        btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                        btnGeoloc.classList.add("bi-geo-alt-fill");
+                        inputDepart.placeholder = originalPlace;
+                    }
+                );
+            } else {
+                alert("Navigateur incompatible.");
+                // Reset immédiat si pas compatible
+                btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                btnGeoloc.classList.add("bi-geo-alt-fill");
+            }
+        });
+    }
+
+    // Lancer la configuration de la géolocalisation
+    setupGeolocation();
+
     // Lancement de l'autocomplétion sur les champs Départ et Arrivée
     setupAutocomplete("depart", "depart-list");
     setupAutocomplete("arrivee", "arrivee-list");

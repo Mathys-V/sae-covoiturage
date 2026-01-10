@@ -18,6 +18,13 @@
   box-shadow: none !important;
 }
 
+
+.autocomplete-suggestions:empty { 
+  display: none !important;
+  border: none !important; 
+  padding: 0 !important; 
+}
+
 /* ==========================================================================
    2. STYLE DU BOUTON DE GÉOLOCALISATION
    ========================================================================== */

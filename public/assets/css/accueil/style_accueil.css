@@ -462,3 +462,43 @@ body {
     border: none !important;
     padding: 0 !important;
 }
+/* ==========================================================================
+   BOUTON DE GÉOLOCALISATION
+   ========================================================================== */
+/* On s'assure que l'icône est AU-DESSUS de l'input */
+.input-icon {
+    position: absolute;
+    left: 18px;
+    top: 42px;
+    font-size: 1.3rem;
+    
+    /* MODIFICATIONS IMPORTANTES */
+    z-index: 20; /* Très haut pour être sûr d'être au dessus */
+    cursor: pointer; /* Affiche la main au survol */
+    pointer-events: auto; /* Active les clics */
+    transition: all 0.2s ease;
+    color: #98a2b3; /* Couleur de base */
+}
+
+/* Effet au survol pour bien montrer que c'est un bouton */
+.input-icon:hover {
+    color: #8c52ff; /* Ta couleur accent (violet) */
+    transform: scale(1.2); /* Grossit légèrement */
+}
+
+/* On s'assure que l'input ne cache pas l'icône */
+.input-modern {
+    z-index: 1; 
+    position: relative;
+}
+/* Animation de rotation pour l'icône de chargement */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.geo-loading {
+    animation: spin 1s linear infinite; /* Tourne à l'infini */
+    color: var(--accent-color); /* Optionnel : met l'icône en violet pendant le chargement */
+    cursor: wait !important;
+}

@@ -1,4 +1,6 @@
 {include file='includes/header.tpl'}
+
+{* Styles spécifiques pour le système de notation par étoiles (interactive et visuelle) *}
 <style>
     .rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 10px; }
     .rating input { display: none; }
@@ -8,16 +10,22 @@
 
 <div class="container mt-5" style="max-width: 600px;">
     <div class="card border-0 shadow-lg rounded-4 p-4">
+        
+        {* En-tête : Photo et nom de la personne à noter *}
         <div class="text-center mb-4">
             <img src="/sae-covoiturage/public/uploads/{$destinataire.photo_profil}" class="rounded-circle mb-3 shadow-sm" width="80" height="80" style="object-fit:cover;">
             <h3 class="fw-bold">Notez {$destinataire.prenom}</h3>
             <p class="text-muted">Comment s'est passé le voyage ?</p>
         </div>
 
+        {* Formulaire d'envoi de l'avis *}
         <form action="/sae-covoiturage/public/avis/ajouter" method="POST">
+            
+            {* Champs cachés nécessaires pour lier l'avis au trajet et au destinataire *}
             <input type="hidden" name="id_trajet" value="{$id_trajet}">
             <input type="hidden" name="id_destinataire" value="{$id_dest}">
 
+            {* Système de notation par étoiles (1 à 5) *}
             <div class="mb-4 text-center">
                 <div class="rating">
                     <input type="radio" name="note" id="star5" value="5" required><label for="star5" title="Excellent"><i class="bi bi-star-fill"></i></label>
@@ -28,15 +36,18 @@
                 </div>
             </div>
 
+            {* Champ de saisie pour le commentaire textuel *}
             <div class="mb-4">
                 <label class="form-label fw-bold">Commentaire</label>
                 <textarea name="commentaire" class="form-control bg-light border-0" rows="4" placeholder="Conduite agréable, ponctuel..." required></textarea>
             </div>
 
+            {* Bouton de validation *}
             <div class="d-grid">
                 <button type="submit" class="btn btn-purple rounded-pill py-2 fw-bold">Publier l'avis</button>
             </div>
         </form>
     </div>
 </div>
+
 {include file='includes/footer.tpl'}

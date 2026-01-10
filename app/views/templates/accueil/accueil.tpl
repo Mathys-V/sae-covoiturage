@@ -18,7 +18,9 @@
                 {* Champ de saisie du lieu de départ avec autocomplétion *}
                 <div class="form-group-modern autocomplete-wrapper"> 
                     <label for="depart">D'où partez-vous ?</label>
-                    <i class="bi bi-geo-alt-fill input-icon"></i>
+                    
+                    <i class="bi bi-geo-alt-fill input-icon" id="btn-geoloc" title="Me géolocaliser" style="z-index: 10; cursor: pointer;"></i>
+                    
                     <input type="text" id="depart" name="depart" class="input-modern" 
                         placeholder="Ex: Gare d'Amiens..." 
                         value="{$recherche_precedente.depart|default:''}" required>

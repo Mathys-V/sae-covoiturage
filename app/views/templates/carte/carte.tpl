@@ -53,7 +53,7 @@
     <div id="map-container">
         <div id="map"></div> <div id="infoSidebar" class="info-sidebar">
             <div class="sidebar-header">
-                <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
+                <button class="close-sidebar-btn" onclick="closeSidebar()"><i class="bi bi-x-lg"></i></button>
                 <h4 class="m-0 fw-bold" id="sidebarTitle">Résultats</h4>
                 <small id="sidebarSubtitle" class="opacity-75">Trajets disponibles</small>
             </div>

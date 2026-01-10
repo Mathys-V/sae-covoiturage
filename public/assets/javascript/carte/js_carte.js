@@ -593,7 +593,13 @@ function setupGeolocationMap() {
 
     btnGeoloc.addEventListener("click", function () {
         
-        // --- DÉBUT DU CHARGEMENT ---
+        // 1. Vérification du support navigateur
+        if (!navigator.geolocation) {
+            alert("Désolé, votre navigateur ne supporte pas la géolocalisation.");
+            return;
+        }
+
+        // 2. Animation de chargement
         // On enlève l'icône de map
         btnGeoloc.classList.remove("bi-geo-alt-fill");
         // On ajoute la flèche et l'animation de rotation
@@ -603,43 +609,68 @@ function setupGeolocationMap() {
         const originalPlace = inputDepart.placeholder;
         inputDepart.placeholder = "Recherche en cours...";
 
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                // SUCCÈS
-                function (position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
+        // 3. Demande de position
+        navigator.geolocation.getCurrentPosition(
+            // --- SUCCÈS ---
+            function (position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
 
-                    fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`)
-                        .then((response) => response.json())
-                        .then((data) => {
-                            if (data.features && data.features.length > 0) {
-                                inputDepart.value = data.features[0].properties.label;
-                            } else {
-                                alert("Adresse introuvable.");
-                            }
-                        })
-                        .catch((err) => console.error(err))
-                        .finally(() => {
-                            // --- FIN DU CHARGEMENT ---
-                            btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
-                            btnGeoloc.classList.add("bi-geo-alt-fill");
-                            inputDepart.placeholder = originalPlace;
-                        });
-                },
-                // ERREUR
-                function (error) {
-                    alert("Géolocalisation impossible ou refusée.");
-                    btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
-                    btnGeoloc.classList.add("bi-geo-alt-fill");
-                    inputDepart.placeholder = originalPlace;
+                fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.features && data.features.length > 0) {
+                            // Adresse trouvée
+                            inputDepart.value = data.features[0].properties.label;
+                        } else {
+                            // Position OK mais pas d'adresse (Hors France souvent)
+                            alert(
+                                "📍 Position détectée, mais adresse introuvable.\n\n" +
+                                "L'outil de recherche automatique ne fonctionne que pour les lieux situés en France métropolitaine.\n\n" +
+                                "👉 Solution : Veuillez saisir le nom de votre ville manuellement."
+                            );
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("Erreur API:", err);
+                        alert("Une erreur technique est survenue lors de la communication avec le service d'adresse.");
+                    })
+                    .finally(() => {
+                        // --- FIN DU CHARGEMENT ---
+                        btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                        btnGeoloc.classList.add("bi-geo-alt-fill");
+                        inputDepart.placeholder = originalPlace;
+                    });
+            },
+            // --- ERREUR ---
+            function (error) {
+                // Fin du chargement
+                btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
+                btnGeoloc.classList.add("bi-geo-alt-fill");
+                inputDepart.placeholder = originalPlace;
+
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        alert(
+                            "⚠️ Géolocalisation bloquée.\n\n" +
+                            "Pour utiliser cette fonction, vous devez l'autoriser :\n" +
+                            "1. Cliquez sur l'icône (cadenas 🔒) à gauche de l'adresse URL.\n" +
+                            "2. Activez l'option 'Position' ou 'Localisation'.\n" +
+                            "3. Réessayez."
+                        );
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        alert("Votre position est actuellement indisponible (signal GPS trop faible ou désactivé).");
+                        break;
+                    case error.TIMEOUT:
+                        alert("La demande de localisation a pris trop de temps. Veuillez réessayer.");
+                        break;
+                    default:
+                        alert("Une erreur inconnue est survenue.");
+                        break;
                 }
-            );
-        } else {
-            alert("Navigateur incompatible.");
-            btnGeoloc.classList.remove("bi-arrow-repeat", "geo-loading");
-            btnGeoloc.classList.add("bi-geo-alt-fill");
-        }
+            }
+        );
     });
 }
 

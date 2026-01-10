@@ -1,19 +1,24 @@
 /* ==========================================================================
    CONFIGURATIONS GLOBALES & VARIABLES
    ========================================================================== */
-/* Définition des variables de couleurs pour une maintenance aisée et une cohérence graphique */
 :root {
-  --primary-color: #452b85; /* Couleur principale (violet foncé) utilisée pour le fond et les titres */
-  --accent-color: #8c52ff; /* Couleur d'accentuation (violet vif) pour les éléments interactifs et détails */
-  --accent-hover: #703ccf; /* Couleur au survol pour les éléments d'accentuation */
-  --text-dark: #2c3e50; /* Couleur de texte sombre pour une lisibilité optimale sur fond clair */
-  --bg-light: #f8f9fa; /* Couleur de fond très clair pour les sections secondaires */
+    --primary-color: #452b85;
+    --accent-color: #8c52ff;
+    --accent-hover: #703ccf;
+    --text-dark: #2c3e50;
+    --bg-light: #f8f9fa;
 }
 
 body {
-  background-color: var(--primary-color);
-  font-family: "Poppins", sans-serif; /* Police moderne sans-serif pour l'ensemble du site */
-  overflow-x: hidden; /* Empêche le défilement horizontal indésirable */
+    background-color: var(--primary-color);
+    overflow-x: hidden;
+}
+
+.section-heros,
+.section-detail,
+.section-steps,
+.search-card {
+    font-family: "Poppins", sans-serif;
 }
 
 /* ==========================================================================
@@ -21,143 +26,143 @@ body {
    ========================================================================== */
 /* Version avec image de fond pleine sans filtre de couleur par-dessus */
 .section-heros {
-  position: relative;
-  padding: 80px 20px 60px;
-  background-image: url("/sae-covoiturage/public/assets/img/image-BU-accueil.png");
-  background-size: cover; /* L'image couvre toute la zone */
-  background-position: center; /* Centrage de l'image */
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 85vh; /* Occupe au moins 85% de la hauteur de la fenêtre */
-  overflow: hidden;
+    position: relative;
+    padding: 80px 20px 60px;
+    background-image: url("/sae-covoiturage/public/assets/img/image-BU-accueil.png");
+    background-size: cover; /* L'image couvre toute la zone */
+    background-position: center; /* Centrage de l'image */
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 85vh; /* Occupe au moins 85% de la hauteur de la fenêtre */
+    overflow: hidden;
 }
 
 /* LE BLOC .section-heros::before QUI FAISAIT L'EFFET VIOLET A ÉTÉ SUPPRIMÉ ICI */
 
 /* Conteneur principal du contenu héroïque */
 .hero-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end; /* Aligne le contenu (la carte de recherche) vers la droite */
-  gap: 5rem;
-  max-width: 1400px;
-  width: 100%;
-  z-index: 2; /* S'assure que le contenu est au-dessus du fond */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Aligne le contenu (la carte de recherche) vers la droite */
+    gap: 5rem;
+    max-width: 1400px;
+    width: 100%;
+    z-index: 2; /* S'assure que le contenu est au-dessus du fond */
 }
 
 /* CARTE DE RECHERCHE "GLASSMORPHISM" */
 /* Effet de verre dépoli moderne pour la carte de recherche */
 .search-card {
-  /* Fond blanc semi-transparent, opacité élevée pour la lisibilité */
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(15px); /* Flou d'arrière-plan standard */
-  -webkit-backdrop-filter: blur(15px); /* Support Safari */
-  border-radius: 24px;
-  padding: 3rem;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); /* Ombre portée douce et profonde */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* Bordure subtile pour définir la forme */
-  position: relative;
-  z-index: 2;
+    /* Fond blanc semi-transparent, opacité élevée pour la lisibilité */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px); /* Flou d'arrière-plan standard */
+    -webkit-backdrop-filter: blur(15px); /* Support Safari */
+    border-radius: 24px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); /* Ombre portée douce et profonde */
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Bordure subtile pour définir la forme */
+    position: relative;
+    z-index: 2;
 }
 
 /* --- TYPOGRAPHIE SPÉCIFIQUE HÉROS --- */
 .hero-title {
-  color: var(--primary-color);
-  font-weight: 800; /* Gras très prononcé */
-  font-size: 3rem;
-  letter-spacing: -1.5px; /* Resserrement des lettres pour un titre compact */
-  margin-bottom: 0.5rem;
-  line-height: 1.1;
+    color: var(--primary-color);
+    font-weight: 800; /* Gras très prononcé */
+    font-size: 3rem;
+    letter-spacing: -1.5px; /* Resserrement des lettres pour un titre compact */
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
 }
 
 .hero-subtitle {
-  color: #555;
-  font-size: 1.1rem;
-  font-weight: 400; /* Poids normal */
-  margin-bottom: 2rem;
+    color: #555;
+    font-size: 1.1rem;
+    font-weight: 400; /* Poids normal */
+    margin-bottom: 2rem;
 }
 
 /* ==========================================================================
    COMPOSANTS DE FORMULAIRE (STYLE MODERNE)
    ========================================================================== */
 .form-group-modern {
-  margin-bottom: 1.2rem;
-  position: relative; /* Nécessaire pour le positionnement absolu des icônes */
+    margin-bottom: 1.2rem;
+    position: relative; /* Nécessaire pour le positionnement absolu des icônes */
 }
 
 .form-group-modern label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent-color);
-  margin-bottom: 0.4rem;
-  display: block;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 0.4rem;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .input-modern {
-  border: 2px solid #eaecf0;
-  border-radius: 16px;
-  padding: 14px 20px 14px 50px; /* Padding gauche important pour laisser place à l'icône */
-  width: 100%;
-  font-size: 1rem;
-  color: var(--text-dark);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transition fluide */
-  background-color: #fff;
+    border: 2px solid #eaecf0;
+    border-radius: 16px;
+    padding: 14px 20px 14px 50px; /* Padding gauche important pour laisser place à l'icône */
+    width: 100%;
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transition fluide */
+    background-color: #fff;
 }
 
 /* État focus du champ de saisie */
 .input-modern:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo de focus violet */
-  outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15); /* Halo de focus violet */
+    outline: none;
 }
 
 /* Icône à l'intérieur du champ */
 .input-icon {
-  position: absolute;
-  left: 18px;
-  top: 42px; /* Ajustement vertical précis */
-  color: #98a2b3;
-  font-size: 1.3rem;
-  transition: color 0.3s;
+    position: absolute;
+    left: 18px;
+    top: 42px; /* Ajustement vertical précis */
+    color: #98a2b3;
+    font-size: 1.3rem;
+    transition: color 0.3s;
 }
 
 /* Changement de couleur de l'icône lors du focus sur le champ parent */
 .input-modern:focus + .input-icon,
 .form-group-modern:focus-within .input-icon {
-  color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 /* Bouton de recherche principal */
 .btn-search {
-  background: linear-gradient(
-    135deg,
-    var(--accent-color),
-    var(--primary-color)
-  ); /* Dégradé diagonal */
-  color: white;
-  border: none;
-  padding: 16px 0;
-  width: 100%;
-  border-radius: 50px; /* Bords complètement arrondis */
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
-  box-shadow: 0 10px 20px rgba(140, 82, 255, 0.25); /* Ombre colorée */
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  cursor: pointer;
+    background: linear-gradient(
+        135deg,
+        var(--accent-color),
+        var(--primary-color)
+    ); /* Dégradé diagonal */
+    color: white;
+    border: none;
+    padding: 16px 0;
+    width: 100%;
+    border-radius: 50px; /* Bords complètement arrondis */
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 10px 20px rgba(140, 82, 255, 0.25); /* Ombre colorée */
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    cursor: pointer;
 }
 
 /* Effet au survol du bouton */
 .btn-search:hover {
-  transform: translateY(-3px); /* Légère élévation */
-  box-shadow: 0 20px 30px rgba(140, 82, 255, 0.35); /* Ombre plus intense */
+    transform: translateY(-3px); /* Légère élévation */
+    box-shadow: 0 20px 30px rgba(140, 82, 255, 0.35); /* Ombre plus intense */
 }
 
 /* ==========================================================================
@@ -165,295 +170,295 @@ body {
    ========================================================================== */
 /* Écrans larges */
 @media (min-width: 992px) {
-  .hero-container {
-    padding-top: 20px;
-  }
+    .hero-container {
+        padding-top: 20px;
+    }
 }
 
 /* Tablettes et mobiles (moins de 992px) */
 @media (max-width: 992px) {
-  .section-heros {
-    padding: 40px 20px;
-  }
-  .hero-container {
-    flex-direction: column; /* Empilement vertical des éléments */
-    justify-content: center;
-    gap: 2rem;
-  }
-  .search-card {
-    order: 2; /* La carte passe après le titre sur mobile si nécessaire (ici, ordre visuel) */
-    padding: 2rem;
-    margin: 0 auto;
-  }
-  .hero-title {
-    font-size: 2.2rem; /* Réduction de la taille du titre */
-  }
+    .section-heros {
+        padding: 40px 20px;
+    }
+    .hero-container {
+        flex-direction: column; /* Empilement vertical des éléments */
+        justify-content: center;
+        gap: 2rem;
+    }
+    .search-card {
+        order: 2; /* La carte passe après le titre sur mobile si nécessaire (ici, ordre visuel) */
+        padding: 2rem;
+        margin: 0 auto;
+    }
+    .hero-title {
+        font-size: 2.2rem; /* Réduction de la taille du titre */
+    }
 }
 
 /* ==========================================================================
    SECTIONS DÉTAILS & FONCTIONNALITÉS
    ========================================================================== */
 .section-detail {
-  background-color: var(--primary-color);
-  padding: 80px 20px;
+    background-color: var(--primary-color);
+    padding: 80px 20px;
 }
 
 .section-title {
-  color: white;
-  font-weight: 700;
-  font-size: 2.2rem;
-  margin-bottom: 50px;
-  position: relative;
-  display: inline-block;
+    color: white;
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 50px;
+    position: relative;
+    display: inline-block;
 }
 
 /* Soulignement décoratif du titre */
 .section-title::after {
-  content: "";
-  display: block;
-  width: 60px;
-  height: 4px;
-  background-color: var(--accent-color);
-  margin: 15px auto 0;
-  border-radius: 2px;
+    content: "";
+    display: block;
+    width: 60px;
+    height: 4px;
+    background-color: var(--accent-color);
+    margin: 15px auto 0;
+    border-radius: 2px;
 }
 
 /* Grille de cartes responsive */
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(250px, 1fr)
-  ); /* Colonnes flexibles */
-  gap: 25px;
-  max-width: 1200px;
-  margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(250px, 1fr)
+    ); /* Colonnes flexibles */
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Carte de fonctionnalité individuelle */
 .feature-card {
-  background: white;
-  padding: 30px 25px;
-  border-radius: 20px;
-  text-align: left;
-  transition: all 0.3s ease;
-  border-bottom: 5px solid transparent; /* Prépare la bordure au survol */
+    background: white;
+    padding: 30px 25px;
+    border-radius: 20px;
+    text-align: left;
+    transition: all 0.3s ease;
+    border-bottom: 5px solid transparent; /* Prépare la bordure au survol */
 }
 
 .feature-card:hover {
-  transform: translateY(-8px);
-  border-bottom-color: var(
-    --accent-color
-  ); /* Apparition de la bordure colorée */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(-8px);
+    border-bottom-color: var(
+        --accent-color
+    ); /* Apparition de la bordure colorée */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .icon-box {
-  width: 50px;
-  height: 50px;
-  background-color: rgba(140, 82, 255, 0.1); /* Fond légèrement teinté */
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 15px;
-  color: var(--accent-color);
-  font-size: 1.5rem;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(140, 82, 255, 0.1); /* Fond légèrement teinté */
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    color: var(--accent-color);
+    font-size: 1.5rem;
 }
 
 .feature-card h3 {
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin-bottom: 8px;
-  color: var(--text-dark);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-dark);
 }
 
 .feature-card p {
-  color: #666;
-  line-height: 1.5;
-  margin: 0;
-  font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+    font-size: 0.95rem;
 }
 
 /* ==========================================================================
    SECTION ÉTAPES (STEPS)
    ========================================================================== */
 .section-steps {
-  background-color: white;
-  padding: 120px 20px 80px;
-  position: relative;
-  margin-top: -2px; /* Évite les lignes blanches entre sections */
+    background-color: white;
+    padding: 120px 20px 80px;
+    position: relative;
+    margin-top: -2px; /* Évite les lignes blanches entre sections */
 }
 
 /* Séparateur en forme de vague (SVG) */
 .steps-wave {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  line-height: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
 }
 
 .steps-wave svg {
-  position: relative;
-  display: block;
-  width: calc(100% + 1.3px);
-  height: 80px;
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 80px;
 }
 
 .steps-wave .shape-fill {
-  fill: var(
-    --primary-color
-  ); /* Remplit la vague avec la couleur de la section précédente */
+    fill: var(
+        --primary-color
+    ); /* Remplit la vague avec la couleur de la section précédente */
 }
 
 .steps-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  max-width: 1000px;
-  margin: 0 auto;
-  position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
 }
 
 .step-item {
-  text-align: center;
-  flex: 1; /* Chaque étape prend la même largeur */
-  z-index: 2;
-  padding: 0 15px;
+    text-align: center;
+    flex: 1; /* Chaque étape prend la même largeur */
+    z-index: 2;
+    padding: 0 15px;
 }
 
 /* Cercle numéroté */
 .step-circle {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(
-    135deg,
-    var(--accent-color),
-    var(--primary-color)
-  );
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0 auto 20px;
-  box-shadow: 0 10px 20px rgba(69, 43, 133, 0.2);
-  position: relative;
-  z-index: 2;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(
+        135deg,
+        var(--accent-color),
+        var(--primary-color)
+    );
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 20px rgba(69, 43, 133, 0.2);
+    position: relative;
+    z-index: 2;
 }
 
 .step-content strong {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--primary-color);
-  margin-bottom: 8px;
+    display: block;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 8px;
 }
 
 .step-content {
-  color: #666;
-  font-size: 0.95rem;
+    color: #666;
+    font-size: 0.95rem;
 }
 
 /* Connecteur visuel entre les étapes (ligne pointillée) */
 .step-connector {
-  flex-grow: 1;
-  height: 3px;
-  background-image: linear-gradient(
-    to right,
-    var(--accent-color) 50%,
-    transparent 50%
-  );
-  background-size: 20px 100%; /* Création de l'effet pointillé */
-  margin-top: 35px;
-  opacity: 0.5;
+    flex-grow: 1;
+    height: 3px;
+    background-image: linear-gradient(
+        to right,
+        var(--accent-color) 50%,
+        transparent 50%
+    );
+    background-size: 20px 100%; /* Création de l'effet pointillé */
+    margin-top: 35px;
+    opacity: 0.5;
 }
 
 /* Adaptation mobile pour les étapes */
 @media (max-width: 768px) {
-  .steps-container {
-    flex-direction: column; /* Empilement vertical */
-    align-items: center;
-    gap: 30px;
-  }
-  .step-connector {
-    width: 3px;
-    height: 40px; /* Ligne verticale sur mobile */
-    background-image: linear-gradient(
-      to bottom,
-      var(--accent-color) 50%,
-      transparent 50%
-    );
-    background-size: 100% 20px;
-    margin: 0;
-  }
+    .steps-container {
+        flex-direction: column; /* Empilement vertical */
+        align-items: center;
+        gap: 30px;
+    }
+    .step-connector {
+        width: 3px;
+        height: 40px; /* Ligne verticale sur mobile */
+        background-image: linear-gradient(
+            to bottom,
+            var(--accent-color) 50%,
+            transparent 50%
+        );
+        background-size: 100% 20px;
+        margin: 0;
+    }
 }
 
 /* ==========================================================================
    AUTOCOMPLÉTION (AUTOCOMPLETE)
    ========================================================================== */
 .autocomplete-wrapper {
-  position: relative;
+    position: relative;
 }
 
 /* Liste de suggestions déroulante */
 .autocomplete-suggestions {
-  position: absolute;
-  top: 100%; /* S'affiche juste en dessous du champ */
-  left: 0;
-  width: 100%;
-  background: white;
-  border-radius: 0 0 15px 15px; /* Arrondi uniquement en bas */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
-  max-height: 280px;
-  overflow-y: auto; /* Défilement si la liste est trop longue */
-  border: 1px solid #eee;
-  border-top: none;
-  margin-top: -5px;
+    position: absolute;
+    top: 100%; /* S'affiche juste en dessous du champ */
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 0 0 15px 15px; /* Arrondi uniquement en bas */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    max-height: 280px;
+    overflow-y: auto; /* Défilement si la liste est trop longue */
+    border: 1px solid #eee;
+    border-top: none;
+    margin-top: -5px;
 }
 
 .autocomplete-suggestion {
-  padding: 12px 15px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 15px;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .autocomplete-suggestion:hover {
-  background-color: #f3efff;
-  color: #8c52ff;
+    background-color: #f3efff;
+    color: #8c52ff;
 }
 
 .autocomplete-suggestion:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 /* Style spécifique pour les lieux fréquents (suggestions prioritaires) */
 .autocomplete-suggestion.is-frequent {
-  background-color: #fffbf0 !important;
-  border-bottom: 1px solid #ffeeba;
+    background-color: #fffbf0 !important;
+    border-bottom: 1px solid #ffeeba;
 }
 
 .autocomplete-suggestion.is-frequent .sugg-icon {
-  color: #ffc107 !important; /* Couleur jaune/or pour distinguer */
-  font-size: 1.1rem;
+    color: #ffc107 !important; /* Couleur jaune/or pour distinguer */
+    font-size: 1.1rem;
 }
 
 .autocomplete-suggestion.is-frequent:hover {
-  background-color: #fff3cd !important;
+    background-color: #fff3cd !important;
 }
 
 /* Masquer le conteneur s'il est vide */
 .autocomplete-suggestions:empty {
-  display: none !important;
-  border: none !important;
-  padding: 0 !important;
+    display: none !important;
+    border: none !important;
+    padding: 0 !important;
 }
